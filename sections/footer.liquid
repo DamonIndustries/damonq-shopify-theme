@@ -7,6 +7,8 @@
             <img
               src="{{ section.settings.footer_logo | image_url: width: 400 }}"
               alt="{{ section.settings.footer_logo_alt | default: shop.name | escape }}"
+              width="{{ section.settings.footer_logo.width }}"
+              height="{{ section.settings.footer_logo.height }}"
               style="max-height: {{ section.settings.footer_logo_max_height | default: 36 }}px; width: auto;"
               loading="lazy">
           {%- else -%}
