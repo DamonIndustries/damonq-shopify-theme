@@ -74,6 +74,13 @@ unintended files (especially no `config/settings_data.json` or
 `templates/*.json` changes you didn't deliberately make — if they appear
 modified, restore them: `git checkout -- <file>`).
 
+**Version bump on every commit:** each commit must increment the patch
+(third) component of `theme_version` in `config/settings_schema.json`
+(`theme_info` block) — one commit, one bump, included in that same commit
+(e.g. `1.0.142 → 1.0.143`). Merge commits and Shopify bot sync commits are
+exempt. On a merge/rebase conflict over `theme_version`, resolve to the
+highest version either side has seen, plus one.
+
 **Commit messages:** imperative subject line under 72 chars, e.g.
 `Add announcement bar section with schedule settings`. Add a body when the
 "why" isn't obvious. If your tooling adds a `Co-Authored-By` trailer,
