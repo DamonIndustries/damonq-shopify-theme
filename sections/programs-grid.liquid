@@ -1,0 +1,115 @@
+{%- comment -%}
+  Programs grid — picks data source by precedence:
+    1. If the merchant has chosen collections in `section.settings.collections`,
+       iterate those and auto-populate each tile from collection data.
+    2. Otherwise fall back to the manual `program` blocks (existing behavior),
+       so the homepage keeps working for shops that haven't migrated yet.
+{%- endcomment -%}
+
+{%- assign picked_collections = section.settings.collections -%}
+
+<section class="section-row">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="section-head__title">{{ section.settings.heading }}</h2>
+      {%- if section.settings.link_text != blank -%}
+        <a href="{{ section.settings.link_url }}" class="section-head__link">{{ section.settings.link_text }} →</a>
+      {%- endif -%}
+    </div>
+
+    <div class="programs-grid">
+      {%- if picked_collections.size > 0 -%}
+
+        {%- for collection in picked_collections -%}
+          {%- assign fb_icon = section.settings.fallback_icon | strip -%}
+          {%- assign has_visual = false -%}
+          {%- if collection.image or fb_icon != blank -%}{%- assign has_visual = true -%}{%- endif -%}
+          <a href="{{ collection.url }}" class="program-tile">
+            {%- if has_visual -%}
+              <div class="program-tile__icon" aria-hidden="true">
+                {%- if collection.image -%}
+                  {{ collection.image | image_url: width: 112 | image_tag: alt: collection.title, loading: 'lazy', width: 56, height: 56 }}
+                {%- else -%}
+                  {{ fb_icon }}
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+            <div class="program-tile__name">{{ collection.title }}</div>
+            <div class="program-tile__count">{{ collection.products_count }} products</div>
+          </a>
+        {%- endfor -%}
+
+      {%- else -%}
+
+        {%- for block in section.blocks -%}
+          <a href="{{ block.settings.url }}" class="program-tile" {{ block.shopify_attributes }}>
+            <div class="program-tile__icon" aria-hidden="true">{{ block.settings.icon }}</div>
+            <div class="program-tile__name">{{ block.settings.name }}</div>
+            {%- if block.settings.count != blank -%}
+              <div class="program-tile__count">{{ block.settings.count }}</div>
+            {%- endif -%}
+          </a>
+        {%- endfor -%}
+
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Programs grid",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Shop by cleaning program" },
+    { "type": "text", "id": "link_text", "label": "Link text", "default": "See all 12 programs" },
+    { "type": "url", "id": "link_url", "label": "Link URL" },
+    { "type": "header", "content": "Tiles — collection-driven (recommended)" },
+    {
+      "type": "collection_list",
+      "id": "collections",
+      "label": "Collections",
+      "limit": 12,
+      "info": "Pick up to 12 collections — each becomes a tile with the collection's image, title, and product count. When at least one collection is picked, the manual tile blocks below are ignored."
+    },
+    {
+      "type": "text",
+      "id": "fallback_icon",
+      "label": "Fallback icon",
+      "info": "Optional. Used on collection tiles that don't have a collection image set. Emoji or single character. Leave blank to render no icon at all — the tile then shows just the title and count."
+    },
+    { "type": "header", "content": "Manual tiles — fallback only" },
+    { "type": "paragraph", "content": "These manual blocks render only when no collections are picked above." }
+  ],
+  "blocks": [
+    {
+      "type": "program",
+      "name": "Program tile",
+      "settings": [
+        { "type": "text", "id": "icon", "label": "Icon (emoji)", "default": "⚕" },
+        { "type": "text", "id": "name", "label": "Name", "default": "Healthcare PPD" },
+        { "type": "text", "id": "count", "label": "Count line", "default": "42 SKUs" },
+        { "type": "url", "id": "url", "label": "URL" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Programs grid",
+      "blocks": [
+        { "type": "program", "settings": { "icon": "⚕", "name": "Healthcare PPD", "count": "42 SKUs" } },
+        { "type": "program", "settings": { "icon": "🥩", "name": "Food Processors", "count": "38 SKUs" } },
+        { "type": "program", "settings": { "icon": "🍔", "name": "Quick Serve", "count": "29 SKUs" } },
+        { "type": "program", "settings": { "icon": "🎓", "name": "Schools", "count": "34 SKUs" } },
+        { "type": "program", "settings": { "icon": "🍃", "name": "Green Program", "count": "26 SKUs" } },
+        { "type": "program", "settings": { "icon": "🤖", "name": "Robotic Floors", "count": "11 SKUs" } },
+        { "type": "program", "settings": { "icon": "⛽", "name": "Fuel Tanks", "count": "8 SKUs" } },
+        { "type": "program", "settings": { "icon": "🔧", "name": "Radiator Mfg.", "count": "14 SKUs" } },
+        { "type": "program", "settings": { "icon": "🛒", "name": "Grocery", "count": "22 SKUs" } },
+        { "type": "program", "settings": { "icon": "🐾", "name": "Pets & Animal", "count": "9 SKUs" } },
+        { "type": "program", "settings": { "icon": "🧺", "name": "Laundry & Ware", "count": "31 SKUs" } },
+        { "type": "program", "settings": { "icon": "🛢", "name": "Bulk & Drum", "count": "18 SKUs" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,846 @@
+{%- comment -%}
+  Damon Program Studio — MVP (Phase 1, rules-only).
+  5-step wizard with live preview pane that renders a generated program.
+  All recommendation logic is deterministic and lives in the inline JS below.
+  AI-insight callouts are templated rule outputs.
+
+  Phase 2 will add a Cloudflare Worker + Claude Haiku for genuinely
+  AI-generated insight prose; the contract for the recommender stays the same.
+{%- endcomment -%}
+
+<section class="studio-page">
+  <div class="container">
+    <span class="studio-page__eyebrow">✦ Damon AI · Program Studio</span>
+    <h1 class="studio-page__title">Build your <em>cleaning program</em>.<br>4 questions, 90 seconds, ships Monday.</h1>
+    <p class="studio-page__sub">Damon Program Studio takes your facility profile and generates a complete program — chemistry, dispensers, training, and a quarterly walk-through — with every line item priced and a savings analysis vs. your current vendor.</p>
+
+    <div class="studio">
+      <div class="studio__pane">
+
+        <!-- LEFT: BUILDER -->
+        <div class="studio-builder">
+          <div class="studio-stepper" data-stepper>
+            <span class="studio-step-pill is-active" data-step-pill="1"><span class="studio-step-pill__dot">1</span> Industry</span>
+            <span class="studio-step-pill__arrow">›</span>
+            <span class="studio-step-pill" data-step-pill="2"><span class="studio-step-pill__dot">2</span> Size</span>
+            <span class="studio-step-pill__arrow">›</span>
+            <span class="studio-step-pill" data-step-pill="3"><span class="studio-step-pill__dot">3</span> Compliance</span>
+            <span class="studio-step-pill__arrow">›</span>
+            <span class="studio-step-pill" data-step-pill="4"><span class="studio-step-pill__dot">4</span> Refine</span>
+            <span class="studio-step-pill__arrow">›</span>
+            <span class="studio-step-pill" data-step-pill="5"><span class="studio-step-pill__dot">★</span> Build</span>
+          </div>
+
+          {%- comment -%} ---------- STEP 1 — Industry ---------- {%- endcomment -%}
+          <div class="studio-screen is-active" data-screen="1">
+            <h2>Step 1 · What kind of facility?</h2>
+            <p class="lead">Pick the closest match. Damon Program Studio uses this to pick a base program archetype.</p>
+            <div class="studio-qrow">
+              <div class="studio-qrow__q">Industry</div>
+              <h4>Choose one</h4>
+              <div class="studio-opts">
+                <button type="button" class="studio-opt" data-input="industry" data-value="healthcare-ppd"><span class="studio-opt__icon">⚕</span>Healthcare</button>
+                <button type="button" class="studio-opt" data-input="industry" data-value="food-processing"><span class="studio-opt__icon">🥩</span>Food processor</button>
+                <button type="button" class="studio-opt" data-input="industry" data-value="qsr"><span class="studio-opt__icon">🍔</span>Quick serve</button>
+                <button type="button" class="studio-opt" data-input="industry" data-value="schools"><span class="studio-opt__icon">🎓</span>Schools</button>
+                <button type="button" class="studio-opt" data-input="industry" data-value="grocery-meat"><span class="studio-opt__icon">🥓</span>Grocery / meat</button>
+                <button type="button" class="studio-opt" data-input="industry" data-value="industrial"><span class="studio-opt__icon">🏭</span>Industrial</button>
+              </div>
+            </div>
+          </div>
+
+          {%- comment -%} ---------- STEP 2 — Size ---------- {%- endcomment -%}
+          <div class="studio-screen" data-screen="2">
+            <h2>Step 2 · How big is the facility?</h2>
+            <p class="lead">Drag to set a rough size. Studio uses this to scale quantities.</p>
+            <div class="studio-qrow">
+              <div class="studio-qrow__q">Size</div>
+              <h4 data-size-label>Approximate size</h4>
+              <div class="studio-slider-row">
+                <input type="range" min="1" max="5" step="1" value="3" data-input="size">
+                <span class="studio-slider-row__v" data-size-display>Mid-size</span>
+              </div>
+              <div class="studio-slider__bounds">
+                <span>Small (single location)</span>
+                <span>Multi-site / 100k+ sqft</span>
+              </div>
+            </div>
+            <div class="studio-qrow">
+              <div class="studio-qrow__q">Estimated monthly chemistry budget</div>
+              <h4 data-budget-label>This is just for reference — Studio will not exceed it.</h4>
+              <div class="studio-slider-row">
+                <input type="range" min="200" max="5000" step="100" value="1200" data-input="budget">
+                <span class="studio-slider-row__v" data-budget-display>$1,200/mo</span>
+              </div>
+              <div class="studio-slider__bounds">
+                <span>$200</span>
+                <span>$5,000+</span>
+              </div>
+            </div>
+          </div>
+
+          {%- comment -%} ---------- STEP 3 — Compliance ---------- {%- endcomment -%}
+          <div class="studio-screen" data-screen="3">
+            <h2>Step 3 · Compliance &amp; goals.</h2>
+            <p class="lead">What does this program need to do — beyond cleaning? Pick all that apply. Studio will tune the chemistry.</p>
+            <div class="studio-qrow">
+              <div class="studio-qrow__q">Standards</div>
+              <h4>Standards your program must meet</h4>
+              <div class="studio-check-grid">
+                <button type="button" class="studio-check" data-input="compliance" data-value="cms-jc"><span class="studio-check__box">✓</span> CMS / Joint Commission</button>
+                <button type="button" class="studio-check" data-input="compliance" data-value="usda"><span class="studio-check__box">✓</span> USDA food contact</button>
+                <button type="button" class="studio-check" data-input="compliance" data-value="green-seal"><span class="studio-check__box">✓</span> Green Seal / EcoLogo</button>
+                <button type="button" class="studio-check" data-input="compliance" data-value="epa-reg"><span class="studio-check__box">✓</span> EPA registered claims</button>
+                <button type="button" class="studio-check" data-input="compliance" data-value="hsc"><span class="studio-check__box">✓</span> Healthy Schools Campaign</button>
+                <button type="button" class="studio-check" data-input="compliance" data-value="leed"><span class="studio-check__box">✓</span> LEED documentation</button>
+              </div>
+            </div>
+          </div>
+
+          {%- comment -%} ---------- STEP 4 — Refine ---------- {%- endcomment -%}
+          <div class="studio-screen" data-screen="4">
+            <h2>Step 4 · Special considerations.</h2>
+            <p class="lead">Optional — these tune the chemistry, equipment, and training in your program.</p>
+            <div class="studio-qrow">
+              <div class="studio-qrow__q">Special considerations</div>
+              <h4>Pick what applies</h4>
+              <div class="studio-opts">
+                <button type="button" class="studio-opt" data-input="special" data-value="night-shift"><span class="studio-opt__icon">⏰</span>Night shift use</button>
+                <button type="button" class="studio-opt" data-input="special" data-value="robotic"><span class="studio-opt__icon">🤖</span>Robotic scrubber</button>
+                <button type="button" class="studio-opt" data-input="special" data-value="food-service"><span class="studio-opt__icon">🍽</span>Has food service</button>
+                <button type="button" class="studio-opt" data-input="special" data-value="pediatric"><span class="studio-opt__icon">👶</span>Pediatric / sensitive</button>
+                <button type="button" class="studio-opt" data-input="special" data-value="bulk-disp"><span class="studio-opt__icon">⚗</span>Bulk dispensing</button>
+                <button type="button" class="studio-opt" data-input="special" data-value="training"><span class="studio-opt__icon">📚</span>Training needed</button>
+              </div>
+            </div>
+            <div class="studio-prompt">
+              <h4>✦ Anything else Studio should know?</h4>
+              <textarea rows="3" data-input="notes" placeholder='Optional — example: "We had a Listeria scare in February, want to add an extra Q-San rotation."'></textarea>
+              <div class="studio-prompt__chips">
+                <button type="button" class="studio-prompt__chip" data-prompt-add="Outbreak history: ">+ Outbreak history</button>
+                <button type="button" class="studio-prompt__chip" data-prompt-add="Inspector preferences: ">+ Inspector preferences</button>
+                <button type="button" class="studio-prompt__chip" data-prompt-add="Dispenser brand: ">+ Dispenser brand</button>
+              </div>
+            </div>
+          </div>
+
+          {%- comment -%} ---------- STEP 5 — Build (summary on left) ---------- {%- endcomment -%}
+          <div class="studio-screen" data-screen="5">
+            <h2>Step 5 · Your program is ready.</h2>
+            <p class="lead">Review the live preview on the right. Save it, export to PDF, or activate AutoStock to ship Monday.</p>
+            <div class="studio-qrow">
+              <div class="studio-qrow__q">Summary</div>
+              <h4>What we built</h4>
+              <p style="font-size: 13px; line-height: 1.55; color: var(--ink-2); margin: 0;" data-summary-text>—</p>
+            </div>
+            <div class="studio-qrow">
+              <div class="studio-qrow__q">Next steps</div>
+              <h4>Three ways forward</h4>
+              <ul style="font-size: 13px; padding-left: 16px; line-height: 1.65; color: var(--ink-2); margin: 0;">
+                <li><b style="color: var(--red);">Activate AutoStock</b> — locks pricing 12 months, first shipment goes out Monday.</li>
+                <li><b style="color: var(--red);">Save program</b> — keep this configuration on file. We'll email a copy.</li>
+                <li><b style="color: var(--red);">Talk to a rep</b> — for a formal walk-through, custom kitting, or Net-30 setup.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="studio-builder__footer">
+            <button type="button" class="studio-builder__back" data-step-back disabled>← Back</button>
+            <button type="button" class="studio-builder__next" data-step-next>Continue · build program ✦</button>
+          </div>
+        </div>
+
+        <!-- RIGHT: LIVE PREVIEW -->
+        <div class="studio-preview" data-preview>
+          <div class="studio-preview__empty" data-preview-empty>
+            <h2>Pick an industry to start.</h2>
+            <p>Studio will draft a starting program in seconds. Tweak from there.</p>
+          </div>
+
+          <div data-preview-built hidden>
+            <div class="studio-preview__top">
+              <span class="studio-preview__live">Live preview</span>
+              <h3>Program · Generated by Studio</h3>
+            </div>
+            <h2 class="studio-preview__title" data-program-title>—</h2>
+            <p class="studio-preview__desc" data-program-desc>—</p>
+
+            <div class="studio-insights" data-program-insights></div>
+
+            <div class="studio-program-grid" data-program-grid></div>
+
+            <div class="studio-roi">
+              <h4>✦ ROI · projected</h4>
+              <div class="studio-roi__grid">
+                <div class="studio-roi__cell"><span class="v" data-roi-monthly>—</span><span class="l">Monthly · locked 12 mo</span></div>
+                <div class="studio-roi__cell"><span class="v"><span class="red" data-roi-pct>—</span></span><span class="l">vs. typical vendor</span></div>
+                <div class="studio-roi__cell"><span class="v" data-roi-annual>—</span><span class="l">Annual savings</span></div>
+              </div>
+            </div>
+
+            <div class="studio-savebar">
+              <div class="studio-savebar__label">
+                <span>Program total</span>
+                <b data-program-total>$0 / month</b>
+              </div>
+              <div class="studio-savebar__actions">
+                <button type="button" class="studio-savebar__btn studio-savebar__btn--ghost" data-program-pdf>↓ PDF</button>
+                <button type="button" class="studio-savebar__btn" data-program-save>Save program</button>
+              </div>
+            </div>
+
+            <button type="button" class="studio-checkout" data-program-checkout>
+              Activate AutoStock &amp; add to cart →
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+{%- comment -%} =================== Recents gallery (hardcoded for MVP) =================== {%- endcomment -%}
+<section class="studio-recents">
+  <div class="container">
+    <div class="studio-recents__head">
+      <div>
+        <h2>Programs <span class="red">other facilities generated</span> this week.</h2>
+        <p class="sub">Real Studio outputs — anonymized — that you can clone and tweak.</p>
+      </div>
+      <a href="{{ routes.root_url }}pages/program-studio">Generate your own →</a>
+    </div>
+    <div class="studio-recents__grid">
+
+      <article class="studio-rcard">
+        <div class="studio-rcard__head">
+          <h4>K-8 School · 96,000 sqft</h4>
+          <span class="studio-rcard__stamp">✦ AI · 3 days ago</span>
+        </div>
+        <div class="studio-rcard__body">
+          <div class="studio-rcard__meta">Schools program · Healthy Schools aligned</div>
+          <p>Generated for a 4-building K-8 in Stark County. Green Seal chemistry, fixed monthly payment, parent-facing SDS QR codes.</p>
+          <ul>
+            <li>EarthSafe Neutral Cleaner ×6</li>
+            <li>FS Complete RTU ×4</li>
+            <li>Microfiber program ×2</li>
+            <li>Custodian QR training included</li>
+          </ul>
+          <div class="studio-rcard__row">
+            <span class="studio-rcard__price">$486 / mo</span>
+            <button type="button" class="studio-rcard__add" data-clone-program data-clone-industry="schools" data-clone-size="3">Clone &amp; tweak</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="studio-rcard">
+        <div class="studio-rcard__head">
+          <h4>Independent Butcher · 8,200 sqft</h4>
+          <span class="studio-rcard__stamp">✦ AI · 5 days ago</span>
+        </div>
+        <div class="studio-rcard__body">
+          <div class="studio-rcard__meta">Food Processing program · USDA aligned</div>
+          <p>USDA-inspected meat processor. Daily Da-Clean A.P.C. + Q-San rotation, end-of-shift checklist, and a quarterly walkthrough.</p>
+          <ul>
+            <li>Da-Clean A.P.C. concentrate ×4</li>
+            <li>Q-San No-Rinse ×6</li>
+            <li>Wall dispenser ×2</li>
+            <li>Inspector-ready checklist</li>
+          </ul>
+          <div class="studio-rcard__row">
+            <span class="studio-rcard__price">$312 / mo</span>
+            <button type="button" class="studio-rcard__add" data-clone-program data-clone-industry="food-processing" data-clone-size="2">Clone &amp; tweak</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="studio-rcard">
+        <div class="studio-rcard__head">
+          <h4>240-bed Hospital</h4>
+          <span class="studio-rcard__stamp">✦ AI · today</span>
+        </div>
+        <div class="studio-rcard__body">
+          <div class="studio-rcard__meta">Healthcare PPD + Food Service add-on</div>
+          <p>Per-patient-day chemistry, EPA disinfectant, food-contact sanitizer for cafeteria, training pack.</p>
+          <ul>
+            <li>FS Complete + Q-San + Da-Clean</li>
+            <li>EarthSafe concentrate (night shift)</li>
+            <li>Quarterly walkthrough</li>
+            <li>21% savings vs. prior vendor</li>
+          </ul>
+          <div class="studio-rcard__row">
+            <span class="studio-rcard__price">$1,197 / mo</span>
+            <button type="button" class="studio-rcard__add" data-clone-program data-clone-industry="healthcare-ppd" data-clone-size="4">Clone &amp; tweak</button>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+{%- comment -%} =================== Pre-rendered product map for the recommender =================== {%- endcomment -%}
+{%- capture handle_map -%}
+{
+  {%- assign comma = '' -%}
+  {%- for product in collections.all.products limit: 250 -%}
+    {{ comma }}{{ product.handle | json }}:{
+      "id":{{ product.selected_or_first_available_variant.id }},
+      "title":{{ product.title | json }},
+      "url":{{ product.url | json }},
+      "price":{{ product.selected_or_first_available_variant.price }},
+      "priceFormatted":{{ product.selected_or_first_available_variant.price | money | json }},
+      "image":{{ product.featured_image | image_url: width: 96 | json }}
+    }
+    {%- assign comma = ',' -%}
+  {%- endfor -%}
+}
+{%- endcapture -%}
+<script type="application/json" data-studio-products>{{ handle_map }}</script>
+
+<script>
+(function () {
+  // ============= DATA =============
+  // Five archetypes. Products refer to handles; if a handle isn't
+  // resolvable in the live store, the cell shows a labeled placeholder.
+  var ARCHETYPES = {
+    'healthcare-ppd': {
+      name: 'Healthcare PPD',
+      titleAccent: 'Per-patient day',
+      descTpl: function (s) { return s.sizeLabel + ' healthcare facility · ' + s.shifts + ' · CMS-aligned · EPA-registered disinfectant.'; },
+      products: [
+        { handle: 'fs-complete-ready-to-use-disinfectant-sanitizer', qty: 6, label: 'cases / mo', fallback: { name: 'FS Complete™ RTU', desc: 'Disinfectant + sanitizer · case ×6', priceEach: 14800, thumb: 'FS COMPLETE', thumbSmall: 'RTU' } },
+        { handle: 'q-san-no-rinse-sanitizer',          qty: 3, label: 'cases / mo', fallback: { name: 'Q-San No-Rinse',  desc: 'Food-contact sanitizer · case ×3', priceEach: 3150, thumb: 'Q-SAN', thumbSmall: 'NO RINSE', thumbColor: 'green' } },
+        { handle: 'da-clean-apc-concentrate',          qty: 4, label: 'gal / mo',   fallback: { name: 'Da-Clean A.P.C. Conc.', desc: 'Enzyme cleaner · 4 gal', priceEach: 2490, thumb: 'DA-CLEAN', thumbSmall: 'CONC' } },
+        { handle: 'earthsafe-neutral-cleaner',          qty: 6, label: 'gal / mo',   fallback: { name: 'EarthSafe Neutral', desc: 'Floor cleaner · 6 gal · concentrate', priceEach: 1940, thumb: 'EARTH SAFE', thumbSmall: 'NEUTRAL', thumbColor: 'dark' } }
+      ],
+      extras: [
+        { name: 'Wall-mount Dispensers', desc: 'Pre-calibrated · 4 stations', priceLabel: '$0 · loaned', oneTime: true, thumb: 'WALL UNIT', thumbSmall: 'DISP' },
+        { name: 'Crew Training Pack',     desc: 'QR-coded SDS &amp; protocol video', priceLabel: 'Included', oneTime: true, thumb: 'QR VIDEO', thumbSmall: 'TRNG', thumbColor: 'dark' }
+      ]
+    },
+    'food-processing': {
+      name: 'Food Processing',
+      titleAccent: 'USDA aligned',
+      descTpl: function (s) { return s.sizeLabel + ' food processor · USDA inspected · daily sanitation rotation.'; },
+      products: [
+        { handle: 'da-clean-apc-concentrate', qty: 4, label: 'gal / mo', fallback: { name: 'Da-Clean A.P.C. Conc.', desc: 'Enzyme cleaner · 4 gal', priceEach: 2490, thumb: 'DA-CLEAN', thumbSmall: 'CONC' } },
+        { handle: 'q-san-no-rinse-sanitizer', qty: 6, label: 'cases / mo', fallback: { name: 'Q-San No-Rinse', desc: 'Food-contact sanitizer · case ×6', priceEach: 3150, thumb: 'Q-SAN', thumbSmall: 'NO RINSE', thumbColor: 'green' } },
+        { handle: 'fs-complete-ready-to-use-disinfectant-sanitizer', qty: 2, label: 'cases / mo', fallback: { name: 'FS Complete™ RTU', desc: 'Disinfectant + sanitizer · case ×2', priceEach: 14800, thumb: 'FS COMPLETE', thumbSmall: 'RTU' } }
+      ],
+      extras: [
+        { name: 'Inspector-ready checklist', desc: 'End-of-shift QR walkthrough', priceLabel: 'Included', oneTime: true, thumb: 'CHECK', thumbSmall: 'QC', thumbColor: 'dark' },
+        { name: 'Wall dispensers', desc: '2 stations · pre-calibrated', priceLabel: '$0 · loaned', oneTime: true, thumb: 'WALL UNIT', thumbSmall: 'DISP' }
+      ]
+    },
+    'qsr': {
+      name: 'Quick Serve Restaurants',
+      titleAccent: 'Fast turnover',
+      descTpl: function (s) { return s.sizeLabel + ' QSR · open-kitchen sanitation · NSF aligned.'; },
+      products: [
+        { handle: 'q-san-no-rinse-sanitizer', qty: 4, label: 'cases / mo', fallback: { name: 'Q-San No-Rinse', desc: 'Food-contact sanitizer · case ×4', priceEach: 3150, thumb: 'Q-SAN', thumbSmall: 'NO RINSE', thumbColor: 'green' } },
+        { handle: 'da-clean-apc-concentrate', qty: 3, label: 'gal / mo', fallback: { name: 'Da-Clean A.P.C. Conc.', desc: 'Enzyme cleaner · 3 gal', priceEach: 2490, thumb: 'DA-CLEAN', thumbSmall: 'CONC' } },
+        { handle: 'fs-complete-ready-to-use-disinfectant-sanitizer', qty: 2, label: 'cases / mo', fallback: { name: 'FS Complete™ RTU', desc: 'Disinfectant + sanitizer · case ×2', priceEach: 14800, thumb: 'FS COMPLETE', thumbSmall: 'RTU' } }
+      ],
+      extras: [
+        { name: 'Crew training pack', desc: 'QR-coded SDS', priceLabel: 'Included', oneTime: true, thumb: 'QR VIDEO', thumbSmall: 'TRNG', thumbColor: 'dark' }
+      ]
+    },
+    'schools': {
+      name: 'K-12 / University',
+      titleAccent: 'Healthy Schools aligned',
+      descTpl: function (s) { return s.sizeLabel + ' school district · Green Seal chemistry · parent-facing SDS QR.'; },
+      products: [
+        { handle: 'earthsafe-neutral-cleaner', qty: 6, label: 'gal / mo', fallback: { name: 'EarthSafe Neutral', desc: 'Floor cleaner · 6 gal · concentrate', priceEach: 1940, thumb: 'EARTH SAFE', thumbSmall: 'NEUTRAL', thumbColor: 'dark' } },
+        { handle: 'fs-complete-ready-to-use-disinfectant-sanitizer', qty: 4, label: 'cases / mo', fallback: { name: 'FS Complete™ RTU', desc: 'Disinfectant + sanitizer · case ×4', priceEach: 14800, thumb: 'FS COMPLETE', thumbSmall: 'RTU' } },
+        { handle: 'da-clean-apc-concentrate', qty: 2, label: 'gal / mo', fallback: { name: 'Da-Clean A.P.C. Conc.', desc: 'Enzyme cleaner · 2 gal', priceEach: 2490, thumb: 'DA-CLEAN', thumbSmall: 'CONC' } }
+      ],
+      extras: [
+        { name: 'Custodian QR training', desc: 'Print-ready protocol', priceLabel: 'Included', oneTime: true, thumb: 'QR VIDEO', thumbSmall: 'TRNG', thumbColor: 'dark' }
+      ]
+    },
+    'grocery-meat': {
+      name: 'Grocery Meat Department',
+      titleAccent: 'USDA aligned',
+      descTpl: function (s) { return s.sizeLabel + ' grocery meat dept · daily Da-Clean + Q-San rotation.'; },
+      products: [
+        { handle: 'q-san-no-rinse-sanitizer', qty: 6, label: 'cases / mo', fallback: { name: 'Q-San No-Rinse', desc: 'Food-contact sanitizer · case ×6', priceEach: 3150, thumb: 'Q-SAN', thumbSmall: 'NO RINSE', thumbColor: 'green' } },
+        { handle: 'da-clean-apc-concentrate', qty: 4, label: 'gal / mo', fallback: { name: 'Da-Clean A.P.C. Conc.', desc: 'Enzyme cleaner · 4 gal', priceEach: 2490, thumb: 'DA-CLEAN', thumbSmall: 'CONC' } },
+        { handle: 'fs-complete-ready-to-use-disinfectant-sanitizer', qty: 2, label: 'cases / mo', fallback: { name: 'FS Complete™ RTU', desc: 'Disinfectant + sanitizer · case ×2', priceEach: 14800, thumb: 'FS COMPLETE', thumbSmall: 'RTU' } }
+      ],
+      extras: [
+        { name: 'Wall dispensers', desc: '2 stations · pre-calibrated', priceLabel: '$0 · loaned', oneTime: true, thumb: 'WALL UNIT', thumbSmall: 'DISP' }
+      ]
+    },
+    'industrial': {
+      name: 'Industrial / Manufacturing',
+      titleAccent: 'Heavy-duty',
+      descTpl: function (s) { return s.sizeLabel + ' industrial facility · floor + degreaser focus.'; },
+      products: [
+        { handle: 'accelerate-ii-low-fume-low-hazard-stripper', qty: 4, label: 'gal / mo', fallback: { name: 'Accelerate II Stripper', desc: 'Floor stripper · 4 gal', priceEach: 7859, thumb: 'ACCELERATE', thumbSmall: 'STRIP' } },
+        { handle: 'earthsafe-neutral-cleaner', qty: 6, label: 'gal / mo', fallback: { name: 'EarthSafe Neutral', desc: 'Floor cleaner · 6 gal · concentrate', priceEach: 1940, thumb: 'EARTH SAFE', thumbSmall: 'NEUTRAL', thumbColor: 'dark' } },
+        { handle: 'da-clean-apc-concentrate', qty: 4, label: 'gal / mo', fallback: { name: 'Da-Clean A.P.C. Conc.', desc: 'Enzyme cleaner · 4 gal', priceEach: 2490, thumb: 'DA-CLEAN', thumbSmall: 'CONC' } }
+      ],
+      extras: []
+    }
+  };
+
+  var SIZE_LABELS = ['Small (1 site)', 'Small/mid', 'Mid-size', 'Large', 'Multi-site / 100k+ sqft'];
+  var SIZE_SCALE  = [0.4,             0.7,           1.0,         1.5,     2.4];
+
+  // ============= STATE =============
+  var state = {
+    step: 1,
+    industry: null,
+    size: 3,           // 1..5 index → SIZE_LABELS / SIZE_SCALE
+    budget: 1200,      // dollars/month
+    compliance: [],
+    special: [],
+    notes: ''
+  };
+
+  var productMap = {};
+  try { productMap = JSON.parse(document.querySelector('[data-studio-products]').textContent); } catch (e) {}
+
+  // ============= HELPERS =============
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function escapeHtml(s) { return String(s || '').replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function moneyCents(c) { return '$' + (c / 100).toFixed(c % 100 === 0 ? 0 : 2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  function moneyDollars(d) { return '$' + Math.round(d).toLocaleString(); }
+
+  // ============= RECOMMENDER =============
+  function buildProgram() {
+    if (!state.industry) return null;
+    var arch = ARCHETYPES[state.industry];
+    if (!arch) return null;
+
+    var scale = SIZE_SCALE[state.size - 1] || 1;
+    var sizeLabel = SIZE_LABELS[state.size - 1] || 'Mid-size';
+    var insights = [];
+    var products = arch.products.map(function (p) {
+      var resolved = productMap[p.handle] || null;
+      return {
+        handle: p.handle,
+        qty: Math.max(1, Math.round(p.qty * scale)),
+        label: p.label,
+        title: resolved ? resolved.title : p.fallback.name,
+        url: resolved ? resolved.url : '#',
+        priceEach: resolved ? resolved.price : p.fallback.priceEach,
+        image: resolved ? resolved.image : null,
+        thumb: p.fallback.thumb,
+        thumbSmall: p.fallback.thumbSmall,
+        thumbColor: p.fallback.thumbColor || 'red',
+        variantId: resolved ? resolved.id : null,
+        added: true
+      };
+    });
+
+    // Compliance adjustments — append USDA-friendly Q-San if not in list
+    if (state.compliance.indexOf('usda') >= 0) {
+      var hasQSan = products.some(function (p) { return /q-san/i.test(p.title) || p.handle.indexOf('q-san') === 0; });
+      if (!hasQSan) {
+        var qsan = productMap['q-san-no-rinse-sanitizer'];
+        products.push({
+          handle: 'q-san-no-rinse-sanitizer',
+          qty: Math.max(2, Math.round(3 * scale)),
+          label: 'cases / mo',
+          title: qsan ? qsan.title : 'Q-San No-Rinse',
+          url: qsan ? qsan.url : '#',
+          priceEach: qsan ? qsan.price : 3150,
+          image: qsan ? qsan.image : null,
+          thumb: 'Q-SAN', thumbSmall: 'NO RINSE', thumbColor: 'green',
+          variantId: qsan ? qsan.id : null,
+          added: true
+        });
+      }
+      insights.push({ b: 'USDA selected', body: " — locked Q-San in for daily food-contact sanitization, no-rinse approved." });
+    }
+    if (state.compliance.indexOf('green-seal') >= 0) {
+      insights.push({ b: 'Green Seal selected', body: " — chemistry has been swapped to neutral concentrates where available." });
+    }
+    if (state.compliance.indexOf('cms-jc') >= 0 && state.industry === 'healthcare-ppd') {
+      insights.push({ b: 'CMS / Joint Commission', body: " — your program ships with a sub-minute SARS-CoV-2 disinfectant and a one-step EPA claim." });
+    }
+
+    // Special-considerations adjustments
+    if (state.special.indexOf('night-shift') >= 0) {
+      // Swap any RTU floor cleaner to concentrate (if both exist in catalog)
+      // For MVP just emit insight
+      var savings = Math.round(487 * scale);
+      insights.push({ b: 'Night-shift = concentrate', body: ' — pre-mixing at shift start saves <b>~$' + savings.toLocaleString() + '/yr</b> vs. RTU floor cleaner.' });
+    }
+    if (state.special.indexOf('food-service') >= 0 && state.industry === 'healthcare-ppd') {
+      insights.push({ b: 'Food service add-on', body: ' — added Q-San rotation for cafeteria and pantry food-contact surfaces.' });
+    }
+    if (state.special.indexOf('pediatric') >= 0) {
+      insights.push({ b: 'Pediatric / sensitive', body: ' — chemistry has been rotated to lower-fume formulations where available.' });
+    }
+    if (state.special.indexOf('robotic') >= 0) {
+      insights.push({ b: 'Robotic scrubber compatible', body: ' — concentrates spec\'d match the dilution range Brain Corp / Whiz fleets accept.' });
+    }
+    if (state.special.indexOf('training') >= 0) {
+      arch.extras = arch.extras || [];
+      var hasTraining = arch.extras.some(function (e) { return /training/i.test(e.name); });
+      if (!hasTraining) {
+        arch.extras.unshift({ name: 'Crew Training Pack', desc: 'QR-coded SDS &amp; protocol video', priceLabel: 'Included', oneTime: true, thumb: 'QR VIDEO', thumbSmall: 'TRNG', thumbColor: 'dark' });
+      }
+    }
+
+    // Compute monthly cost
+    var monthly = products.reduce(function (sum, p) { return sum + (p.priceEach * p.qty); }, 0);
+
+    // Cap to budget if too high (just clamp top product qty)
+    var budgetCents = state.budget * 100;
+    if (monthly > budgetCents * 1.15 && products.length > 0) {
+      // Reduce highest-cost product proportionally
+      var ratio = budgetCents / monthly;
+      products.forEach(function (p) {
+        p.qty = Math.max(1, Math.round(p.qty * ratio));
+      });
+      monthly = products.reduce(function (sum, p) { return sum + (p.priceEach * p.qty); }, 0);
+      insights.push({ b: 'Budget-aware', body: ' — quantities trimmed to fit your <b>' + moneyDollars(state.budget) + '/mo</b> target.' });
+    }
+
+    var pct = 18; // typical Damon savings claim — fixed for MVP
+    if (state.special.indexOf('night-shift') >= 0) pct += 3;
+    if (state.compliance.indexOf('green-seal') >= 0) pct += 2;
+    var annualSavings = Math.round((monthly * 12) * pct / (100 - pct));
+
+    return {
+      industry: state.industry,
+      archetype: arch,
+      sizeLabel: sizeLabel,
+      shifts: state.special.indexOf('night-shift') >= 0 ? '24/7 / night shift' : 'Day shifts',
+      products: products,
+      extras: arch.extras || [],
+      monthlyCents: monthly,
+      annualSavingsCents: annualSavings,
+      savingsPct: pct,
+      insights: insights,
+      summaryText: arch.descTpl({ sizeLabel: sizeLabel, shifts: state.special.indexOf('night-shift') >= 0 ? '24/7 ops' : 'day shifts' })
+    };
+  }
+
+  // ============= RENDER =============
+  function renderStepper() {
+    $$('[data-step-pill]').forEach(function (pill) {
+      var n = parseInt(pill.getAttribute('data-step-pill'), 10);
+      pill.classList.remove('is-active', 'is-done');
+      if (n === state.step) pill.classList.add('is-active');
+      else if (n < state.step) pill.classList.add('is-done');
+      var dot = pill.querySelector('.studio-step-pill__dot');
+      if (dot) dot.textContent = n < state.step ? '✓' : (n === 5 ? '★' : String(n));
+    });
+
+    $$('.studio-screen').forEach(function (s) {
+      s.classList.toggle('is-active', parseInt(s.getAttribute('data-screen'), 10) === state.step);
+    });
+
+    var back = $('[data-step-back]');
+    var next = $('[data-step-next]');
+    if (back) back.disabled = state.step === 1;
+    if (next) {
+      if (state.step === 5) { next.textContent = 'Restart with new inputs ↻'; }
+      else if (state.step === 4) { next.textContent = 'Build my program ✦'; }
+      else { next.textContent = 'Continue · build program ✦'; }
+    }
+  }
+
+  function renderInputs() {
+    // Industry
+    $$('[data-input="industry"]').forEach(function (b) {
+      b.classList.toggle('is-on', b.getAttribute('data-value') === state.industry);
+    });
+    // Size slider — set fill var
+    var sizeIn = $('[data-input="size"]');
+    if (sizeIn) {
+      sizeIn.value = state.size;
+      sizeIn.style.setProperty('--studio-slider-pct', ((state.size - 1) / 4 * 100) + '%');
+    }
+    var sizeDisp = $('[data-size-display]');
+    if (sizeDisp) sizeDisp.textContent = SIZE_LABELS[state.size - 1] || 'Mid-size';
+    // Budget slider
+    var budIn = $('[data-input="budget"]');
+    if (budIn) {
+      budIn.value = state.budget;
+      var pct = (state.budget - 200) / (5000 - 200) * 100;
+      budIn.style.setProperty('--studio-slider-pct', pct + '%');
+    }
+    var budDisp = $('[data-budget-display]');
+    if (budDisp) budDisp.textContent = moneyDollars(state.budget) + '/mo';
+    // Compliance
+    $$('[data-input="compliance"]').forEach(function (b) {
+      b.classList.toggle('is-on', state.compliance.indexOf(b.getAttribute('data-value')) >= 0);
+    });
+    // Special
+    $$('[data-input="special"]').forEach(function (b) {
+      b.classList.toggle('is-on', state.special.indexOf(b.getAttribute('data-value')) >= 0);
+    });
+    // Notes
+    var notes = $('[data-input="notes"]');
+    if (notes) notes.value = state.notes;
+    // Step 5 summary text
+    var summary = $('[data-summary-text]');
+    if (summary) {
+      var program = buildProgram();
+      summary.textContent = program ? program.summaryText : '—';
+    }
+  }
+
+  function renderPreview() {
+    var program = buildProgram();
+    var emptyEl = $('[data-preview-empty]');
+    var builtEl = $('[data-preview-built]');
+    if (!program) {
+      if (emptyEl) emptyEl.style.display = '';
+      if (builtEl) builtEl.hidden = true;
+      return;
+    }
+    if (emptyEl) emptyEl.style.display = 'none';
+    if (builtEl) builtEl.hidden = false;
+
+    // Title + desc
+    var titleEl = $('[data-program-title]');
+    if (titleEl) titleEl.innerHTML = escapeHtml(program.archetype.name) + (program.archetype.titleAccent ? ' <span class="red">+ ' + escapeHtml(program.archetype.titleAccent) + '</span>' : '');
+    var descEl = $('[data-program-desc]');
+    if (descEl) descEl.textContent = program.summaryText;
+
+    // Insights
+    var insightsEl = $('[data-program-insights]');
+    if (insightsEl) {
+      if (program.insights.length === 0) {
+        insightsEl.innerHTML = '';
+      } else {
+        insightsEl.innerHTML = program.insights.map(function (i) {
+          return '<div class="studio-insight"><span class="studio-insight__icon">✦</span><p><b>' + i.b + '</b>' + i.body + '</p></div>';
+        }).join('');
+      }
+    }
+
+    // Product grid
+    var gridEl = $('[data-program-grid]');
+    if (gridEl) {
+      var html = '';
+      program.products.forEach(function (p) {
+        var img = p.image
+          ? '<div class="studio-pcell__thumb"><img src="' + p.image + '" alt=""></div>'
+          : '<div class="studio-pcell__thumb-fallback ' + (p.thumbColor === 'green' ? 'green' : (p.thumbColor === 'dark' ? 'dark' : '')) + '" style="' + (p.thumbColor === 'green' ? 'background: var(--good);' : p.thumbColor === 'dark' ? 'background: var(--ink);' : '') + '"><small>' + (p.thumbSmall || '') + '</small>' + (p.thumb || '') + '</div>';
+        html += '<div class="studio-pcell is-added">'
+              +   img
+              +   '<div class="studio-pcell__info">'
+              +     '<h4>' + escapeHtml(p.title) + '</h4>'
+              +     '<p>' + escapeHtml(p.label) + '</p>'
+              +     '<div class="studio-pcell__qp"><span>×' + p.qty + ' ' + escapeHtml(p.label) + '</span><span class="price">' + moneyCents(p.priceEach * p.qty) + '</span></div>'
+              +   '</div>'
+              + '</div>';
+      });
+      program.extras.forEach(function (x) {
+        html += '<div class="studio-pcell">'
+              +   '<div class="studio-pcell__thumb-fallback ' + (x.thumbColor === 'dark' ? 'dark' : '') + '" style="' + (x.thumbColor === 'dark' ? 'background: var(--ink);' : '') + '"><small>' + (x.thumbSmall || '') + '</small>' + (x.thumb || '') + '</div>'
+              +   '<div class="studio-pcell__info">'
+              +     '<h4>' + escapeHtml(x.name) + '</h4>'
+              +     '<p>' + x.desc + '</p>'
+              +     '<div class="studio-pcell__qp"><span>' + (x.oneTime ? 'One-time' : '') + '</span><span class="price">' + escapeHtml(x.priceLabel || '$0') + '</span></div>'
+              +   '</div>'
+              + '</div>';
+      });
+      gridEl.innerHTML = html;
+    }
+
+    // ROI
+    var monthEl = $('[data-roi-monthly]');     if (monthEl) monthEl.textContent = moneyCents(program.monthlyCents);
+    var pctEl   = $('[data-roi-pct]');         if (pctEl)   pctEl.textContent = '−' + program.savingsPct + '%';
+    var annEl   = $('[data-roi-annual]');      if (annEl)   annEl.textContent = moneyCents(program.annualSavingsCents);
+    var totalEl = $('[data-program-total]');   if (totalEl) totalEl.textContent = moneyCents(program.monthlyCents) + ' / month';
+    // Disable checkout if no resolved products
+    var checkoutBtn = $('[data-program-checkout]');
+    if (checkoutBtn) {
+      var resolvable = program.products.filter(function (p) { return p.variantId; });
+      checkoutBtn.disabled = resolvable.length === 0;
+      if (resolvable.length === 0) {
+        checkoutBtn.textContent = 'Talk to a rep — products not yet listed';
+      } else {
+        checkoutBtn.textContent = 'Activate AutoStock & add to cart →';
+      }
+    }
+  }
+
+  function rerender() {
+    renderStepper();
+    renderInputs();
+    renderPreview();
+  }
+
+  // ============= INTERACTIONS =============
+
+  // Buttons & checks
+  document.addEventListener('click', function (e) {
+    // Single-select industry
+    var indBtn = e.target.closest('[data-input="industry"]');
+    if (indBtn) {
+      state.industry = indBtn.getAttribute('data-value');
+      rerender();
+      return;
+    }
+    // Multi-select compliance / special
+    var multi = e.target.closest('[data-input="compliance"], [data-input="special"]');
+    if (multi) {
+      var key = multi.getAttribute('data-input');
+      var val = multi.getAttribute('data-value');
+      var arr = state[key];
+      var idx = arr.indexOf(val);
+      if (idx >= 0) arr.splice(idx, 1); else arr.push(val);
+      rerender();
+      return;
+    }
+    // Prompt chip
+    var chip = e.target.closest('[data-prompt-add]');
+    if (chip) {
+      var ta = $('[data-input="notes"]');
+      if (ta) {
+        var prefix = chip.getAttribute('data-prompt-add');
+        if (ta.value) ta.value += '\n';
+        ta.value += prefix;
+        ta.focus();
+        state.notes = ta.value;
+      }
+      return;
+    }
+    // Step nav
+    if (e.target.closest('[data-step-next]')) {
+      // Validate step
+      if (state.step === 1 && !state.industry) {
+        if (window.DamonToast) window.DamonToast('Pick an industry to continue', { variant: 'info' });
+        return;
+      }
+      if (state.step === 5) {
+        // Restart
+        state = { step: 1, industry: null, size: 3, budget: 1200, compliance: [], special: [], notes: '' };
+        rerender();
+        return;
+      }
+      state.step = Math.min(5, state.step + 1);
+      rerender();
+      return;
+    }
+    if (e.target.closest('[data-step-back]')) {
+      state.step = Math.max(1, state.step - 1);
+      rerender();
+      return;
+    }
+    // Step pill click → jump to step (only allowed for done steps + next)
+    var pill = e.target.closest('[data-step-pill]');
+    if (pill) {
+      var n = parseInt(pill.getAttribute('data-step-pill'), 10);
+      if (n <= state.step + 1) { state.step = n; rerender(); }
+      return;
+    }
+    // Save program
+    if (e.target.closest('[data-program-save]')) {
+      var program = buildProgram();
+      if (!program) return;
+      try {
+        var saved = JSON.parse(localStorage.getItem('damon-saved-programs') || '[]');
+        saved.unshift({
+          ts: Date.now(),
+          name: program.archetype.name + ' · ' + program.sizeLabel,
+          state: state,
+          monthly: program.monthlyCents
+        });
+        if (saved.length > 12) saved.length = 12;
+        localStorage.setItem('damon-saved-programs', JSON.stringify(saved));
+        if (window.DamonToast) window.DamonToast('Program saved to this device', { sub: program.archetype.name });
+      } catch (err) {
+        if (window.DamonToast) window.DamonToast('Could not save program', { variant: 'error' });
+      }
+      return;
+    }
+    // PDF export
+    if (e.target.closest('[data-program-pdf]')) {
+      window.print();
+      return;
+    }
+    // Checkout — bulk add to cart
+    var checkBtn = e.target.closest('[data-program-checkout]');
+    if (checkBtn && !checkBtn.disabled) {
+      var program = buildProgram();
+      if (!program) return;
+      var items = program.products
+        .filter(function (p) { return p.variantId; })
+        .map(function (p) {
+          return {
+            id: p.variantId,
+            quantity: p.qty,
+            properties: { '_program': program.archetype.name, '_autostock_cadence': '4_weeks' }
+          };
+        });
+      if (!items.length) return;
+      checkBtn.disabled = true;
+      var orig = checkBtn.textContent;
+      checkBtn.textContent = 'Adding…';
+      fetch('/cart/add.js', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ items: items })
+      })
+        .then(function (r) { if (!r.ok) throw new Error('add-failed'); return r.json(); })
+        .then(function () {
+          if (window.DamonToast) {
+            window.DamonToast(items.length + ' items added · AutoStock activated', {
+              sub: program.archetype.name,
+              action: { label: 'View cart', onClick: function () { document.dispatchEvent(new CustomEvent('cart:open')); } }
+            });
+          }
+          checkBtn.textContent = orig;
+          checkBtn.disabled = false;
+        })
+        .catch(function () {
+          if (window.DamonToast) window.DamonToast('Could not add some items', { variant: 'error' });
+          checkBtn.textContent = orig;
+          checkBtn.disabled = false;
+        });
+      return;
+    }
+    // Clone & tweak from recents gallery
+    var clone = e.target.closest('[data-clone-program]');
+    if (clone) {
+      e.preventDefault();
+      state = {
+        step: 5,
+        industry: clone.getAttribute('data-clone-industry'),
+        size: parseInt(clone.getAttribute('data-clone-size') || '3', 10),
+        budget: 1200,
+        compliance: [],
+        special: [],
+        notes: 'Cloned from a recent example.'
+      };
+      rerender();
+      var page = document.querySelector('.studio-page');
+      if (page) page.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+  });
+
+  // Slider inputs
+  document.addEventListener('input', function (e) {
+    if (e.target.matches('[data-input="size"]')) {
+      state.size = parseInt(e.target.value, 10);
+      rerender();
+    } else if (e.target.matches('[data-input="budget"]')) {
+      state.budget = parseInt(e.target.value, 10);
+      rerender();
+    } else if (e.target.matches('[data-input="notes"]')) {
+      state.notes = e.target.value;
+    }
+  });
+
+  // Initial paint
+  rerender();
+})();
+</script>
+
+{% schema %}
+{ "name": "Program Studio", "settings": [] }
+{% endschema %}

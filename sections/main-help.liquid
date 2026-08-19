@@ -1,0 +1,301 @@
+{%- comment -%}
+  Damon Help Center
+  Reads from the `damon_faq` metaobject (access.storefront = PUBLIC_READ).
+  Grouped by category, sorted by priority desc within each. Renders an
+  accordion with a search filter, plus JSON-LD FAQPage schema for Google
+  rich results.
+
+  Note: Shopify's built-in shopify--qa-pair metaobject is admin-only; this
+  is our parallel custom-content source that the theme can actually read.
+{%- endcomment -%}
+
+{%- liquid
+  assign entries_raw = shop.metaobjects.damon_faq.values
+  assign entries = entries_raw | sort: 'priority.value' | reverse
+
+  # Build a distinct category list (preserving the priority order of first
+  # appearance) by capturing every category into a pipe-delimited string,
+  # then splitting and deduping.
+  capture _cats_str
+    for e in entries
+      assign cat_name = e.category.value | default: 'General'
+      echo cat_name
+      echo '|'
+    endfor
+  endcapture
+  assign cats = _cats_str | split: '|' | uniq
+
+  # Filter out empty strings (the trailing '|' creates one)
+  assign clean_cats = '' | split: ''
+  for c in cats
+    assign c_trim = c | strip
+    if c_trim != ''
+      assign c_one = c_trim | split: '~~~~~'
+      assign clean_cats = clean_cats | concat: c_one
+    endif
+  endfor
+  assign cats = clean_cats
+-%}
+
+<section class="help-page container" data-help>
+  <header class="help-page__head">
+    <span class="help-page__eyebrow">Help center</span>
+    <h1 class="help-page__title">Answers to common questions</h1>
+    {%- assign rep_url = settings.rep_link_page.url | default: '/pages/contact-rep' -%}
+    {%- assign rep_label = settings.rep_link_label | default: 'Contact the Q Team' -%}
+    <p class="help-page__lead">Browse by category or search by keyword. If you can't find what you need, <a href="{{ rep_url }}" style="color: var(--red); font-weight: 700;">{{ rep_label | downcase }}</a>.</p>
+
+    <div class="help-search">
+      <span aria-hidden="true">⌕</span>
+      <input
+        type="search"
+        placeholder="Search the help center…"
+        aria-label="Search help articles"
+        data-help-search>
+    </div>
+  </header>
+
+  {%- if entries.size == 0 -%}
+    <div class="help-empty">
+      <h3>No help articles yet</h3>
+      <p>Help content is being added. In the meantime, reach out to <a href="mailto:{{ settings.contact_email }}">{{ settings.contact_email }}</a> or call <b>{{ settings.contact_phone }}</b>.</p>
+    </div>
+  {%- else -%}
+
+    <div class="help-tabs" data-help-tabs>
+      <button type="button" class="help-tab help-tab--on" data-help-cat="__all">All <span class="help-tab__ct">{{ entries.size }}</span></button>
+      {%- for c in cats -%}
+        {%- assign cat_count = 0 -%}
+        {%- for e in entries -%}{%- if e.category.value == c -%}{%- assign cat_count = cat_count | plus: 1 -%}{%- endif -%}{%- endfor -%}
+        <button type="button" class="help-tab" data-help-cat="{{ c | handle }}">{{ c }} <span class="help-tab__ct">{{ cat_count }}</span></button>
+      {%- endfor -%}
+    </div>
+
+    <div class="help-count" data-help-count>
+      Showing <b><span data-help-shown>{{ entries.size }}</span></b> of <b>{{ entries.size }}</b> articles
+    </div>
+
+    <div class="help-list" data-help-list>
+      {%- for e in entries -%}
+        {%- assign e_cat = e.category.value | default: 'General' -%}
+        {%- comment -%} Find up to 3 sibling FAQs in the same category for "Related" {%- endcomment -%}
+        <details
+          id="faq-{{ e.handle }}"
+          class="help-item"
+          data-help-item
+          data-help-item-cat="{{ e_cat | handle }}"
+          data-help-handle="{{ e.handle }}"
+          data-help-haystack="{{ e.question.value | escape | downcase }} {{ e.answer.value | strip | escape | downcase }} {{ e_cat | downcase | escape }}">
+          <summary>
+            <span class="help-item__cat">{{ e_cat }}</span>
+            <span class="help-item__q">{{ e.question.value }}</span>
+            <span class="help-item__chev" aria-hidden="true">⌄</span>
+          </summary>
+          <div class="help-item__body">
+            <p>{{ e.answer.value | newline_to_br }}</p>
+
+            {%- comment -%} Related entries (same category, up to 3 others) {%- endcomment -%}
+            {%- assign related_count = 0 -%}
+            {%- capture related_html -%}
+              {%- for r in entries -%}
+                {%- if r.handle != e.handle and r.category.value == e_cat and related_count < 3 -%}
+                  <a href="#faq-{{ r.handle }}" class="help-item__related-link" data-help-related>{{ r.question.value }}</a>
+                  {%- assign related_count = related_count | plus: 1 -%}
+                {%- endif -%}
+              {%- endfor -%}
+            {%- endcapture -%}
+            {%- if related_count > 0 -%}
+              <div class="help-item__related">
+                <div class="help-item__related-eyebrow">More about {{ e_cat }}</div>
+                {{ related_html }}
+              </div>
+            {%- endif -%}
+
+            <div class="help-item__feedback" data-help-feedback>
+              <span class="help-item__feedback-q">Was this helpful?</span>
+              <button type="button" class="help-item__feedback-btn" data-help-vote="up" aria-label="Yes, this was helpful">👍 Yes</button>
+              <button type="button" class="help-item__feedback-btn" data-help-vote="down" aria-label="No, this was not helpful">👎 No</button>
+              <a href="{{ rep_url }}?topic={{ e.question.value | url_encode }}" class="help-item__feedback-rep">Still stuck? Ask a rep →</a>
+            </div>
+          </div>
+        </details>
+      {%- endfor -%}
+
+      <p class="help-empty help-empty--filter" data-help-empty hidden>No articles match that search. <a href="{{ rep_url }}" style="color: var(--red); font-weight: 700;">Ask a rep →</a></p>
+    </div>
+  {%- endif -%}
+
+  <footer class="help-page__foot">
+    <p>Still need help? <a href="{{ rep_url }}">{{ rep_label }}</a> · <a href="tel:{{ settings.contact_phone | replace: '‑', '' | replace: '-', '' | replace: ' ', '' }}">{{ settings.contact_phone }}</a> · <a href="mailto:{{ settings.contact_email }}">{{ settings.contact_email }}</a></p>
+  </footer>
+</section>
+
+{%- comment -%} JSON-LD FAQPage schema — enables Google rich results {%- endcomment -%}
+{%- if entries.size > 0 -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {%- assign _comma = '' -%}
+    {%- for e in entries -%}
+      {{ _comma }}{
+        "@type": "Question",
+        "name": {{ e.question.value | json }},
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": {{ e.answer.value | json }}
+        }
+      }
+      {%- assign _comma = ',' -%}
+    {%- endfor -%}
+  ]
+}
+</script>
+{%- endif -%}
+
+<script>
+(function () {
+  var root = document.querySelector('[data-help]');
+  if (!root) return;
+  var search = root.querySelector('[data-help-search]');
+  var items = Array.prototype.slice.call(root.querySelectorAll('[data-help-item]'));
+  var tabs = Array.prototype.slice.call(root.querySelectorAll('[data-help-cat]'));
+  var emptyEl = root.querySelector('[data-help-empty]');
+  var shownEl = root.querySelector('[data-help-shown]');
+  var activeCat = '__all';
+  var query = '';
+
+  function apply() {
+    var visible = 0;
+    items.forEach(function (item) {
+      var hay = item.getAttribute('data-help-haystack') || '';
+      var cat = item.getAttribute('data-help-item-cat') || '';
+      var matchesCat = activeCat === '__all' || cat === activeCat;
+      var matchesQuery = !query || hay.indexOf(query) >= 0;
+      var show = matchesCat && matchesQuery;
+      item.hidden = !show;
+      if (show) visible++;
+    });
+    if (emptyEl) emptyEl.hidden = visible > 0;
+    if (shownEl) shownEl.textContent = visible;
+  }
+
+  if (search) {
+    var t;
+    search.addEventListener('input', function () {
+      clearTimeout(t);
+      t = setTimeout(function () {
+        query = search.value.trim().toLowerCase();
+        apply();
+      }, 80);
+    });
+    search.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { search.value = ''; query = ''; apply(); }
+    });
+  }
+
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      tabs.forEach(function (t) { t.classList.remove('help-tab--on'); });
+      tab.classList.add('help-tab--on');
+      activeCat = tab.getAttribute('data-help-cat');
+      apply();
+    });
+  });
+
+  // -------- URL anchor: auto-open + scroll if URL has #faq-<handle>
+  function openFromHash() {
+    var hash = (window.location.hash || '').replace('#', '');
+    if (!hash || hash.indexOf('faq-') !== 0) return;
+    var el = document.getElementById(hash);
+    if (!el) return;
+    el.open = true;
+    setTimeout(function () {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 60);
+  }
+  window.addEventListener('hashchange', openFromHash);
+  openFromHash();
+
+  // -------- Related links: clicking another entry opens it and smooth-scrolls
+  root.addEventListener('click', function (e) {
+    var link = e.target.closest('[data-help-related]');
+    if (!link) return;
+    var href = link.getAttribute('href') || '';
+    if (href.indexOf('#faq-') !== 0) return;
+    e.preventDefault();
+    var targetId = href.replace('#', '');
+    var target = document.getElementById(targetId);
+    if (!target) return;
+    target.open = true;
+    history.pushState(null, '', '#' + targetId);
+    setTimeout(function () {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 60);
+  });
+
+  // -------- "Was this helpful?" — localStorage-backed; one vote per article per device
+  var VOTE_KEY = 'damon-faq-votes';
+  function getVotes() {
+    try { return JSON.parse(localStorage.getItem(VOTE_KEY) || '{}'); } catch (e) { return {}; }
+  }
+  function setVote(handle, value) {
+    var votes = getVotes();
+    votes[handle] = value;
+    try { localStorage.setItem(VOTE_KEY, JSON.stringify(votes)); } catch (e) {}
+  }
+
+  // Apply existing votes on load — disable buttons + highlight selected
+  var existingVotes = getVotes();
+  items.forEach(function (item) {
+    var handle = item.getAttribute('data-help-handle');
+    var prior = existingVotes[handle];
+    if (!prior) return;
+    var fb = item.querySelector('[data-help-feedback]');
+    if (!fb) return;
+    var btns = fb.querySelectorAll('[data-help-vote]');
+    btns.forEach(function (b) {
+      b.disabled = true;
+      if (b.getAttribute('data-help-vote') === prior) {
+        b.classList.add('help-item__feedback-btn--on');
+      } else {
+        b.classList.add('help-item__feedback-btn--off');
+      }
+    });
+    var q = fb.querySelector('.help-item__feedback-q');
+    if (q) q.textContent = prior === 'up' ? 'Thanks for the feedback.' : 'Thanks — we\'ll improve this one.';
+  });
+
+  root.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-help-vote]');
+    if (!btn) return;
+    var item = btn.closest('[data-help-item]');
+    if (!item) return;
+    var handle = item.getAttribute('data-help-handle');
+    var value = btn.getAttribute('data-help-vote');
+    setVote(handle, value);
+
+    var fb = item.querySelector('[data-help-feedback]');
+    var btns = fb.querySelectorAll('[data-help-vote]');
+    btns.forEach(function (b) {
+      b.disabled = true;
+      if (b === btn) b.classList.add('help-item__feedback-btn--on');
+      else b.classList.add('help-item__feedback-btn--off');
+    });
+    var q = fb.querySelector('.help-item__feedback-q');
+    if (q) q.textContent = value === 'up' ? 'Thanks for the feedback.' : 'Thanks — we\'ll improve this one.';
+
+    // Fire a custom event analytics can listen to (Shopify Pixel, GA4, etc.)
+    document.dispatchEvent(new CustomEvent('faq:vote', { detail: { handle: handle, vote: value } }));
+
+    if (window.DamonToast) {
+      window.DamonToast('Feedback recorded', { sub: value === 'up' ? 'Glad that helped.' : 'We\'ll review this answer.' });
+    }
+  });
+})();
+</script>
+
+{% schema %}
+{ "name": "Help center", "settings": [] }
+{% endschema %}

@@ -1,0 +1,211 @@
+{%- comment -%}
+  My SDS Binder — auto-generated list of Safety Data Sheets (and other
+  product documents) for every product on the customer's order history.
+  Solves the OSHA HazCom compliance problem for facilities buyers.
+
+  Data source: for every line item in `customer.orders`, read
+  `line.product.metafields.damon.documents` (list.metaobject_reference
+  to `product_document`). Dedupe on doc.id, sort SDS-first, then by
+  title.
+
+  Locked to signed-in customers via the shared customer-required gate.
+{%- endcomment -%}
+
+{% render 'customer-required' %}
+
+{%- if customer -%}
+<section class="account-portal">
+  <div class="container account-portal__body">
+    <header class="account-portal__head">
+      <h1>{{ section.settings.title | default: 'My SDS Binder' }}</h1>
+      <p class="account-portal__lede">
+        {{- section.settings.lede | default: 'Safety Data Sheets for every product on your Damon order history. Required for OSHA HazCom compliance.' -}}
+      </p>
+    </header>
+
+    {%- comment -%}
+      Build a deduped, tagged list. We collect entries as pipe-delimited
+      strings inside a Liquid variable (Liquid has no dict), then parse
+      them client-side into the DOM. The server-rendered <ul> holds all
+      rows; the search + filter operate on them without a re-fetch.
+    {%- endcomment -%}
+    {%- assign seen_doc_ids = '' -%}
+    {%- assign total_docs = 0 -%}
+    {%- assign orders_count = customer.orders.size | default: 0 -%}
+
+    <div class="account-portal__toolbar sds-binder__toolbar">
+      <div class="sds-binder__search">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="search" data-sds-search placeholder="Search by product or document title&hellip;" aria-label="Search safety data sheets">
+      </div>
+      <select data-sds-filter aria-label="Filter by document type">
+        <option value="">All document types</option>
+        <option value="SDS">SDS only</option>
+        <option value="TDS">Tech sheets (TDS) only</option>
+        <option value="EPA_LABEL">EPA labels only</option>
+        <option value="PROTOCOL">Cleaning protocols only</option>
+      </select>
+      <button type="button" class="btn btn--outline" data-sds-print>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="6 9 6 2 18 2 18 9"></polyline>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+          <rect x="6" y="14" width="12" height="8"></rect>
+        </svg>
+        Print binder
+      </button>
+    </div>
+
+    <ul class="sds-binder__list" data-sds-list>
+      {%- for order in customer.orders -%}
+        {%- for line in order.line_items -%}
+          {%- if line.product == blank -%}{%- continue -%}{%- endif -%}
+
+          {%- comment -%}
+            Products reached via order.line_items don't fully hydrate
+            list.metaobject_reference metafields — Shopify hands back the
+            raw JSON string of GIDs. Re-fetching via all_products[handle]
+            gives us the fully expanded metaobject drops we can iterate
+            over as `doc.title`, `doc.file`, `doc.doc_type`, etc.
+          {%- endcomment -%}
+          {%- assign product_full = all_products[line.product.handle] | default: line.product -%}
+          {%- assign docs = product_full.metafields.damon.documents.value -%}
+          {%- if docs and docs.size > 0 -%}
+            {%- for doc in docs -%}
+              {%- comment -%}
+                Dedup key: Shopify's Metaobject drop does not expose `.id`
+                at the top level (it's under `.system.id` in newer contexts
+                and unavailable in older ones). Using the file URL as the
+                key instead — unique per document, guaranteed present for
+                any doc with an actual PDF attached. Falls back to a
+                composite of type + title if there's no file (e.g. a
+                stub doc), and finally to the metaobject's `system.id`.
+              {%- endcomment -%}
+              {%- assign doc_file = doc.file.value -%}
+              {%- assign doc_href = '#' -%}
+              {%- if doc_file and doc_file.url -%}{%- assign doc_href = doc_file.url -%}{%- endif -%}
+              {%- assign doc_key = doc_href -%}
+              {%- if doc_key == '#' or doc_key == '' -%}
+                {%- assign doc_key = doc.doc_type.value | append: '|' | append: doc.title.value -%}
+              {%- endif -%}
+              {%- if doc_key == '' or doc_key == '|' -%}
+                {%- assign doc_key = doc.system.id | append: '' -%}
+              {%- endif -%}
+              {%- if doc_key == '' -%}{%- continue -%}{%- endif -%}
+              {%- unless seen_doc_ids contains doc_key -%}
+                {%- assign seen_doc_ids = seen_doc_ids | append: doc_key | append: ';;' -%}
+                {%- assign total_docs = total_docs | plus: 1 -%}
+                {%- assign doc_type_str = doc.doc_type.value | default: 'OTHER' -%}
+                {%- assign doc_title = doc.title.value | default: product_full.title -%}
+                {%- assign doc_subtitle = doc.subtitle.value | default: '' -%}
+                {%- assign search_key = product_full.title | append: ' ' | append: doc_title | append: ' ' | append: doc_subtitle | downcase | escape -%}
+                <li class="sds-binder__row"
+                    data-sds-row
+                    data-sds-search-key="{{ search_key }}"
+                    data-sds-type="{{ doc_type_str }}">
+                  <span class="sds-binder__badge sds-binder__badge--{{ doc_type_str | downcase | handle }}">{{ doc_type_str }}</span>
+                  <div class="sds-binder__info">
+                    <b>{{ product_full.title }}</b>
+                    <span>{{ doc_title }}{%- if doc_subtitle != blank -%} &middot; {{ doc_subtitle }}{%- endif -%}</span>
+                  </div>
+                  <a class="sds-binder__download" href="{{ doc_href }}" target="_blank" rel="noopener" download>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Download PDF
+                  </a>
+                </li>
+              {%- endunless -%}
+            {%- endfor -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endfor -%}
+    </ul>
+
+    {%- if total_docs == 0 -%}
+      {%- if orders_count == 0 -%}
+        <div class="account-portal__empty" data-sds-empty-initial>
+          <p><b>No documents to show yet.</b></p>
+          <p>Once you place an order, safety data sheets and tech sheets for the products you buy will appear here automatically.</p>
+          <a class="btn btn--red" href="{{ routes.all_products_collection_url }}">Browse products</a>
+        </div>
+      {%- else -%}
+        <div class="account-portal__empty" data-sds-empty-no-docs>
+          <p><b>No safety data sheets on file yet.</b></p>
+          <p>You have {{ orders_count }} order{% if orders_count != 1 %}s{% endif %} on record, but none of those products have SDS documents attached yet. Reach out and we&rsquo;ll get the sheets uploaded for you.</p>
+          {%- liquid
+            assign rep_url = settings.rep_link_page.url | default: '/pages/contact-rep'
+            assign rep_label = settings.rep_link_label | default: 'Contact the Q Team'
+          -%}
+          <a class="btn btn--red" href="{{ rep_url }}?reason=sds_request">{{ rep_label }}</a>
+        </div>
+      {%- endif -%}
+    {%- else -%}
+      <div class="account-portal__empty account-portal__empty--filter" data-sds-empty-filter hidden>
+        <p>No documents match those filters.</p>
+      </div>
+      <p class="sds-binder__count">
+        <span data-sds-visible-count>{{ total_docs }}</span> of {{ total_docs }} document{% if total_docs != 1 %}s{% endif %}
+      </p>
+    {%- endif -%}
+  </div>
+</section>
+
+<script>
+(function () {
+  var list = document.querySelector('[data-sds-list]');
+  if (!list) return;
+  var search = document.querySelector('[data-sds-search]');
+  var filter = document.querySelector('[data-sds-filter]');
+  var printBtn = document.querySelector('[data-sds-print]');
+  var emptyFilter = document.querySelector('[data-sds-empty-filter]');
+  var countEl = document.querySelector('[data-sds-visible-count]');
+  var rows = Array.prototype.slice.call(list.querySelectorAll('[data-sds-row]'));
+
+  function apply() {
+    var q = (search.value || '').toLowerCase().trim();
+    var t = filter.value;
+    var visible = 0;
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      var matchQ = !q || row.getAttribute('data-sds-search-key').indexOf(q) !== -1;
+      var matchT = !t || row.getAttribute('data-sds-type') === t;
+      var show = matchQ && matchT;
+      row.hidden = !show;
+      if (show) visible++;
+    }
+    if (countEl) countEl.textContent = String(visible);
+    if (emptyFilter) emptyFilter.hidden = visible !== 0;
+  }
+
+  if (search) search.addEventListener('input', apply);
+  if (filter) filter.addEventListener('change', apply);
+  if (printBtn) printBtn.addEventListener('click', function () { window.print(); });
+})();
+</script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "My SDS Binder",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Page title",
+      "default": "My SDS Binder"
+    },
+    {
+      "type": "text",
+      "id": "lede",
+      "label": "Page description",
+      "default": "Safety Data Sheets for every product on your Damon order history. Required for OSHA HazCom compliance."
+    }
+  ],
+  "presets": [{ "name": "My SDS Binder" }]
+}
+{% endschema %}

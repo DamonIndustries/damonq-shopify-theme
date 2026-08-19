@@ -1,0 +1,318 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "Damon",
+    "theme_version": "1.0.142",
+    "theme_author": "Damon Industries",
+    "theme_documentation_url": "https://github.com/The-Splash-Company/damon-template",
+    "theme_support_email": "info@damonq.com"
+  },
+  {
+    "name": "Brand",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "logo",
+        "label": "Logo image",
+        "info": "Optional. PNG or SVG with a transparent background works best on the red header. If not set, the inline red shield ('QUALITY \u00b7 DAMON \u00b7 PRODUCTS') is used."
+      },
+      {
+        "type": "text",
+        "id": "logo_alt",
+        "label": "Logo alt text",
+        "default": "Damon Industries",
+        "info": "Used for screen readers and SEO."
+      },
+      {
+        "type": "range",
+        "id": "logo_max_height",
+        "label": "Logo max height",
+        "min": 24,
+        "max": 80,
+        "step": 2,
+        "default": 44,
+        "unit": "px",
+        "info": "Header is sized for ~44px tall logos."
+      },
+      {
+        "type": "checkbox",
+        "id": "show_wordmark",
+        "label": "Show wordmark text next to logo",
+        "default": true,
+        "info": "Uncheck if your logo already includes the brand name, or if you only want the shield/image to appear in the header."
+      },
+      {
+        "type": "text",
+        "id": "wordmark_text",
+        "label": "Wordmark text",
+        "info": "Leave blank to use the shop name from Settings \u2192 Store details."
+      },
+      {
+        "type": "image_picker",
+        "id": "favicon",
+        "label": "Favicon (32\u00d732)",
+        "info": "Square PNG. Used in browser tabs and bookmarks."
+      },
+      {
+        "type": "color",
+        "id": "color_brand_red",
+        "label": "Damon red",
+        "default": "#C8102E",
+        "info": "Header background, primary CTAs, badges, accents."
+      },
+      {
+        "type": "color",
+        "id": "color_brand_red_dark",
+        "label": "Damon red \u2014 hover",
+        "default": "#9C0A22",
+        "info": "Hover state for primary buttons and red surfaces."
+      },
+      {
+        "type": "color",
+        "id": "color_ink",
+        "label": "Ink (body text)",
+        "default": "#161A1F"
+      },
+      {
+        "type": "color",
+        "id": "color_body_bg",
+        "label": "Page background",
+        "default": "#F8F6EE",
+        "info": "Background color behind every page. Warm off-white reads less stark than pure white. Pure white (#FFFFFF) is fine if you prefer that."
+      },
+      {
+        "type": "image_picker",
+        "id": "default_product_image",
+        "label": "Default product image",
+        "info": "Shown when a product has no image uploaded. Used on product cards (collection grids, featured products) and on the PDP main image. Falls back to Shopify's standard placeholder when blank."
+      },
+      {
+        "type": "header",
+        "content": "Product price labels"
+      },
+      {
+        "type": "text",
+        "id": "price_range_prefix",
+        "label": "Variable-price prefix",
+        "default": "Starting at",
+        "info": "Shown before the price on product cards (and search results) when the product has multiple variants at different prices. Common alternatives: \"As low as\", \"From\". Leave blank to show only the price with no prefix."
+      },
+      {
+        "type": "header",
+        "content": "Header icons"
+      },
+      {
+        "type": "checkbox",
+        "id": "account_icon_circle",
+        "label": "Account icon in white circle",
+        "default": true,
+        "info": "When on, the profile silhouette sits inside a white circle for an avatar-like treatment. When off, just the profile icon renders in the header color."
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_icon_circle",
+        "label": "Cart icon in white circle",
+        "default": true,
+        "info": "Same circle treatment for the cart truck icon. Keep both on to match each other."
+      }
+    ]
+  },
+  {
+    "name": "Style",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Corner style"
+      },
+      {
+        "type": "paragraph",
+        "content": "Applies site-wide to every button, text input, search field, chip, badge, and active nav state. Truly circular elements (avatars, dots, hero rings) are unaffected."
+      },
+      {
+        "type": "range",
+        "id": "control_corner_radius",
+        "label": "Corner radius",
+        "min": 0,
+        "max": 30,
+        "step": 1,
+        "unit": "px",
+        "default": 6,
+        "info": "0 = square. 3 = sharp. 6 = matches the Damon shield. 30 = strongly rounded. For a true pill shape, tick the box below."
+      },
+      {
+        "type": "checkbox",
+        "id": "control_corner_pill_override",
+        "label": "Use full pill instead",
+        "default": false,
+        "info": "When on, ignores the slider and uses a 999px radius for that classic capsule look. Turn off to use the slider value."
+      }
+    ]
+  },
+  {
+    "name": "Access control (Locksmith)",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Gates the Add-to-cart button across the PDP, product cards, collections, recommendations \u2014 any surface that uses the shared product card. Requires the Locksmith Shopify app installed, with 'Enable manual locking' ticked under Advanced on each lock. Leave off until Locksmith is installed and locks are configured."
+      },
+      {
+        "type": "checkbox",
+        "id": "locksmith_enabled",
+        "label": "Enable Locksmith manual mode site-wide",
+        "default": false,
+        "info": "When on, every product surface calls Locksmith's locksmith-variables snippet to check access. Fail-secure: if the snippet is missing, errors, or returns anything other than 'true', the product stays locked. When off, Locksmith logic is skipped entirely and Add-to-cart renders normally."
+      },
+      {
+        "type": "checkbox",
+        "id": "locksmith_preview_locked",
+        "label": "Preview as locked (theme editor only)",
+        "default": false,
+        "info": "Forces the locked UI inside the Shopify theme editor so you can verify the Request access state. Gated by request.design_mode \u2014 has no effect on the live storefront. Locksmith normally grants admin users access, which is why the editor preview otherwise looks unlocked."
+      }
+    ]
+  },
+  {
+    "name": "Tracking / Analytics",
+    "settings": [
+      {
+        "type": "header",
+        "content": "HubSpot"
+      },
+      {
+        "type": "text",
+        "id": "hubspot_portal_id",
+        "label": "HubSpot portal ID",
+        "default": "51416173",
+        "info": "Used by the site-wide tracking script (drops the hubspotutk cookie so form submissions can be tied to a visitor's full pageview history) and by any section that POSTs to a HubSpot form."
+      },
+      {
+        "type": "checkbox",
+        "id": "hubspot_tracking_enabled",
+        "label": "Load HubSpot tracking script site-wide",
+        "default": true,
+        "info": "Uncheck to disable HubSpot pageview tracking entirely. Form submissions still work but won't carry hutk attribution."
+      },
+      {
+        "type": "header",
+        "content": "ZoomInfo WebSights"
+      },
+      {
+        "type": "checkbox",
+        "id": "zoominfo_tracking_enabled",
+        "label": "Load ZoomInfo tracking script site-wide",
+        "default": true,
+        "info": "Loads the ZoomInfo WebSights snippet on every page \u2014 identifies visiting companies by IP for sales intel. Deferred, non-blocking. Uncheck to disable entirely (e.g. in EU/opt-out contexts)."
+      }
+    ]
+  },
+  {
+    "name": "Social",
+    "settings": [
+      {
+        "type": "url",
+        "id": "social_facebook",
+        "label": "Facebook"
+      },
+      {
+        "type": "url",
+        "id": "social_linkedin",
+        "label": "LinkedIn"
+      },
+      {
+        "type": "url",
+        "id": "social_youtube",
+        "label": "YouTube"
+      }
+    ]
+  },
+  {
+    "name": "Contact",
+    "settings": [
+      {
+        "type": "text",
+        "id": "contact_phone",
+        "label": "Phone",
+        "default": "1\u2011800\u2011362\u20119850"
+      },
+      {
+        "type": "text",
+        "id": "contact_email",
+        "label": "Email",
+        "default": "info@damonq.com"
+      },
+      {
+        "type": "text",
+        "id": "contact_address",
+        "label": "Address",
+        "default": "12435 Rockhill Ave NE, Alliance, OH 44601"
+      },
+      {
+        "type": "header",
+        "content": "Talk-to-a-rep link"
+      },
+      {
+        "type": "text",
+        "id": "rep_link_label",
+        "label": "Rep link label",
+        "default": "Contact the Q Team",
+        "info": "Used by the PDP rep link and other places that point users to your contact page."
+      },
+      {
+        "type": "page",
+        "id": "rep_link_page",
+        "label": "Rep link target page",
+        "info": "Pick the page this link should open. If left blank, defaults to /pages/contact-rep."
+      }
+    ]
+  },
+  {
+    "name": "PDP ship row",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Defaults for the four ship-row tiles. Each can be overridden per-product via the damon.* metafields."
+      },
+      {
+        "type": "text",
+        "id": "ship_row_shipping_headline",
+        "label": "Shipping \u2014 headline",
+        "default": "Ships today before 2pm ET"
+      },
+      {
+        "type": "text",
+        "id": "ship_row_shipping_subtext",
+        "label": "Shipping \u2014 subtext",
+        "default": "From Alliance, OH"
+      },
+      {
+        "type": "text",
+        "id": "ship_row_returns_headline",
+        "label": "Returns \u2014 headline",
+        "default": "30\u2011day returns"
+      },
+      {
+        "type": "text",
+        "id": "ship_row_returns_subtext",
+        "label": "Returns \u2014 subtext",
+        "default": "Even on opened cases"
+      },
+      {
+        "type": "text",
+        "id": "ship_row_net30_subtext",
+        "label": "Net\u201130 \u2014 subtext",
+        "default": "For verified facilities"
+      },
+      {
+        "type": "header",
+        "content": "Free freight threshold"
+      },
+      {
+        "type": "number",
+        "id": "free_freight_threshold",
+        "label": "Free freight at (USD)",
+        "default": 250,
+        "info": "Cart subtotal at which freight becomes free. Drives the progress bar in the cart drawer."
+      }
+    ]
+  }
+]

@@ -1,0 +1,31 @@
+<section class="section-row container">
+  <div class="section-head">
+    <div>
+      <span style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--red);font-weight:800;">Blog</span>
+      <h1 class="section-head__title" style="margin-top: 6px;">{{ blog.title }}</h1>
+    </div>
+  </div>
+
+  <div class="reviews-grid">
+    {%- paginate blog.articles by 12 -%}
+      {%- for article in blog.articles -%}
+        <article class="review-card">
+          {%- if article.image -%}
+            <a href="{{ article.url }}">
+              {{ article.image | image_url: width: 600 | image_tag: alt: article.title, loading: 'lazy', style: 'border-radius: 12px; aspect-ratio: 16/9; object-fit: cover; width: 100%;' }}
+            </a>
+          {%- endif -%}
+          <h3 style="font-size: 20px; font-weight: 800; margin: 14px 0 6px;"><a href="{{ article.url }}">{{ article.title }}</a></h3>
+          <p style="color: var(--grey); font-size: 13px; margin: 0;">{{ article.published_at | date: '%b %-d, %Y' }} · {{ article.author }}</p>
+          <p style="font-size: 14px; line-height: 1.55; margin: 12px 0 0;">{{ article.excerpt_or_content | strip_html | truncate: 140 }}</p>
+        </article>
+      {%- else -%}
+        <p style="color: var(--grey); grid-column: 1 / -1;">No articles published yet.</p>
+      {%- endfor -%}
+    {%- endpaginate -%}
+  </div>
+</section>
+
+{% schema %}
+{ "name": "Blog", "settings": [] }
+{% endschema %}

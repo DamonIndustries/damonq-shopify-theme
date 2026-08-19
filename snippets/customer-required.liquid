@@ -1,0 +1,33 @@
+{%- comment -%}
+  Customer-required gate. Include at the top of any account portal
+  section that must only render for logged-in customers. Renders the
+  "please sign in" panel (server-side, no page flash) when the visitor
+  is not signed in, and outputs nothing otherwise.
+
+  Usage in the parent section: render this snippet first, then wrap the
+  main content in a customer-truthy check so it only renders when signed
+  in. See sections/main-my-sds-binder.liquid for the pattern.
+
+  Passes return_url so the login flow bounces the customer back to
+  the page they were trying to reach.
+{%- endcomment -%}
+{%- if customer == blank -%}
+  <section class="account-portal">
+    <div class="container account-portal__body">
+      <div class="account-portal__gate">
+        <div class="account-portal__gate-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="10" width="16" height="11" rx="2"></rect>
+            <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+          </svg>
+        </div>
+        <h1>Sign in to view this page</h1>
+        <p>This section of your Damon account is only available to signed-in customers. Sign in to continue &mdash; we&rsquo;ll bring you back here.</p>
+        <div class="account-portal__gate-actions">
+          <a class="btn btn--red btn--lg" href="{{ routes.account_login_url }}?return_url={{ request.path | url_encode }}">Sign in</a>
+          <a class="btn btn--outline btn--lg" href="{{ routes.account_register_url }}?return_url={{ request.path | url_encode }}">Create account</a>
+        </div>
+      </div>
+    </div>
+  </section>
+{%- endif -%}

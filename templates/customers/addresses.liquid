@@ -1,0 +1,31 @@
+<section class="container" style="padding: 56px 0;">
+  <a href="{{ routes.account_url }}" style="font-size: 13px; color: var(--red); font-weight: 700;">← Back to account</a>
+  <h1 style="font-size: clamp(28px, 3vw, 40px); margin: 18px 0 24px; letter-spacing: -0.02em; line-height: 1; font-weight: 800;">Addresses</h1>
+
+  {%- paginate customer.addresses by 6 -%}
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px;">
+      {%- for address in customer.addresses -%}
+        <div style="background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 22px; position: relative;">
+          {%- if address == customer.default_address -%}
+            <span style="position: absolute; top: 16px; right: 16px; background: var(--red); color: #fff; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;">Default</span>
+          {%- endif -%}
+          <div style="font-size: 14px; line-height: 1.6;">
+            <b>{{ address.first_name }} {{ address.last_name }}</b><br>
+            {%- if address.company -%}{{ address.company }}<br>{%- endif -%}
+            {{ address.street }}<br>
+            {{ address.city }}, {{ address.province_code }} {{ address.zip }}<br>
+            {{ address.country }}<br>
+            {%- if address.phone -%}{{ address.phone }}{%- endif -%}
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 14px;">
+            <a href="#" style="font-size: 13px; color: var(--red); font-weight: 700;">Edit</a>
+            <span style="color: var(--grey-2);">·</span>
+            <a href="#" style="font-size: 13px; color: var(--grey); font-weight: 700;">Delete</a>
+          </div>
+        </div>
+      {%- else -%}
+        <p style="color: var(--grey); grid-column: 1 / -1;">No addresses on file yet.</p>
+      {%- endfor -%}
+    </div>
+  {%- endpaginate -%}
+</section>

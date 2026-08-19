@@ -1,0 +1,193 @@
+{%- liquid
+  assign first_name = customer.first_name | default: customer.email
+  assign autostock_count = 0
+  assign autostock_next_in_days = ''
+-%}
+
+<section class="account container">
+  <header class="account__head">
+    <div>
+      <span class="account__eyebrow">★ Account</span>
+      <h1 class="account__title">Welcome, {{ first_name }}</h1>
+      <p class="account__lead">Manage orders, AutoStock subscriptions, saved bundles, and shipping addresses.</p>
+    </div>
+    <a href="{{ routes.account_logout_url }}" class="btn btn--outline">Log out</a>
+  </header>
+
+  <div class="account__layout">
+    <aside class="account__nav">
+      <h5>Navigate</h5>
+      <ul>
+        <li><a href="{{ routes.account_url }}" class="is-active">Dashboard</a></li>
+        <li><a href="/pages/my-products">My products</a></li>
+        <li><a href="/pages/my-sds-binder">My SDS binder</a></li>
+        <li><a href="/pages/my-contacts">My contacts</a></li>
+        <li><a href="/pages/my-programs">My programs</a></li>
+        <li><a href="#autostock">AutoStock subscriptions</a></li>
+        <li><a href="#orders">Orders <span>({{ customer.orders_count }})</span></a></li>
+        <li><a href="#bundles">Saved bundles</a></li>
+        <li><a href="{{ routes.account_addresses_url }}">Addresses</a></li>
+        <li><a href="/pages/notification-preferences">Notification preferences</a></li>
+      </ul>
+    </aside>
+
+    <main class="account__main">
+      {%- comment -%} ===== QUICK ACCESS TILES ===== {%- endcomment -%}
+      <div class="account-tiles">
+        <a class="account-tile" href="/pages/my-products">
+          <span class="account-tile__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          </span>
+          <h3>My products</h3>
+          <p>Reorder items you have bought before</p>
+        </a>
+        <a class="account-tile" href="/pages/my-sds-binder">
+          <span class="account-tile__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          </span>
+          <h3>My SDS binder</h3>
+          <p>Safety Data Sheets for your order history</p>
+        </a>
+        <a class="account-tile" href="/pages/my-contacts">
+          <span class="account-tile__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"></path></svg>
+          </span>
+          <h3>My contacts</h3>
+          <p>Your sales rep, service tech, and CSR</p>
+        </a>
+        <a class="account-tile" href="/pages/my-programs">
+          <span class="account-tile__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+          </span>
+          <h3>My programs</h3>
+          <p>Your Damon program memberships</p>
+        </a>
+        <a class="account-tile" href="/pages/notification-preferences">
+          <span class="account-tile__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          </span>
+          <h3>Notifications</h3>
+          <p>Manage email &amp; text preferences</p>
+        </a>
+      </div>
+
+      {%- comment -%} ===== AT A GLANCE ===== {%- endcomment -%}
+      <div class="account-stats">
+        <div class="account-stat">
+          <span class="account-stat__label">Total orders</span>
+          <b class="account-stat__value">{{ customer.orders_count }}</b>
+        </div>
+        <div class="account-stat">
+          <span class="account-stat__label">Total spent</span>
+          <b class="account-stat__value">{{ customer.total_spent | money_without_trailing_zeros }}</b>
+        </div>
+        <div class="account-stat">
+          <span class="account-stat__label">AutoStock subs</span>
+          <b class="account-stat__value">{{ autostock_count }}</b>
+        </div>
+      </div>
+
+      {%- comment -%} ===== AUTOSTOCK ===== {%- endcomment -%}
+      <section class="account-block" id="autostock">
+        <div class="account-block__head">
+          <h2>AutoStock subscriptions</h2>
+          <span class="account-block__pill">Coming soon</span>
+        </div>
+        <div class="autostock-card">
+          <span class="autostock-card__tag">★ Damon AutoStock</span>
+          <h3>You're not subscribed to anything yet.</h3>
+          <p>AutoStock locks pricing for 12 months and ships your routine chemistry on a cadence you control. Skip or swap any time, no commitment.</p>
+          <div class="autostock-card__ctas">
+            <a href="/collections/all" class="btn btn--red">Browse products</a>
+            <a href="{{ routes.account_url }}" class="btn btn--outline">How AutoStock works</a>
+          </div>
+          <p class="autostock-card__note">Subscription management goes live alongside the Damon Subscriptions integration.</p>
+        </div>
+      </section>
+
+      {%- comment -%} ===== ORDERS ===== {%- endcomment -%}
+      <section class="account-block" id="orders">
+        <div class="account-block__head">
+          <h2>Recent orders</h2>
+          {%- if customer.orders.size > 5 -%}
+            <a href="{{ routes.account_url }}#orders" class="account-block__link">See all →</a>
+          {%- endif -%}
+        </div>
+        {%- if customer.orders.size > 0 -%}
+          <div class="account-orders">
+            <table class="account-orders__table">
+              <thead>
+                <tr>
+                  <th>Order</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Total</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {%- for order in customer.orders limit: 10 -%}
+                  <tr>
+                    <td><a href="{{ order.customer_url }}">{{ order.name }}</a></td>
+                    <td>{{ order.created_at | date: '%b %-d, %Y' }}</td>
+                    <td>
+                      <span class="account-orders__status account-orders__status--{{ order.fulfillment_status | default: 'pending' | handle }}">
+                        {{ order.fulfillment_status_label | default: 'Pending' }}
+                      </span>
+                    </td>
+                    <td>{{ order.total_price | money }}</td>
+                    <td><a href="{{ order.customer_url }}" class="account-orders__view">View</a></td>
+                  </tr>
+                {%- endfor -%}
+              </tbody>
+            </table>
+          </div>
+        {%- else -%}
+          <div class="account-empty">
+            <h3>No orders yet</h3>
+            <p>Your order history will live here once you place your first order.</p>
+            <a href="/collections/all" class="btn btn--red">Start shopping</a>
+          </div>
+        {%- endif -%}
+      </section>
+
+      {%- comment -%} ===== SAVED BUNDLES ===== {%- endcomment -%}
+      <section class="account-block" id="bundles">
+        <div class="account-block__head">
+          <h2>Saved bundles</h2>
+          <span class="account-block__pill">Coming soon</span>
+        </div>
+        <div class="account-empty">
+          <h3>No saved bundles yet</h3>
+          <p>Save a configuration of products from any PDP — useful when you reorder the same kit each month.</p>
+          <a href="/collections/all" class="btn btn--outline">Build a bundle</a>
+        </div>
+      </section>
+
+      {%- comment -%} ===== ADDRESSES ===== {%- endcomment -%}
+      <section class="account-block" id="addresses">
+        <div class="account-block__head">
+          <h2>Shipping addresses</h2>
+          <a href="{{ routes.account_addresses_url }}" class="account-block__link">Manage addresses →</a>
+        </div>
+        {%- if customer.default_address -%}
+          <div class="account-address">
+            <span class="account-address__pill">Default</span>
+            <p>
+              {{ customer.default_address.first_name }} {{ customer.default_address.last_name }}<br>
+              {%- if customer.default_address.company != blank -%}{{ customer.default_address.company }}<br>{%- endif -%}
+              {{ customer.default_address.street }}<br>
+              {{ customer.default_address.city }}, {{ customer.default_address.province_code }} {{ customer.default_address.zip }}<br>
+              {{ customer.default_address.country }}
+            </p>
+          </div>
+        {%- else -%}
+          <div class="account-empty">
+            <p>No addresses on file yet.</p>
+            <a href="{{ routes.account_addresses_url }}" class="btn btn--outline">Add an address</a>
+          </div>
+        {%- endif -%}
+      </section>
+    </main>
+  </div>
+</section>

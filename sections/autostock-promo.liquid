@@ -1,0 +1,158 @@
+{%- comment -%}
+  AutoStock promo — dark ink card promoting the recurring-order subscription.
+  Two columns: pitch + perks on left, sample monthly cart on right.
+
+  Blocks:
+    - perk: a feature with icon + title + body (limit 4)
+    - sample_item: a line item shown in the sample cart (limit 8)
+{%- endcomment -%}
+
+{%- liquid
+  assign sample_total = 0
+  for block in section.blocks
+    if block.type == 'sample_item'
+      assign sample_total = sample_total | plus: block.settings.line_total_cents
+    endif
+  endfor
+  assign sample_total_money = sample_total | divided_by: 100.0 | round: 2
+-%}
+
+{%- if section.settings.section_enabled -%}
+<section class="container">
+  <div class="autostock-promo">
+    <div class="container">
+      <div class="autostock-promo__grid">
+        <div>
+          <span style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#ffb3bd;font-weight:700;">★ {{ section.settings.eyebrow }}</span>
+          <h2 class="autostock-promo__title">
+            {{ section.settings.headline_pre }}
+            <span class="autostock-promo__title-accent">{{ section.settings.headline_accent }}</span>
+            {{ section.settings.headline_post }}
+          </h2>
+          <p class="autostock-promo__body">{{ section.settings.body }}</p>
+
+          <div class="autostock-promo__perks">
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'perk' -%}
+                <div class="autostock-promo__perk" {{ block.shopify_attributes }}>
+                  <span class="autostock-promo__perk-icon" aria-hidden="true">{{ block.settings.icon }}</span>
+                  <div>
+                    <b>{{ block.settings.title }}</b>
+                    <span>{{ block.settings.body }}</span>
+                  </div>
+                </div>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+
+          <a href="{{ section.settings.cta_url }}" class="btn btn--red btn--lg">{{ section.settings.cta_text }} →</a>
+        </div>
+
+        <div class="autostock-promo__panel">
+          <h4 class="autostock-promo__panel-title">{{ section.settings.panel_title }}</h4>
+
+          {%- assign has_sample = false -%}
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'sample_item' -%}{%- assign has_sample = true -%}{%- break -%}{%- endif -%}
+          {%- endfor -%}
+
+          {%- if has_sample -%}
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'sample_item' -%}
+                <div class="autostock-cart-item" {{ block.shopify_attributes }}>
+                  <span class="autostock-cart-item__thumb" aria-hidden="true">{{ block.settings.code }}</span>
+                  <div>
+                    <div class="autostock-cart-item__name">{{ block.settings.name }}</div>
+                    <div class="autostock-cart-item__meta">{{ block.settings.meta }}</div>
+                  </div>
+                  <span class="autostock-cart-item__qty">×{{ block.settings.qty }}</span>
+                  <span class="autostock-cart-item__price">{{ block.settings.line_total }}</span>
+                </div>
+              {%- endif -%}
+            {%- endfor -%}
+
+            <div class="autostock-cart-total">
+              <span>{{ section.settings.total_label }}</span>
+              <b>{{ section.settings.total_value }}</b>
+            </div>
+
+            {%- if section.settings.activate_text != blank -%}
+              <a href="{{ section.settings.activate_url }}" class="autostock-cart__activate" style="display:block;text-align:center;text-decoration:none;">{{ section.settings.activate_text }}</a>
+            {%- endif -%}
+          {%- else -%}
+            <p style="color:#c4cad1;font-size:13px;">Add `Sample item` blocks in the theme customizer to render a sample cart here.</p>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "AutoStock promo",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "section_enabled",
+      "label": "Show AutoStock promo on this page",
+      "default": true,
+      "info": "Uncheck to hide the entire AutoStock promo section without removing the block from this template."
+    },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Damon AutoStock" },
+    { "type": "text", "id": "headline_pre", "label": "Headline (pre)", "default": "Never run out of" },
+    { "type": "text", "id": "headline_accent", "label": "Headline (accent · red)", "default": "FS Complete" },
+    { "type": "text", "id": "headline_post", "label": "Headline (post)", "default": "on a Saturday again." },
+    { "type": "textarea", "id": "body", "label": "Body", "default": "Set a recurring order for any Damon program. We ship on your schedule — and walk through the facility once a quarter to make sure the program is still right." },
+    { "type": "text", "id": "cta_text", "label": "CTA text", "default": "Set up AutoStock" },
+    { "type": "url", "id": "cta_url", "label": "CTA URL" },
+    { "type": "header", "content": "Sample cart panel" },
+    { "type": "text", "id": "panel_title", "label": "Panel title", "default": "Sample monthly cart · St. Mary's Cafeteria" },
+    { "type": "text", "id": "total_label", "label": "Total label", "default": "Monthly total · locked" },
+    { "type": "text", "id": "total_value", "label": "Total value", "default": "$486.20" },
+    { "type": "text", "id": "activate_text", "label": "Panel CTA text", "default": "Activate this AutoStock cart" },
+    { "type": "url", "id": "activate_url", "label": "Panel CTA URL" }
+  ],
+  "blocks": [
+    {
+      "type": "perk",
+      "name": "Perk",
+      "limit": 4,
+      "settings": [
+        { "type": "text", "id": "icon", "label": "Icon", "default": "⏰" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Set & forget cadence" },
+        { "type": "text", "id": "body", "label": "Body", "default": "Weekly, monthly, or per‑PO" }
+      ]
+    },
+    {
+      "type": "sample_item",
+      "name": "Sample cart item",
+      "limit": 8,
+      "settings": [
+        { "type": "text", "id": "code", "label": "Code (2 chars on thumbnail)", "default": "FS" },
+        { "type": "text", "id": "name", "label": "Product name", "default": "FS Complete RTU · case" },
+        { "type": "text", "id": "meta", "label": "Meta line", "default": "Disinfectant · ships 1st of month" },
+        { "type": "number", "id": "qty", "label": "Quantity", "default": 4 },
+        { "type": "text", "id": "line_total", "label": "Line total (display)", "default": "$148" },
+        { "type": "number", "id": "line_total_cents", "label": "Line total (cents, for sum)", "default": 14800 }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "AutoStock promo",
+      "blocks": [
+        { "type": "perk", "settings": { "icon": "⏰", "title": "Set & forget cadence", "body": "Weekly, monthly, or per‑PO" } },
+        { "type": "perk", "settings": { "icon": "%", "title": "5% off every order", "body": "Plus locked pricing for 12 months" } },
+        { "type": "perk", "settings": { "icon": "🔁", "title": "Skip or swap anytime", "body": "From your account dashboard" } },
+        { "type": "perk", "settings": { "icon": "★", "title": "Quarterly walkthrough", "body": "Free with any active program" } },
+        { "type": "sample_item", "settings": { "code": "FS", "name": "FS Complete RTU · case", "meta": "Disinfectant · ships 1st of month", "qty": 4, "line_total": "$148", "line_total_cents": 14800 } },
+        { "type": "sample_item", "settings": { "code": "DA", "name": "Da‑Clean A.P.C. · gallon", "meta": "Enzyme cleaner · ships 1st", "qty": 6, "line_total": "$149", "line_total_cents": 14940 } },
+        { "type": "sample_item", "settings": { "code": "QS", "name": "Q‑San No‑Rinse · case", "meta": "Sanitizer · ships 1st", "qty": 2, "line_total": "$63", "line_total_cents": 6300 } },
+        { "type": "sample_item", "settings": { "code": "EZ", "name": "EarthSafe Neutral · gallon", "meta": "Floor cleaner · ships 1st", "qty": 3, "line_total": "$58", "line_total_cents": 5820 } }
+      ]
+    }
+  ]
+}
+{% endschema %}

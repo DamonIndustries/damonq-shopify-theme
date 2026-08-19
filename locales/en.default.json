@@ -1,0 +1,159 @@
+{
+  "general": {
+    "search": {
+      "title": "Search",
+      "placeholder": "Search 340+ products — try \"FS Complete\" or \"no rinse sanitizer\"",
+      "submit": "Search",
+      "searching": "Searching…",
+      "no_results": "No results for \"{{ terms }}\".",
+      "aria_input": "Search products",
+      "aria_filter": "Filter by program",
+      "all_programs": "All Programs"
+    },
+    "404": {
+      "title": "Page not found",
+      "subtext": "Continue shopping",
+      "link": "Back to home"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "accessibility": {
+      "skip_to_content": "Skip to content",
+      "site_actions": "Site actions"
+    }
+  },
+  "products": {
+    "product": {
+      "add_to_cart": "Add to cart",
+      "sold_out": "Sold out",
+      "unavailable": "Unavailable",
+      "out_of_stock": "Out of stock",
+      "available": "Available · ships today",
+      "on_backorder": "On backorder · ships when restocked",
+      "quantity": "Quantity",
+      "decrease_quantity": "Decrease quantity",
+      "increase_quantity": "Increase quantity",
+      "regular_price": "Regular price",
+      "sale_price": "Sale price",
+      "view_details": "View details",
+      "from_lowest_price_html": "From {{ lowest_price }}",
+      "view_thumbnail_html": "View {{ label }}",
+      "trust_signals": "Trust signals"
+    }
+  },
+  "cart": {
+    "general": {
+      "title": "Your cart",
+      "subtotal": "Subtotal",
+      "checkout": "Check out",
+      "place_order": "Place order →",
+      "view_cart": "View cart",
+      "empty": "Your cart is empty",
+      "continue_browsing": "Continue browsing",
+      "remove": "Remove",
+      "update": "Update",
+      "loading": "Loading…",
+      "order_summary": "Order summary",
+      "shipping_estimate": "Shipping (estimate)",
+      "calculated_at_checkout": "Calculated at checkout",
+      "order_total_today": "Order total today",
+      "payment_method": "Payment method",
+      "po_number": "PO #",
+      "po_placeholder": "e.g. SMH‑2026‑04812"
+    },
+    "drawer": {
+      "aria_label": "Shopping cart",
+      "close": "Close cart",
+      "net30_note_html": "Net‑30 available for verified facilities at checkout. <a href=\"{{ contact_url }}\" style=\"color: var(--red); font-weight: 700;\">Talk to a rep →</a>"
+    }
+  },
+  "customer": {
+    "account": {
+      "title": "My account",
+      "label": "Account",
+      "details": "Account details",
+      "view_addresses": "View addresses",
+      "logout": "Sign out",
+      "orders": "Orders",
+      "no_orders": "You haven't placed any orders yet."
+    },
+    "login": {
+      "title": "Sign in",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "forgot_password": "Forgot password?",
+      "create_account": "Create account"
+    }
+  },
+  "blogs": {
+    "article": {
+      "comments": "Comments",
+      "post_comment": "Post comment"
+    }
+  },
+  "damon": {
+    "header": {
+      "cart_label_html": "Cart · <span data-cart-count>{{ count }}</span>",
+      "cart_short": "Cart",
+      "region": {
+        "trigger_aria": "Change region and language",
+        "panel_aria": "Choose region",
+        "ship_to": "Ship to",
+        "foot": "Pricing, freight, language & currency follow the region you pick."
+      }
+    },
+    "pdp": {
+      "tab_description": "Description",
+      "tab_directions": "Directions",
+      "tab_directions_dilution": "Directions & Dilution",
+      "tab_compatibility": "Compatibility",
+      "tab_compatibility_surfaces": "Surfaces & Compatibility",
+      "tab_documentation": "Documentation",
+      "subscribe_save_html": "Subscribe & save {{ pct }}%",
+      "autostock_cadence_aria": "AutoStock cadence",
+      "add_to_cart_with_total_html": "Add to cart · {{ total }}",
+      "talk_to_rep": "Talk to a rep",
+      "directions_heading": "Directions for use & dilution",
+      "documentation_heading": "Documentation",
+      "net30_available": "Net‑30 available",
+      "trust": {
+        "fallback_4_headline": "Net‑30 financing"
+      }
+    },
+    "cart": {
+      "breadcrumb_home": "Home",
+      "breadcrumb_cart": "Cart",
+      "ships_now_title": "Ships now",
+      "autostock_title": "Damon AutoStock",
+      "bulk_title": "Bulk & drum · ships LTL",
+      "recurring_tag": "Recurring",
+      "ltl_tag": "LTL freight",
+      "ltl_note_html": "⚠ <b>Bulk items ship via LTL motor freight.</b> Damon will email a freight quote within 4 business hours of order placement. Free freight does not apply to drum and tote orders.",
+      "next_ship_label": "Next ship",
+      "next_ship_value": "In ~4 weeks · then on cadence",
+      "skip_next_ship": "Skip next ship",
+      "cadence_4_weeks": "Every 4 weeks",
+      "cadence_6_weeks": "Every 6 weeks",
+      "cadence_8_weeks": "Every 8 weeks",
+      "free_freight_unlocked_html": "<b>Free freight unlocked</b> on standard items",
+      "freight_progress_html": "You're <b>{{ remaining }} away</b> from free freight on the standard items",
+      "ai_cross_heading": "Add a case to clear free freight.",
+      "ai_cross_body_html": "You're {{ remaining }} from the threshold. Add another case to qualify and lock the AutoStock {{ pct }}%.",
+      "ai_cross_cta": "Browse top sellers",
+      "ai_cross_stamp": "Damon AI",
+      "save_bundle_title": "★ Save this cart as a bundle",
+      "save_bundle_body": "Re-order in one click later. Or open it in Program Studio to generate a custom Damon program.",
+      "save_bundle_cta": "Save bundle",
+      "open_in_studio_cta": "Open in Program Studio →",
+      "net30_invoice_note": "Net-30 invoice will be emailed after fulfillment.",
+      "ltl_quote_note": "LTL freight quote sent separately within 4 business hours.",
+      "pay_net30_title": "Net‑30 (PO)",
+      "pay_net30_sub": "Verified facilities",
+      "pay_card_title": "Credit card",
+      "pay_card_sub": "Visa · MC · Amex"
+    }
+  }
+}

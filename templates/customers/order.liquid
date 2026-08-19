@@ -1,0 +1,37 @@
+<section class="container" style="padding: 56px 0;">
+  <a href="{{ routes.account_url }}" style="font-size: 13px; color: var(--red); font-weight: 700;">← Back to account</a>
+
+  <header style="margin: 18px 0 32px;">
+    <h1 style="font-size: clamp(28px, 3vw, 40px); margin: 0 0 8px; letter-spacing: -0.02em; line-height: 1; font-weight: 800;">Order {{ order.name }}</h1>
+    <p style="color: var(--grey); margin: 0;">Placed {{ order.created_at | date: '%B %-d, %Y' }} · {{ order.financial_status_label }}</p>
+  </header>
+
+  <div style="background: #fff; border: 1px solid var(--line); border-radius: 18px; overflow: hidden;">
+    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+      <thead>
+        <tr style="background: var(--bg);">
+          <th style="text-align: left; padding: 14px 22px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); font-weight: 800;">Item</th>
+          <th style="text-align: left; padding: 14px 22px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); font-weight: 800;">SKU</th>
+          <th style="text-align: right; padding: 14px 22px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); font-weight: 800;">Qty</th>
+          <th style="text-align: right; padding: 14px 22px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); font-weight: 800;">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {%- for line_item in order.line_items -%}
+          <tr style="border-top: 1px solid var(--line);">
+            <td style="padding: 14px 22px; font-weight: 700;">{{ line_item.title }}</td>
+            <td style="padding: 14px 22px; color: var(--grey);">{{ line_item.sku }}</td>
+            <td style="padding: 14px 22px; text-align: right;">×{{ line_item.quantity }}</td>
+            <td style="padding: 14px 22px; text-align: right; font-weight: 800;">{{ line_item.line_price | money }}</td>
+          </tr>
+        {%- endfor -%}
+      </tbody>
+      <tfoot style="background: var(--bg);">
+        <tr><td colspan="3" style="padding: 14px 22px; text-align: right; color: var(--grey);">Subtotal</td><td style="padding: 14px 22px; text-align: right; font-weight: 800;">{{ order.subtotal_price | money }}</td></tr>
+        {%- if order.shipping_price > 0 -%}<tr><td colspan="3" style="padding: 8px 22px; text-align: right; color: var(--grey);">Shipping</td><td style="padding: 8px 22px; text-align: right; font-weight: 800;">{{ order.shipping_price | money }}</td></tr>{%- endif -%}
+        {%- if order.tax_price > 0 -%}<tr><td colspan="3" style="padding: 8px 22px; text-align: right; color: var(--grey);">Tax</td><td style="padding: 8px 22px; text-align: right; font-weight: 800;">{{ order.tax_price | money }}</td></tr>{%- endif -%}
+        <tr><td colspan="3" style="padding: 14px 22px 22px; text-align: right; font-weight: 800; border-top: 2px solid var(--ink);">Total</td><td style="padding: 14px 22px 22px; text-align: right; font-weight: 900; font-size: 22px; border-top: 2px solid var(--ink);">{{ order.total_price | money }}</td></tr>
+      </tfoot>
+    </table>
+  </div>
+</section>

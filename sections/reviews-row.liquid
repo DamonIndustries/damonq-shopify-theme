@@ -1,0 +1,58 @@
+<section class="container">
+  <div class="section-head">
+    <h2 class="section-head__title">{{ section.settings.heading }}</h2>
+    {%- if section.settings.link_text != blank -%}
+      <a href="{{ section.settings.link_url }}" class="section-head__link">{{ section.settings.link_text }} →</a>
+    {%- endif -%}
+  </div>
+
+  <div class="reviews-grid">
+    {%- for block in section.blocks -%}
+      <article class="review-card" {{ block.shopify_attributes }}>
+        <div class="review-card__stars" aria-label="Rated 5 stars">★★★★★</div>
+        <p class="review-card__body">{{ block.settings.body }}</p>
+        <div class="review-card__author">
+          <span class="review-card__avatar" aria-hidden="true">{{ block.settings.initials }}</span>
+          <div>
+            <div class="review-card__name">{{ block.settings.name }}</div>
+            <div class="review-card__role">{{ block.settings.role }}</div>
+          </div>
+        </div>
+      </article>
+    {%- endfor -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Reviews row",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "What facility managers say" },
+    { "type": "text", "id": "link_text", "label": "Link text", "default": "2,400 reviews" },
+    { "type": "url", "id": "link_url", "label": "Link URL" }
+  ],
+  "blocks": [
+    {
+      "type": "review",
+      "name": "Review",
+      "limit": 6,
+      "settings": [
+        { "type": "textarea", "id": "body", "label": "Quote", "default": "Switched our four buildings to the Healthy Schools Starter and our parent complaints dropped to zero." },
+        { "type": "text", "id": "name", "label": "Name", "default": "Carla R." },
+        { "type": "text", "id": "role", "label": "Role / facility", "default": "Director of Facilities · Stark County Schools" },
+        { "type": "text", "id": "initials", "label": "Avatar initials", "default": "CR" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Reviews row",
+      "blocks": [
+        { "type": "review", "settings": { "body": "Switched our four buildings to the Healthy Schools Starter and our parent complaints dropped to zero. The fixed‑payment program is easier to budget than line‑item buys.", "name": "Carla R.", "role": "Director of Facilities · Stark County Schools", "initials": "CR" } },
+        { "type": "review", "settings": { "body": "FS Complete replaced three different products in our meat case. One bottle, one SDS, one training. My team actually uses it.", "name": "Jeff M.", "role": "Meat Manager · Independent Grocer", "initials": "JM" } },
+        { "type": "review", "settings": { "body": "AutoStock is the first chemical subscription I've ever recommended. Damon's rep walks the building. They actually know the floor.", "name": "Pat B.", "role": "EVS Manager · 240‑bed Hospital", "initials": "PB" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

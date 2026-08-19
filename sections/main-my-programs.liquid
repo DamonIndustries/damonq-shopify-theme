@@ -1,0 +1,92 @@
+{%- comment -%}
+  My Programs — lists the Damon program memberships the customer is
+  enrolled in (Laundry, Bulk, Green, Mini Bulk, Hand Washing, etc.).
+  Each program is a program_membership metaobject with:
+    - program_name, program_slug, enrolled_date, notes
+    - documents: list of product_document metaobjects
+
+  Reads customer.metafields.damon.programs (list of program_membership).
+  Locked to signed-in customers via the shared customer-required gate.
+{%- endcomment -%}
+
+{% render 'customer-required' %}
+
+{%- if customer -%}
+{%- assign programs = customer.metafields.damon.programs.value -%}
+<section class="account-portal">
+  <div class="container account-portal__body">
+    <header class="account-portal__head">
+      <h1>{{ section.settings.title | default: 'My programs' }}</h1>
+      <p class="account-portal__lede">
+        {{- section.settings.lede | default: 'Damon programs you are enrolled in. Program-specific documents, dispensers, and reorder shortcuts.' -}}
+      </p>
+    </header>
+
+    {%- if programs and programs.size > 0 -%}
+      <div class="my-programs__list">
+        {%- for program in programs -%}
+          {%- assign p_name = program.program_name.value -%}
+          {%- assign p_slug = program.program_slug.value -%}
+          {%- assign p_enrolled = program.enrolled_date.value -%}
+          {%- assign p_notes = program.notes.value -%}
+          {%- assign p_docs = program.documents.value -%}
+          <article class="my-programs__card">
+            <div class="my-programs__head">
+              <h3>{{ p_name }}</h3>
+              {%- if p_enrolled -%}
+                <span class="my-programs__badge">Enrolled since {{ p_enrolled | date: '%b %Y' }}</span>
+              {%- endif -%}
+            </div>
+            {%- if p_notes != blank -%}
+              <p class="my-programs__notes">{{ p_notes }}</p>
+            {%- endif -%}
+            {%- if p_docs and p_docs.size > 0 -%}
+              <div class="my-programs__docs">
+                <span class="my-programs__docs-label">Program documents</span>
+                <ul>
+                  {%- for doc in p_docs -%}
+                    {%- assign doc_file = doc.file.value -%}
+                    {%- assign doc_href = '#' -%}
+                    {%- if doc_file and doc_file.url -%}{%- assign doc_href = doc_file.url -%}{%- endif -%}
+                    {%- assign doc_type_str = doc.doc_type.value | default: 'DOC' -%}
+                    <li>
+                      <a href="{{ doc_href }}" target="_blank" rel="noopener" download>
+                        <span class="my-programs__doc-type">{{ doc_type_str }}</span>
+                        <span>{{ doc.title.value | default: doc_type_str }}</span>
+                      </a>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            {%- endif -%}
+            {%- if p_slug != blank -%}
+              <a class="btn btn--outline" href="{{ routes.collections_url }}/{{ p_slug }}">Browse program products</a>
+            {%- endif -%}
+          </article>
+        {%- endfor -%}
+      </div>
+    {%- else -%}
+      <div class="account-portal__empty">
+        <p><b>You are not currently enrolled in any Damon programs.</b></p>
+        <p>Damon programs bundle related products with training, dispenser support, and priority service. Ask about eligibility.</p>
+        {%- liquid
+          assign rep_url = settings.rep_link_page.url | default: '/pages/contact-rep'
+          assign rep_label = settings.rep_link_label | default: 'Contact the Q Team'
+        -%}
+        <a class="btn btn--red" href="{{ rep_url }}?reason=program_inquiry">{{ rep_label }}</a>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "My programs",
+  "settings": [
+    { "type": "text", "id": "title", "label": "Page title", "default": "My programs" },
+    { "type": "text", "id": "lede", "label": "Page description", "default": "Damon programs you are enrolled in. Program-specific documents, dispensers, and reorder shortcuts." }
+  ],
+  "presets": [{ "name": "My programs" }]
+}
+{% endschema %}

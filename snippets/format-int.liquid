@@ -1,0 +1,20 @@
+{%- comment -%}
+  Render an integer with comma thousand-separators.
+  Usage: {% render 'format-int', n: product.metafields.damon.facilities_using %}
+  Handles up to 999,999,999 cleanly.
+{%- endcomment -%}
+{%- assign n_int = n | plus: 0 | round -%}
+{%- if n_int >= 1000000000 -%}
+  {{ n_int }}
+{%- elsif n_int >= 1000000 -%}
+  {%- assign m = n_int | divided_by: 1000000 -%}
+  {%- assign rem_k = n_int | modulo: 1000000 | divided_by: 1000 -%}
+  {%- assign rem_u = n_int | modulo: 1000 -%}
+  {{ m }},{% if rem_k < 100 %}0{% endif %}{% if rem_k < 10 %}0{% endif %}{{ rem_k }},{% if rem_u < 100 %}0{% endif %}{% if rem_u < 10 %}0{% endif %}{{ rem_u }}
+{%- elsif n_int >= 1000 -%}
+  {%- assign k = n_int | divided_by: 1000 -%}
+  {%- assign rem_u = n_int | modulo: 1000 -%}
+  {{ k }},{% if rem_u < 100 %}0{% endif %}{% if rem_u < 10 %}0{% endif %}{{ rem_u }}
+{%- else -%}
+  {{ n_int }}
+{%- endif -%}

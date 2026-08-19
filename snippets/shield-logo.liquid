@@ -1,0 +1,29 @@
+{%- comment -%}
+  Damon shield logo (the iconic red shield reading QUALITY · DAMON · PRODUCTS).
+
+  Accepts:
+    - variant: 'light' (white background, red text · default) or 'dark' (red background, white text)
+    - size: 'md' (default 44px) or 'lg' (56px)
+
+  Usage:
+    {% render 'shield-logo' %}
+    {% render 'shield-logo', variant: 'dark', size: 'lg' %}
+{%- endcomment -%}
+
+{%- liquid
+  assign variant = variant | default: 'light'
+  assign size = size | default: 'md'
+  assign classes = 'shield'
+  if variant == 'dark'
+    assign classes = classes | append: ' shield--dark'
+  endif
+  if size == 'lg'
+    assign classes = classes | append: ' shield--lg'
+  endif
+-%}
+
+<span class="{{ classes }}" aria-hidden="true">
+  <span class="shield__q">QUALITY</span>
+  <span class="shield__d">DAMON</span>
+  <span class="shield__p">PRODUCTS</span>
+</span>

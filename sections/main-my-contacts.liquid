@@ -1,0 +1,98 @@
+{%- comment -%}
+  My Damon Contacts — displays the customer's assigned sales rep, CSR,
+  and service tech as business-card-style tiles. Each contact is a
+  metaobject reference on customer.metafields.damon.assigned_*:
+    - assigned_rep    → sales_rep metaobject
+    - assigned_csr    → csr metaobject
+    - assigned_tech   → service_tech metaobject
+
+  Every card falls back gracefully: photo becomes an initials avatar
+  when absent, title/territory/certifications only render when present,
+  the whole card is skipped if the metafield isn't set.
+
+  Locked to signed-in customers via the shared customer-required gate.
+{%- endcomment -%}
+
+{% render 'customer-required' %}
+
+{%- if customer -%}
+{%- liquid
+  assign rep = customer.metafields.damon.assigned_rep.value
+  assign csr = customer.metafields.damon.assigned_csr.value
+  assign tech = customer.metafields.damon.assigned_tech.value
+  assign any_contact = false
+  if rep or csr or tech
+    assign any_contact = true
+  endif
+-%}
+<section class="account-portal">
+  <div class="container account-portal__body">
+    <header class="account-portal__head">
+      <h1>{{ section.settings.title | default: 'My Damon contacts' }}</h1>
+      <p class="account-portal__lede">
+        {{- section.settings.lede | default: 'Your team at Damon Industries. Call, text, or email anytime.' -}}
+      </p>
+    </header>
+
+    {%- if any_contact -%}
+      <div class="my-contacts__grid">
+        {%- if rep -%}
+          {%- render 'contact-card',
+            eyebrow: 'Sales representative',
+            name: rep.name.value,
+            title: rep.title.value,
+            territory: rep.territory.value,
+            phone: rep.phone.value,
+            email: rep.email.value,
+            photo: rep.photo.value -%}
+        {%- endif -%}
+        {%- if csr -%}
+          {%- render 'contact-card',
+            eyebrow: 'Customer service',
+            name: csr.name.value,
+            title: csr.title.value,
+            phone: csr.phone.value,
+            email: csr.email.value,
+            photo: csr.photo.value -%}
+        {%- endif -%}
+        {%- if tech -%}
+          {%- render 'contact-card',
+            eyebrow: 'Service technician',
+            name: tech.name.value,
+            title: tech.title.value,
+            territory: tech.service_area.value,
+            phone: tech.phone.value,
+            email: tech.email.value,
+            photo: tech.photo.value,
+            certifications: tech.certifications.value -%}
+        {%- endif -%}
+      </div>
+    {%- else -%}
+      <div class="account-portal__empty">
+        <p><b>Your Damon team has not been assigned yet.</b></p>
+        <p>Contact us and we&rsquo;ll match you with the right rep, service tech, and customer service specialist for your account.</p>
+        {%- liquid
+          assign rep_url = settings.rep_link_page.url | default: '/pages/contact-rep'
+          assign rep_label = settings.rep_link_label | default: 'Contact the Q Team'
+        -%}
+        <a class="btn btn--red" href="{{ rep_url }}?reason=request_team_assignment">{{ rep_label }}</a>
+      </div>
+    {%- endif -%}
+
+    <div class="my-contacts__footer">
+      <p>Need something else? <a href="{{ settings.rep_link_page.url | default: '/pages/contact-rep' }}">Talk to a rep</a> &middot; <a href="/pages/help">Help center</a></p>
+    </div>
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "My contacts",
+  "settings": [
+    { "type": "text", "id": "title", "label": "Page title", "default": "My Damon contacts" },
+    { "type": "text", "id": "lede", "label": "Page description", "default": "Your team at Damon Industries. Call, text, or email anytime." }
+  ],
+  "presets": [{ "name": "My contacts" }]
+}
+{% endschema %}

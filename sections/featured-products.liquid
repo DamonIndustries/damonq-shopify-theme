@@ -1,0 +1,85 @@
+<section class="section-row">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="section-head__title">{{ section.settings.heading }}</h2>
+      {%- if section.settings.link_text != blank -%}
+        <a href="{{ section.settings.link_url }}" class="section-head__link">{{ section.settings.link_text }} →</a>
+      {%- endif -%}
+    </div>
+
+    {%- if section.settings.show_filters -%}
+      <div class="product-grid__filters" role="tablist" aria-label="Product filters">
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'filter' -%}
+            <button class="product-grid__filter{% if forloop.first %} product-grid__filter--active{% endif %}" {{ block.shopify_attributes }} type="button">
+              {{ block.settings.label }}
+              {%- if block.settings.count != blank -%}
+                <span class="product-grid__filter-count">{{ block.settings.count }}</span>
+              {%- endif -%}
+            </button>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    <div class="product-grid">
+      {%- if section.settings.collection != blank -%}
+        {%- assign featured = collections[section.settings.collection].products | slice: 0, section.settings.limit -%}
+        {%- for product in featured -%}
+          {% render 'product-card', product: product %}
+        {%- endfor -%}
+      {%- else -%}
+        {%- for i in (1..4) -%}
+          <div class="product-card">
+            <div class="product-card__image">{{ 'product-1' | placeholder_svg_tag }}</div>
+            <div class="product-card__info">
+              <span class="product-card__cat">Configure a collection</span>
+              <h4 class="product-card__title">Placeholder product {{ i }}</h4>
+              <div class="product-card__row">
+                <span class="product-card__price">$—</span>
+                <button class="product-card__add" type="button">+ Add</button>
+              </div>
+            </div>
+          </div>
+        {%- endfor -%}
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Featured products",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Best‑selling cleaning solutions" },
+    { "type": "collection", "id": "collection", "label": "Collection" },
+    { "type": "range", "id": "limit", "label": "Number of products", "min": 4, "max": 12, "step": 4, "default": 8 },
+    { "type": "text", "id": "link_text", "label": "Link text", "default": "View all 340" },
+    { "type": "url", "id": "link_url", "label": "Link URL" },
+    { "type": "checkbox", "id": "show_filters", "label": "Show filter chips", "default": true }
+  ],
+  "blocks": [
+    {
+      "type": "filter",
+      "name": "Filter chip",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Label", "default": "All" },
+        { "type": "text", "id": "count", "label": "Count", "default": "340" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Featured products",
+      "blocks": [
+        { "type": "filter", "settings": { "label": "All", "count": "340" } },
+        { "type": "filter", "settings": { "label": "Disinfectants", "count": "42" } },
+        { "type": "filter", "settings": { "label": "Sanitizers", "count": "28" } },
+        { "type": "filter", "settings": { "label": "Floor Care", "count": "61" } },
+        { "type": "filter", "settings": { "label": "EPA Registered", "count": "87" } },
+        { "type": "filter", "settings": { "label": "Green Seal", "count": "26" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code | default: 'en' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ 'gift_cards.issued.title' | t: shop: shop.name, value: gift_card.initial_value | money_without_trailing_zeros }} · {{ shop.name }}</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap">
+  {{ 'theme.css' | asset_url | stylesheet_tag }}
+</head>
+<body class="theme-page" style="background: var(--bg);">
+  <section class="container" style="max-width: 540px; padding: 64px 24px; text-align: center;">
+    <a href="{{ shop.url }}" style="display: inline-flex; align-items: center; gap: 12px; margin-bottom: 32px;">
+      {% render 'shield-logo', size: 'lg' %}
+      <span style="font-weight: 800; font-size: 22px; color: var(--ink);">{{ shop.name }}</span>
+    </a>
+
+    <h1 style="font-size: 36px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 12px;">
+      Gift card
+    </h1>
+    <p style="color: var(--grey); margin: 0 0 32px;">
+      {{ 'gift_cards.issued.subtext' | t }}
+    </p>
+
+    <div style="background: #fff; border: 1px solid var(--line); border-radius: 22px; padding: 36px 28px; text-align: center;">
+      <div style="font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--red); font-weight: 800;">Damon</div>
+      <div style="font-size: 56px; font-weight: 900; margin: 12px 0; letter-spacing: -0.02em;">
+        {{ gift_card.balance | money }}
+      </div>
+      {%- if gift_card.expired -%}
+        <div style="background: #FEE2E2; color: #B91C1C; padding: 8px 14px; border-radius: 999px; display: inline-block; font-size: 13px; font-weight: 700;">{{ 'gift_cards.issued.expired' | t }}</div>
+      {%- elsif gift_card.expires_on -%}
+        <div style="color: var(--grey); font-size: 13px;">Expires {{ gift_card.expires_on | date: '%B %-d, %Y' }}</div>
+      {%- endif -%}
+
+      <div style="margin: 28px 0; padding: 18px; background: var(--bg); border-radius: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 18px; letter-spacing: 0.06em; word-break: break-all;">
+        {{ gift_card.code | format_code }}
+      </div>
+
+      <a href="{{ shop.url }}" class="btn btn--red btn--lg btn--block">{{ 'gift_cards.issued.shop_link' | t }} →</a>
+    </div>
+
+    <p style="color: var(--grey); font-size: 12px; margin-top: 24px;">
+      {{ 'gift_cards.issued.disabled' | t }}
+    </p>
+  </section>
+</body>
+</html>

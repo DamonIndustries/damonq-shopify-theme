@@ -1,0 +1,111 @@
+{%- comment -%}
+  Cleaning program landing — driven by the cleaning_program metaobject.
+  Renders when a metaobject of type cleaning_program is viewed via Online Store.
+{%- endcomment -%}
+
+{%- liquid
+  assign p = metaobject
+  assign hero_image = p.hero_image.value
+-%}
+
+<section class="program-hero">
+  <div class="container">
+    <div class="program-hero__grid">
+      <div class="program-hero__copy">
+        <span class="program-hero__eyebrow">Cleaning program</span>
+        <h1 class="program-hero__title">{{ p.name.value }}</h1>
+        {%- if p.description.value != blank -%}
+          <p class="program-hero__lead">{{ p.description.value }}</p>
+        {%- endif -%}
+        <div class="program-hero__ctas">
+          <a href="#shopify-section-products" class="btn btn--red">Browse products</a>
+          {%- if section.settings.spec_sheet_url != blank -%}
+            <a href="{{ section.settings.spec_sheet_url }}" target="_blank" rel="noopener" class="btn btn--outline">Program spec sheet ↓</a>
+          {%- endif -%}
+        </div>
+      </div>
+      {%- if hero_image -%}
+        <div class="program-hero__image">
+          {{ hero_image | image_url: width: 1200 | image_tag: alt: p.name.value, width: 1200, height: 800, loading: 'eager' }}
+        </div>
+      {%- else -%}
+        <div class="program-hero__image program-hero__image--placeholder">
+          <span aria-hidden="true">★</span>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{%- if section.blocks.size > 0 -%}
+  <section class="program-pillars">
+    <div class="container">
+      <div class="program-pillars__grid">
+        {%- for block in section.blocks -%}
+          {%- case block.type -%}
+            {%- when 'pillar' -%}
+              <article class="program-pillar" {{ block.shopify_attributes }}>
+                {%- if block.settings.icon != blank -%}
+                  <span class="program-pillar__icon">{{ block.settings.icon }}</span>
+                {%- endif -%}
+                <h3>{{ block.settings.title }}</h3>
+                <p>{{ block.settings.body }}</p>
+              </article>
+          {%- endcase -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  </section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Program hero",
+  "settings": [
+    {
+      "type": "url",
+      "id": "spec_sheet_url",
+      "label": "Spec sheet URL (optional)",
+      "info": "External PDF link shown next to the primary CTA."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "pillar",
+      "name": "Pillar",
+      "limit": 6,
+      "settings": [
+        {
+          "type": "text",
+          "id": "icon",
+          "label": "Icon character",
+          "info": "Single character or emoji.",
+          "default": "★"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Built for the program"
+        },
+        {
+          "type": "textarea",
+          "id": "body",
+          "label": "Body",
+          "default": "Two sentences about why this matters for this program."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Program hero",
+      "blocks": [
+        { "type": "pillar" },
+        { "type": "pillar" },
+        { "type": "pillar" }
+      ]
+    }
+  ]
+}
+{% endschema %}

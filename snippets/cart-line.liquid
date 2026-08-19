@@ -1,0 +1,46 @@
+{%- comment -%}
+  Cart line item — used inside cart blocks (ships-now / AutoStock / bulk).
+
+  Accepts:
+    - item: cart line item (required)
+    - cadence: AutoStock cadence string (optional, e.g. "4_weeks")
+    - is_bulk: bool (optional, marks as bulk drum)
+{%- endcomment -%}
+
+<div class="cart-line" data-line-id="{{ item.key }}">
+  <div class="cart-line__thumb">
+    {%- if item.image -%}
+      {{ item.image | image_url: width: 160 | image_tag: alt: item.title, width: 160, height: 160, loading: 'lazy' }}
+    {%- endif -%}
+  </div>
+
+  <div class="cart-line__info">
+    {%- if item.product.type != blank -%}
+      <span class="cart-line__cat">{{ item.product.type }}</span>
+    {%- endif -%}
+    <h4 class="cart-line__title"><a href="{{ item.url }}">{{ item.product.title }}{% unless item.variant.title contains 'Default' %} · {{ item.variant.title }}{% endunless %}</a></h4>
+    <div class="cart-line__meta">
+      {%- if item.sku != blank -%}<span>SKU <b>{{ item.sku }}</b></span><span>·</span>{%- endif -%}
+      {%- if item.product.metafields.custom.sds_url -%}<a href="{{ item.product.metafields.custom.sds_url | file_url }}" target="_blank">SDS</a><span>·</span>{%- endif -%}
+      {%- if item.product.metafields.custom.epa_reg -%}<span>EPA Reg. <b>{{ item.product.metafields.custom.epa_reg }}</b></span>{%- endif -%}
+      {%- if cadence -%}<span style="color: var(--good); font-weight: 700;">Locked through subscription</span>{%- endif -%}
+      {%- if is_bulk -%}<span style="color: var(--warn); font-weight: 700;">Lift gate may be required</span>{%- endif -%}
+    </div>
+  </div>
+
+  <div class="cart-line__qty">
+    <button type="button" data-line-qty-minus="{{ item.key }}" aria-label="Decrease">−</button>
+    <input type="number" name="updates[{{ item.key }}]" value="{{ item.quantity }}" min="0" data-line-qty-input="{{ item.key }}" aria-label="Quantity for {{ item.title | escape }}">
+    <button type="button" data-line-qty-plus="{{ item.key }}" aria-label="Increase">+</button>
+  </div>
+
+  <div class="cart-line__price">
+    <div class="cart-line__price-total">{{ item.line_price | money }}</div>
+    <div class="cart-line__price-each">{{ item.price | money }} <b>/ each</b></div>
+    {%- if item.original_line_price > item.line_price -%}
+      <div class="cart-line__price-saved">Saved {{ item.original_line_price | minus: item.line_price | money_without_trailing_zeros }}</div>
+    {%- endif -%}
+  </div>
+
+  <a href="{{ item.url_to_remove }}" class="cart-line__remove" aria-label="Remove {{ item.title | escape }}">×</a>
+</div>

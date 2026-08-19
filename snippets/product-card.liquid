@@ -1,0 +1,126 @@
+{%- comment -%}
+  Product card. Reused on homepage, collection, related-products, etc.
+
+  Accepts:
+    - product: the Shopify product object (required)
+    - badge: optional override for the top-left badge text
+{%- endcomment -%}
+
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign compare_at = current_variant.compare_at_price
+
+  # When variants have different prices show the lowest with a "Starting at"
+  # style prefix; otherwise just the single variant price.
+  assign show_range_prefix = false
+  if product.price_varies and settings.price_range_prefix != blank
+    assign show_range_prefix = true
+    assign price = product.price_min
+  else
+    assign price = current_variant.price
+  endif
+
+  # ----- Unified "can purchase" gate -----
+  # Single rule shared by every product card (collection, search, related,
+  # recommendations, featured): the quick-add button shows AND functions
+  # only when the current variant is in stock AND Locksmith grants access
+  # (when site-wide manual mode is on). If either fails, the button is
+  # suppressed — there is no way to add an unbuyable item from a card.
+  #
+  # Locksmith fail-secure: if the snippet is missing, errors, or returns
+  # anything other than 'true', the card stays locked. The site-wide
+  # settings.locksmith_enabled toggle gates the snippet call so cards
+  # remain unchanged on stores without Locksmith installed.
+  #
+  # Locksmith preview override: same theme-editor-only behavior as the PDP.
+  assign locked_card = false
+  if settings.locksmith_enabled
+    capture ls_card_access
+      render 'locksmith-variables', variable: 'access_granted', scope: 'subject', subject: product
+    endcapture
+    if ls_card_access != 'true'
+      assign locked_card = true
+    endif
+    if settings.locksmith_preview_locked and request.design_mode
+      assign locked_card = true
+    endif
+  endif
+
+  assign can_purchase = false
+  if current_variant.available and locked_card == false
+    assign can_purchase = true
+  endif
+-%}
+
+<a href="{{ product.url }}" class="product-card" data-product-id="{{ product.id }}">
+  <div class="product-card__image">
+    {%- comment -%}
+      Locked products show a circular lock in the top-left, in the same
+      hovering style as the save-heart in the top-right. Suppresses the
+      Best Seller / metafield badge so they don't collide in that corner.
+    {%- endcomment -%}
+    {%- if locked_card -%}
+      <span class="product-card__lock" aria-label="Access required" title="Access required">🔒</span>
+    {%- elsif badge != blank -%}
+      <span class="product-card__badge">{{ badge }}</span>
+    {%- elsif product.metafields.custom.badge != blank -%}
+      <span class="product-card__badge">{{ product.metafields.custom.badge }}</span>
+    {%- endif -%}
+
+    <button class="product-card__heart" type="button" aria-label="Save {{ product.title | escape }}">♡</button>
+
+    {%- if product.featured_image -%}
+      {{ product.featured_image | image_url: width: 400 | image_tag: alt: product.featured_image.alt, loading: 'lazy', width: 400, height: 400 }}
+    {%- elsif settings.default_product_image != blank -%}
+      {{ settings.default_product_image | image_url: width: 400 | image_tag: alt: product.title, loading: 'lazy', width: 400, height: 400, class: 'product-card__placeholder' }}
+    {%- else -%}
+      {{ 'product-1' | placeholder_svg_tag: 'product-card__placeholder' }}
+    {%- endif -%}
+  </div>
+
+  <div class="product-card__info">
+    {%- if product.type != blank -%}
+      <span class="product-card__cat">{{ product.type }}</span>
+    {%- endif -%}
+
+    <h4 class="product-card__title">{{ product.title }}</h4>
+
+    {%- if product.metafields.custom.review_average != blank -%}
+      <div class="product-card__stars" aria-label="Rated {{ product.metafields.custom.review_average }} out of 5">
+        ★★★★★
+        <span class="product-card__stars-count">({{ product.metafields.custom.review_count | default: 0 }})</span>
+      </div>
+    {%- endif -%}
+
+    {%- comment -%}
+      Stock label reflects actual inventory regardless of lock state — the
+      lock chip in the top-left already signals "you need access," and
+      saying both feels redundant. A locked-and-in-stock product still
+      reads "● In stock · ships today" so customers know it's worth
+      requesting access for.
+    {%- endcomment -%}
+    {%- if current_variant.available -%}
+      <span class="product-card__stock">● In stock · ships today</span>
+    {%- else -%}
+      <span class="product-card__stock" style="color: var(--grey);">Out of stock</span>
+    {%- endif -%}
+
+    <div class="product-card__row">
+      <span class="product-card__price">
+        {%- if show_range_prefix -%}
+          <span class="product-card__price-prefix">{{ settings.price_range_prefix }}</span>
+        {%- endif -%}
+        {{ price | money }}
+        {%- if compare_at and compare_at > price -%}
+          <span class="product-card__strike">{{ compare_at | money }}</span>
+        {%- endif -%}
+      </span>
+
+      {%- if can_purchase -%}
+        <button class="product-card__add" type="button" data-quick-add="{{ current_variant.id }}">+ Add</button>
+      {%- elsif locked_card -%}
+        <span class="product-card__view-link" aria-hidden="true">Request access →</span>
+      {%- endif -%}
+    </div>
+  </div>
+</a>

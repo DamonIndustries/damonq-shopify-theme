@@ -1,0 +1,306 @@
+{%- comment -%}
+  Cart page — Damon
+
+  Groups cart line items into 3 ship-mode containers:
+    1. Ships now      — default for items without an AutoStock cadence
+    2. AutoStock      — items where line_item.properties._autostock_cadence is set
+    3. Bulk & drum    — items where product.type == 'Drum' OR product has 'bulk' tag
+
+  Reads:
+    - settings.free_freight_threshold (global theme setting; same source the
+      cart drawer reads from — single value to maintain)
+    - section.settings.autostock_discount_percent (number, default 5)
+      applied as a discount line
+
+  Reads from cart object directly. Real Shopify cart, not a mock.
+{%- endcomment -%}
+
+{%- liquid
+  assign threshold = settings.free_freight_threshold | default: 250
+  assign threshold_cents = threshold | times: 100
+
+  assign ships_now_count = 0
+  assign autostock_count = 0
+  assign bulk_count = 0
+
+  assign ships_now_total = 0
+  assign autostock_total = 0
+  assign bulk_total = 0
+
+  for item in cart.items
+    assign cadence = item.properties._autostock_cadence | default: ''
+    assign is_bulk = false
+    if item.product.type contains 'Drum' or item.product.tags contains 'bulk'
+      assign is_bulk = true
+    endif
+
+    if cadence != blank
+      assign autostock_count = autostock_count | plus: item.quantity
+      assign autostock_total = autostock_total | plus: item.line_price
+    elsif is_bulk
+      assign bulk_count = bulk_count | plus: item.quantity
+      assign bulk_total = bulk_total | plus: item.line_price
+    else
+      assign ships_now_count = ships_now_count | plus: item.quantity
+      assign ships_now_total = ships_now_total | plus: item.line_price
+    endif
+  endfor
+
+  assign autostock_discount = 0
+  if section.settings.autostock_discount_percent and autostock_total > 0
+    assign autostock_discount = autostock_total | times: section.settings.autostock_discount_percent | divided_by: 100
+  endif
+
+  assign progress_pct = ships_now_total | times: 100 | divided_by: threshold_cents
+  if progress_pct > 100
+    assign progress_pct = 100
+  endif
+  assign remaining_to_free = threshold_cents | minus: ships_now_total
+  if remaining_to_free < 0
+    assign remaining_to_free = 0
+  endif
+-%}
+
+<section class="container cart-page">
+  <div class="cart-head">
+    <div class="pdp__crumb">
+      <a href="{{ routes.root_url }}">{{ 'damon.cart.breadcrumb_home' | t }}</a><span class="pdp__crumb-sep">/</span>
+      <span class="pdp__crumb-cur">{{ 'damon.cart.breadcrumb_cart' | t }}</span>
+    </div>
+    <h1>{{ 'cart.general.title' | t }} · {{ cart.item_count }} item{% if cart.item_count != 1 %}s{% endif %}</h1>
+    {%- if cart.item_count > 0 -%}
+      <div class="cart-head__meta">
+        <b>{{ ships_now_count }}</b> ship{% if ships_now_count == 1 %}s{% else %}s{% endif %} now
+        {%- if autostock_count > 0 %} · <b>{{ autostock_count }}</b> AutoStock{% endif -%}
+        {%- if bulk_count > 0 %} · <b>{{ bulk_count }} bulk</b> require{% if bulk_count == 1 %}s{% endif %} LTL freight{% endif -%}
+      </div>
+
+      {%- if remaining_to_free > 0 -%}
+        {%- assign remaining_fmt = remaining_to_free | money_without_trailing_zeros -%}
+        <div class="freight-bar">
+          <div class="freight-bar__icon" aria-hidden="true">⛟</div>
+          <div>
+            <div class="freight-bar__label">{{ 'damon.cart.freight_progress_html' | t: remaining: remaining_fmt }}</div>
+            <div class="freight-bar__track"><div class="freight-bar__fill" style="width: {{ progress_pct }}%;"></div></div>
+          </div>
+          <div class="freight-bar__total">{{ ships_now_total | money_without_trailing_zeros }} / {{ threshold_cents | money_without_trailing_zeros }}</div>
+        </div>
+      {%- else -%}
+        <div class="freight-bar freight-bar--free">
+          <div class="freight-bar__icon" aria-hidden="true">✓</div>
+          <div>
+            <div class="freight-bar__label">{{ 'damon.cart.free_freight_unlocked_html' | t }}</div>
+            <div class="freight-bar__track"><div class="freight-bar__fill" style="width: 100%;"></div></div>
+          </div>
+          <div class="freight-bar__total">{{ ships_now_total | money_without_trailing_zeros }}</div>
+        </div>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+
+  {%- if cart.item_count == 0 -%}
+    <div class="cart-empty">
+      <p>{{ 'cart.general.empty' | t }}.</p>
+      <a href="{{ routes.root_url }}" class="btn btn--red btn--lg">{{ 'cart.general.continue_browsing' | t }} →</a>
+    </div>
+  {%- else -%}
+
+    {%- form 'cart', cart -%}
+      <div class="cart-grid">
+
+        <main>
+          {%- if section.settings.show_ai_cross_sell and ships_now_total > 0 and remaining_to_free > 0 -%}
+            {%- assign cross_remaining = remaining_to_free | money_without_trailing_zeros -%}
+            {%- assign cross_pct = section.settings.autostock_discount_percent | default: 5 -%}
+            <div class="ai-cross">
+              <div>
+                <span class="ai-cross__stamp">{{ 'damon.cart.ai_cross_stamp' | t }}</span>
+                <h4>{{ 'damon.cart.ai_cross_heading' | t }}</h4>
+                <p>{{ 'damon.cart.ai_cross_body_html' | t: remaining: cross_remaining, pct: cross_pct }}</p>
+              </div>
+              <a href="{{ routes.root_url }}" class="ai-cross__add">{{ 'damon.cart.ai_cross_cta' | t }}</a>
+            </div>
+          {%- endif -%}
+
+          {%- # ============ Ships now block ============ -%}
+          {%- if ships_now_count > 0 -%}
+            <div class="cart-blk">
+              <div class="cart-blk__head">
+                <span class="cart-blk__num">1</span>
+                <h3 class="cart-blk__title">{{ 'damon.cart.ships_now_title' | t }}</h3>
+                <span class="cart-blk__count">{{ ships_now_count }} item{% if ships_now_count != 1 %}s{% endif %} · {{ ships_now_total | money_without_trailing_zeros }} · ground freight</span>
+              </div>
+
+              {%- for item in cart.items -%}
+                {%- assign cadence = item.properties._autostock_cadence | default: '' -%}
+                {%- assign is_bulk = false -%}
+                {%- if item.product.type contains 'Drum' or item.product.tags contains 'bulk' -%}{%- assign is_bulk = true -%}{%- endif -%}
+                {%- if cadence == blank and is_bulk == false -%}
+                  {%- render 'cart-line', item: item -%}
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+
+          {%- # ============ AutoStock block ============ -%}
+          {%- if autostock_count > 0 -%}
+            <div class="cart-blk cart-blk--autostock">
+              <div class="cart-blk__head">
+                <span class="cart-blk__num">2</span>
+                <h3 class="cart-blk__title">{{ 'damon.cart.autostock_title' | t }}</h3>
+                <span class="cart-blk__count">{{ autostock_count }} item{% if autostock_count != 1 %}s{% endif %} · saves {{ section.settings.autostock_discount_percent | default: 5 }}%</span>
+                <span class="cart-blk__stamp">{{ 'damon.cart.recurring_tag' | t }}</span>
+              </div>
+
+              <div class="cart-blk__cadence">
+                <div><span class="cart-blk__cadence-lbl">{{ 'damon.cart.next_ship_label' | t }}</span> <span class="cart-blk__cadence-val">{{ 'damon.cart.next_ship_value' | t }}</span></div>
+                <select aria-label="{{ 'damon.pdp.autostock_cadence_aria' | t }}">
+                  <option value="4_weeks">{{ 'damon.cart.cadence_4_weeks' | t }}</option>
+                  <option value="6_weeks">{{ 'damon.cart.cadence_6_weeks' | t }}</option>
+                  <option value="8_weeks">{{ 'damon.cart.cadence_8_weeks' | t }}</option>
+                </select>
+                <button type="button" class="cart-blk__cadence-skip">{{ 'damon.cart.skip_next_ship' | t }}</button>
+              </div>
+
+              {%- for item in cart.items -%}
+                {%- assign cadence = item.properties._autostock_cadence | default: '' -%}
+                {%- if cadence != blank -%}
+                  {%- render 'cart-line', item: item, cadence: cadence -%}
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+
+          {%- # ============ Bulk & drum block ============ -%}
+          {%- if bulk_count > 0 -%}
+            <div class="cart-blk cart-blk--bulk">
+              <div class="cart-blk__head">
+                <span class="cart-blk__num">3</span>
+                <h3 class="cart-blk__title">{{ 'damon.cart.bulk_title' | t }}</h3>
+                <span class="cart-blk__count">{{ bulk_count }} item{% if bulk_count != 1 %}s{% endif %} · separate freight quote</span>
+                <span class="cart-blk__stamp">{{ 'damon.cart.ltl_tag' | t }}</span>
+              </div>
+              <div class="cart-blk__bulk-note">
+                {{ 'damon.cart.ltl_note_html' | t }}
+              </div>
+
+              {%- for item in cart.items -%}
+                {%- assign cadence = item.properties._autostock_cadence | default: '' -%}
+                {%- assign is_bulk = false -%}
+                {%- if item.product.type contains 'Drum' or item.product.tags contains 'bulk' -%}{%- assign is_bulk = true -%}{%- endif -%}
+                {%- if cadence == blank and is_bulk -%}
+                  {%- render 'cart-line', item: item, is_bulk: true -%}
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+
+          {%- # ============ Save bundle CTA ============ -%}
+          <div class="bundle-cta">
+            <b>{{ 'damon.cart.save_bundle_title' | t }}</b>
+            <p>{{ 'damon.cart.save_bundle_body' | t }}</p>
+            <div class="bundle-cta__row">
+              <a href="#" class="bundle-cta__pill">{{ 'damon.cart.save_bundle_cta' | t }}</a>
+              <a href="/pages/program-studio" class="bundle-cta__pill">{{ 'damon.cart.open_in_studio_cta' | t }}</a>
+            </div>
+          </div>
+
+          {%- # ============ Trust strip ============ -%}
+          <div class="trust-strip" style="margin-top: 24px;">
+            <div class="trust-strip__item"><span class="trust-strip__icon">⛟</span><div><b>Ships from Ohio</b><span>Same‑day before 2pm ET</span></div></div>
+            <div class="trust-strip__item"><span class="trust-strip__icon">⏎</span><div><b>30‑day returns</b><span>Even on opened cases</span></div></div>
+            <div class="trust-strip__item"><span class="trust-strip__icon">★</span><div><b>4.9 / 5 average</b><span>Across 2,400+ reviews</span></div></div>
+            <div class="trust-strip__item"><span class="trust-strip__icon">$</span><div><b>Net‑30 financing</b><span>For verified facilities</span></div></div>
+          </div>
+        </main>
+
+        {%- # ============ Order summary sidebar ============ -%}
+        <aside class="cart-summary">
+          <div class="cart-summary__card">
+            <h3>{{ 'cart.general.order_summary' | t }}</h3>
+            <div class="cart-summary__rows">
+              {%- if ships_now_total > 0 -%}
+                <div class="cart-summary__row"><span class="lbl">Subtotal · ships now ({{ ships_now_count }} item{% if ships_now_count != 1 %}s{% endif %})</span><span class="val">{{ ships_now_total | money_without_trailing_zeros }}</span></div>
+              {%- endif -%}
+              {%- if autostock_total > 0 -%}
+                <div class="cart-summary__row"><span class="lbl">Subtotal · AutoStock ({{ autostock_count }} item{% if autostock_count != 1 %}s{% endif %})</span><span class="val">{{ autostock_total | money_without_trailing_zeros }}</span></div>
+              {%- endif -%}
+              {%- if bulk_total > 0 -%}
+                <div class="cart-summary__row"><span class="lbl">Subtotal · bulk &amp; drum ({{ bulk_count }} item{% if bulk_count != 1 %}s{% endif %})</span><span class="val">{{ bulk_total | money_without_trailing_zeros }}</span></div>
+              {%- endif -%}
+              {%- if autostock_discount > 0 -%}
+                <div class="cart-summary__row cart-summary__row--discount"><span class="lbl">★ AutoStock {{ section.settings.autostock_discount_percent | default: 5 }}% (this ship)</span><span class="val">−{{ autostock_discount | money_without_trailing_zeros }}</span></div>
+              {%- endif -%}
+              {%- if cart.cart_level_discount_applications.size > 0 -%}
+                {%- for discount in cart.cart_level_discount_applications -%}
+                  <div class="cart-summary__row cart-summary__row--discount"><span class="lbl">{{ discount.title }}</span><span class="val">−{{ discount.total_allocated_amount | money_without_trailing_zeros }}</span></div>
+                {%- endfor -%}
+              {%- endif -%}
+              <div class="cart-summary__row"><span class="lbl">{{ 'cart.general.shipping_estimate' | t }}</span><span class="val">{{ 'cart.general.calculated_at_checkout' | t }}</span></div>
+
+              <div class="cart-summary__row cart-summary__row--total">
+                <span class="lbl">{{ 'cart.general.order_total_today' | t }}</span>
+                <span class="val">{{ cart.total_price | money_without_trailing_zeros }}</span>
+              </div>
+
+              {%- if autostock_total > 0 -%}
+                <div class="cart-summary__row cart-summary__row--autostock">
+                  <span class="lbl">★ AutoStock monthly · locked</span>
+                  <span class="val">{{ autostock_total | money_without_trailing_zeros }} / mo</span>
+                </div>
+              {%- endif -%}
+            </div>
+
+            <div class="cart-summary__pay">
+              <div class="cart-summary__pay-lbl">{{ 'cart.general.payment_method' | t }}</div>
+              <div class="cart-summary__pay-opts">
+                <div class="pay-opt pay-opt--on">
+                  <b>{{ 'damon.cart.pay_net30_title' | t }}</b>
+                  <span>{{ 'damon.cart.pay_net30_sub' | t }}</span>
+                </div>
+                <div class="pay-opt">
+                  <b>{{ 'damon.cart.pay_card_title' | t }}</b>
+                  <span>{{ 'damon.cart.pay_card_sub' | t }}</span>
+                </div>
+              </div>
+              <div class="cart-summary__po">
+                <span class="cart-summary__po-lbl">{{ 'cart.general.po_number' | t }}</span>
+                <input type="text" name="note" placeholder="{{ 'cart.general.po_placeholder' | t }}" value="{{ cart.note | escape }}">
+              </div>
+            </div>
+
+            <button type="submit" name="checkout" class="cart-summary__checkout">{{ 'cart.general.place_order' | t }}</button>
+            <p class="cart-summary__ssfn">{% if bulk_count > 0 %}{{ 'damon.cart.ltl_quote_note' | t }}{% else %}{{ 'damon.cart.net30_invoice_note' | t }}{% endif %}</p>
+          </div>
+        </aside>
+
+      </div>
+    {%- endform -%}
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Cart",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "The free freight threshold is managed globally — Theme settings → PDP ship row → Free freight at (USD). The cart drawer and this page now share the same value."
+    },
+    {
+      "type": "number",
+      "id": "autostock_discount_percent",
+      "label": "AutoStock discount (%)",
+      "default": 5,
+      "info": "Discount applied to AutoStock subscription line items."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_ai_cross_sell",
+      "label": "Show AI cross-sell card",
+      "default": true,
+      "info": "Recommends adding products to clear free-freight threshold or unlock AutoStock."
+    }
+  ]
+}
+{% endschema %}

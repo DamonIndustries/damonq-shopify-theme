@@ -1,0 +1,636 @@
+<header class="site-header" role="banner">
+  <div class="container">
+    <div class="site-header__top">
+      {%- liquid
+        assign logo_alt = settings.logo_alt | default: shop.name
+        assign logo_max_h = settings.logo_max_height | default: 44
+        assign logo_style = 'max-height: ' | append: logo_max_h | append: 'px; width: auto;'
+        assign wordmark = settings.wordmark_text | default: shop.name
+      -%}
+      <a href="{{ routes.root_url }}" class="site-header__logo" aria-label="{{ logo_alt }}" data-logo>
+        {%- if settings.logo != blank -%}
+          {{ settings.logo | image_url: width: 600 | image_tag: alt: logo_alt, class: 'site-header__logo-img', style: logo_style, loading: 'eager', fetchpriority: 'high' }}
+        {%- else -%}
+          {% render 'shield-logo' %}
+        {%- endif -%}
+        {%- if settings.show_wordmark -%}
+          <span>{{ wordmark }}</span>
+        {%- endif -%}
+        <span class="site-header__logo-alt" aria-hidden="true">{% render 'damon-intelligence-logo' %}</span>
+      </a>
+
+      <form action="{{ routes.search_url }}" method="get" role="search" class="search-bar" data-predictive-search data-price-range-prefix="{{ settings.price_range_prefix | escape }}">
+        <select name="filter.p.product_type" class="search-bar__select" aria-label="{{ 'general.search.aria_filter' | t }}">
+          <option value="">{{ 'general.search.all_programs' | t }}</option>
+          {%- for link in linklists['programs-menu'].links -%}
+            <option value="{{ link.title }}">{{ link.title }}</option>
+          {%- endfor -%}
+        </select>
+        <input
+          type="search"
+          name="q"
+          class="search-bar__input"
+          placeholder="{{ 'general.search.placeholder' | t }}"
+          aria-label="{{ 'general.search.aria_input' | t }}"
+          autocomplete="off"
+          data-predictive-input
+        >
+        <button type="submit" class="search-bar__submit">{{ 'general.search.submit' | t }}</button>
+        <div class="predictive" hidden data-predictive-results>
+          <div class="predictive__loading">{{ 'general.search.searching' | t }}</div>
+        </div>
+      </form>
+
+      <nav class="header-actions" aria-label="{{ 'general.accessibility.site_actions' | t }}">
+        {%- comment -%}
+          Region + language picker — auto-populated from Shopify Markets.
+          The merchant controls which combos appear by publishing markets in
+          Settings -> Markets and enabling languages per market. No theme code
+          change is needed when adding or removing a region.
+
+          For each published country we render one row per available language
+          (so Canada with English + French enabled produces two rows).
+          Country display order follows the Markets admin order.
+        {%- endcomment -%}
+        {%- assign current_cc = localization.country.iso_code -%}
+        {%- assign current_lc = localization.language.iso_code -%}
+        {%- assign combo_count = 0 -%}
+        {%- for c in localization.available_countries -%}
+          {%- assign combo_count = combo_count | plus: c.available_languages.size -%}
+        {%- endfor -%}
+
+        {%- if combo_count > 1 -%}
+        <div class="header-region" data-region-root>
+          <button
+            type="button"
+            class="header-region__trigger"
+            data-region-trigger
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-label="{{ 'damon.header.region.trigger_aria' | t }}">
+            <span class="header-region__icon" aria-hidden="true">⊕</span>
+            <span class="header-region__label">{{ current_cc }} ({{ current_lc | upcase }})</span>
+            <span class="header-region__chev" aria-hidden="true">▾</span>
+          </button>
+
+          <div class="header-region__panel" data-region-panel hidden role="menu" aria-label="{{ 'damon.header.region.panel_aria' | t }}">
+            <div class="header-region__head">{{ 'damon.header.region.ship_to' | t }}</div>
+
+            <div class="header-region__list">
+              {%- for country in localization.available_countries -%}
+                {%- for language in country.available_languages -%}
+                  {%- assign is_current = false -%}
+                  {%- if country.iso_code == current_cc and language.iso_code == current_lc -%}
+                    {%- assign is_current = true -%}
+                  {%- endif -%}
+
+                  {%- form 'localization' -%}
+                    <input type="hidden" name="country_code"  value="{{ country.iso_code }}">
+                    <input type="hidden" name="language_code" value="{{ language.iso_code }}">
+                    <input type="hidden" name="return_to"     value="{{ request.path }}">
+                    <button
+                      type="submit"
+                      class="header-region__opt{% if is_current %} header-region__opt--current{% endif %}"
+                      role="menuitemradio"
+                      aria-checked="{% if is_current %}true{% else %}false{% endif %}">
+                      <span class="header-region__abbr">{{ country.iso_code }}</span>
+                      <span class="header-region__meta">
+                        <strong>{{ country.name }}</strong>
+                        <span>{{ language.endonym_name }} · {{ country.currency.iso_code }}</span>
+                      </span>
+                      {%- if is_current -%}
+                        <span class="header-region__check" aria-hidden="true">✓</span>
+                      {%- endif -%}
+                    </button>
+                  {%- endform -%}
+                {%- endfor -%}
+              {%- endfor -%}
+            </div>
+
+            <div class="header-region__foot">{{ 'damon.header.region.foot' | t }}</div>
+          </div>
+        </div>
+        {%- endif -%}
+
+        {%- if customer -%}
+          {%- comment -%}
+            Logged-in account chip. Horizontal pill with initials avatar +
+            company (if any) + full name + dropdown chevron. Company is
+            optional — when blank the pill collapses to just the full name,
+            vertically centered next to the avatar. Mobile shrinks to just
+            the avatar circle (name moves into the hamburger drawer).
+
+            Initials fall back gracefully: first+last → "AG", first only →
+            "A", nothing → "•". `strip | slice: 0, 1 | upcase` handles each
+            piece safely on empty strings.
+          {%- endcomment -%}
+          {%- liquid
+            assign first_initial = customer.first_name | strip | slice: 0, 1 | upcase
+            assign last_initial = customer.last_name | strip | slice: 0, 1 | upcase
+            assign initials = first_initial | append: last_initial
+            if initials == blank
+              assign initials = '•'
+            endif
+
+            assign full_name = customer.first_name | append: ' ' | append: customer.last_name | strip
+            if full_name == blank
+              assign full_name = customer.email
+            endif
+
+            # ---- Company name lookup — try every known source in order.
+            # Shopify exposes company info in different places depending on
+            # the account type. Ordered strongest-signal-first:
+            #   1. Shopify B2B (Plus) — current selected company/location
+            #   2. Shopify B2B — first company from available locations
+            #   3. Classic address — company field on default_address
+            #   4. Classic address — company field on any other address
+            #   5. Custom metafield escape hatch (customer.metafields.custom.company)
+            # First non-blank wins; falls back to blank so the pill collapses.
+            assign company_name = ''
+
+            if customer.current_company.name != blank
+              assign company_name = customer.current_company.name
+            elsif customer.current_location.company.name != blank
+              assign company_name = customer.current_location.company.name
+            elsif customer.company_available_locations != blank and customer.company_available_locations.size > 0
+              assign first_loc = customer.company_available_locations | first
+              assign company_name = first_loc.company.name
+            elsif customer.default_address.company != blank
+              assign company_name = customer.default_address.company
+            elsif customer.addresses.size > 0
+              for addr in customer.addresses
+                if addr.company != blank
+                  assign company_name = addr.company
+                  break
+                endif
+              endfor
+            endif
+
+            if company_name == blank and customer.metafields.custom.company != blank
+              assign company_name = customer.metafields.custom.company
+            endif
+
+            assign company_name = company_name | strip
+          -%}
+
+
+          <div class="header-account" data-account-menu>
+            <button type="button" class="header-account__pill{% if company_name == blank %} header-account__pill--no-company{% endif %}"
+                    aria-haspopup="menu" aria-expanded="false" data-account-trigger>
+              <span class="header-account__avatar" aria-hidden="true">{{ initials }}</span>
+              <span class="header-account__meta">
+                {%- if company_name != blank -%}
+                  <span class="header-account__company">{{ company_name }}</span>
+                {%- endif -%}
+                <span class="header-account__name">{{ full_name }}</span>
+              </span>
+              <span class="header-account__chev" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </span>
+            </button>
+            <div class="header-account__menu" role="menu" hidden>
+              <a href="{{ routes.account_url }}" role="menuitem">Dashboard</a>
+              <div class="header-account__menu-sep" role="separator"></div>
+              <a href="/pages/my-products" role="menuitem">My products</a>
+              <a href="/pages/my-sds-binder" role="menuitem">My SDS binder</a>
+              <a href="/pages/my-contacts" role="menuitem">My contacts</a>
+              <a href="/pages/my-programs" role="menuitem">My programs</a>
+              <div class="header-account__menu-sep" role="separator"></div>
+              <a href="{{ routes.account_url }}#orders" role="menuitem">Orders</a>
+              <a href="{{ routes.account_addresses_url }}" role="menuitem">Addresses</a>
+              <a href="/pages/notification-preferences" role="menuitem">Notification preferences</a>
+              <a href="{{ routes.account_logout_url }}" role="menuitem" class="header-account__signout">Sign out</a>
+            </div>
+          </div>
+        {%- else -%}
+          <a href="{{ routes.account_login_url }}" class="header-actions__item header-actions__item--account{% if settings.account_icon_circle %} header-actions__item--account-circle{% endif %}" aria-label="{{ 'customer.account.label' | t }}">
+            <span class="header-actions__icon header-actions__icon--account" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </span>
+            <span>{{ 'customer.account.label' | t }}</span>
+          </a>
+        {%- endif -%}
+        <a href="{{ routes.cart_url }}" class="header-actions__item header-actions__item--cart{% if settings.cart_icon_circle %} header-actions__item--cart-circle{% endif %}" aria-label="{{ 'cart.general.title' | t }}" data-cart-trigger>
+          <span class="header-actions__icon header-actions__icon--cart" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 4h11v11H6"></path>
+              <path d="M13 8h5l3 4v3h-2"></path>
+              <circle cx="7" cy="18" r="2"></circle>
+              <circle cx="17" cy="18" r="2"></circle>
+            </svg>
+          </span>
+          <span>{{ 'damon.header.cart_short' | t }} · <span data-cart-count>{{ cart.item_count }}</span></span>
+        </a>
+
+        {%- comment -%} Hamburger — visible on mobile only via CSS. Opens the
+          slide-out nav drawer rendered below. {%- endcomment -%}
+        <button
+          type="button"
+          class="header-hamburger"
+          data-mobile-nav-trigger
+          aria-label="Open menu"
+          aria-controls="mobile-nav-drawer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="3" y1="6"  x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  {%- comment -%}
+    Mobile nav drawer — slides in from the right when the hamburger is tapped.
+    Shows top-level menu items with children expanded inline (no extra tap to
+    reveal). Phone, email, and rep link at the bottom for quick contact.
+  {%- endcomment -%}
+  {%- assign mobile_rep_url   = settings.rep_link_page.url | default: '/pages/contact-rep' -%}
+  {%- assign mobile_rep_label = settings.rep_link_label  | default: 'Contact the Q Team' -%}
+  <aside id="mobile-nav-drawer" class="mobile-nav" hidden aria-hidden="true" data-mobile-nav-drawer>
+    <button type="button" class="mobile-nav__overlay" aria-label="Close menu" data-mobile-nav-close></button>
+    <nav class="mobile-nav__panel" role="dialog" aria-modal="true" aria-label="Site navigation">
+      <header class="mobile-nav__head">
+        <span class="mobile-nav__title">Menu</span>
+        <button type="button" class="mobile-nav__close" data-mobile-nav-close aria-label="Close menu">×</button>
+      </header>
+
+      <ul class="mobile-nav__list">
+        {%- for link in linklists['main-menu'].links -%}
+          <li class="mobile-nav__item">
+            <a href="{{ link.url }}" class="mobile-nav__link">
+              {%- if link.type == 'collection_link' and link.object.image -%}
+                <img class="mobile-nav__thumb" src="{{ link.object.image | image_url: width: 96 }}" alt="" loading="lazy" width="28" height="28">
+              {%- endif -%}
+              <span>{{ link.title }}</span>
+            </a>
+            {%- if link.links.size > 0 -%}
+              <ul class="mobile-nav__sublist">
+                {%- for child in link.links -%}
+                  <li>
+                    <a href="{{ child.url }}" class="mobile-nav__sublink">
+                      {%- if child.type == 'collection_link' and child.object.image -%}
+                        <img class="mobile-nav__thumb mobile-nav__thumb--sm" src="{{ child.object.image | image_url: width: 64 }}" alt="" loading="lazy" width="22" height="22">
+                      {%- endif -%}
+                      <span>{{ child.title }}</span>
+                    </a>
+                  </li>
+                {%- endfor -%}
+              </ul>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+
+      <footer class="mobile-nav__foot">
+        <a href="{{ mobile_rep_url }}" class="mobile-nav__cta">{{ mobile_rep_label }} →</a>
+        {%- if settings.contact_phone != blank -%}
+          <a href="tel:{{ settings.contact_phone | replace: '‑', '' | replace: '-', '' | replace: ' ', '' }}" class="mobile-nav__contact">{{ settings.contact_phone }}</a>
+        {%- endif -%}
+        {%- if settings.contact_email != blank -%}
+          <a href="mailto:{{ settings.contact_email }}" class="mobile-nav__contact">{{ settings.contact_email }}</a>
+        {%- endif -%}
+      </footer>
+    </nav>
+  </aside>
+
+  <div class="catnav" data-mobile-nav data-catnav-root>
+    <div class="container">
+      <div class="catnav__viewport" data-catnav>
+        <button type="button" class="catnav__nav-btn catnav__nav-btn--prev" data-catnav-prev aria-label="Scroll categories left" disabled>‹</button>
+        <div class="catnav__scroller" data-catnav-scroller>
+          <ul class="catnav__list catnav__list--{{ section.settings.nav_alignment | default: 'left' }}">
+            {%- for link in linklists['main-menu'].links -%}
+              {%- liquid
+                assign is_active = false
+                if link.active or link.child_active
+                  assign is_active = true
+                elsif template contains 'product' and link.type == 'collection_link'
+                  for col in product.collections
+                    if col.handle == link.object.handle
+                      assign is_active = true
+                      break
+                    endif
+                  endfor
+                endif
+                assign has_children = false
+                if link.links.size > 0
+                  assign has_children = true
+                endif
+              -%}
+              <li class="catnav__item{% if has_children %} catnav__item--has-children{% endif %}"{% if has_children %} data-catnav-parent="{{ forloop.index0 }}"{% endif %}>
+                <a href="{{ link.url }}" class="catnav__link{% if is_active %} catnav__link--active{% endif %}"{% if has_children %} aria-haspopup="true" aria-expanded="false"{% endif %}>
+                  {%- if link.type == 'collection_link' and link.object.image -%}
+                    <img class="catnav__link-img" src="{{ link.object.image | image_url: width: 64 }}" alt="" loading="lazy" width="20" height="20">
+                  {%- endif -%}
+                  {{ link.title }}{%- if has_children -%}<span class="catnav__chev" aria-hidden="true">▾</span>{%- endif -%}
+                </a>
+              </li>
+            {%- else -%}
+              <li class="catnav__item"><a href="{{ routes.root_url }}" class="catnav__link catnav__link--active">All Programs</a></li>
+              <li class="catnav__item"><a href="#" class="catnav__link">Healthcare</a></li>
+              <li class="catnav__item"><a href="#" class="catnav__link">Food Processors</a></li>
+              <li class="catnav__item"><a href="#" class="catnav__link">Quick Serve</a></li>
+              <li class="catnav__item"><a href="#" class="catnav__link">Schools</a></li>
+              <li class="catnav__item"><a href="#" class="catnav__link">Green Program</a></li>
+              <li class="catnav__item"><a href="#" class="catnav__link">Floor Care</a></li>
+              <li class="catnav__item"><a href="#" class="catnav__link">Sanitizers</a></li>
+              <li class="catnav__item"><a href="#" class="catnav__link">Bulk &amp; Drum</a></li>
+            {%- endfor -%}
+          </ul>
+        </div>
+        <button type="button" class="catnav__nav-btn catnav__nav-btn--next" data-catnav-next aria-label="Scroll categories right">›</button>
+      </div>
+    </div>
+
+    {%- comment -%}
+      Mega panels — rendered OUTSIDE the scroller so they escape its
+      overflow-x: clip. JS toggles [data-active] on the matching panel
+      and [data-open] on the root when a parent is hovered/clicked.
+    {%- endcomment -%}
+    {%- assign any_children = false -%}
+    {%- for link in linklists['main-menu'].links -%}
+      {%- if link.links.size > 0 -%}
+        {%- assign any_children = true -%}
+        {%- break -%}
+      {%- endif -%}
+    {%- endfor -%}
+
+    {%- if any_children -%}
+      <div class="catnav-mega" data-catnav-mega-root aria-label="Sub navigation">
+        <div class="container">
+          {%- for link in linklists['main-menu'].links -%}
+            {%- if link.links.size > 0 -%}
+              {%- liquid
+                assign child_count = link.links.size
+                assign grid_class = 'catnav-mega__grid--one'
+                if child_count > 10
+                  assign grid_class = 'catnav-mega__grid--three'
+                elsif child_count > 5
+                  assign grid_class = 'catnav-mega__grid--two'
+                endif
+              -%}
+              <div class="catnav-mega__panel" data-catnav-panel="{{ forloop.index0 }}" hidden>
+                <div class="catnav-mega__grid {{ grid_class }}">
+                  {%- for child in link.links -%}
+                    <a href="{{ child.url }}" class="catnav-mega__link">
+                      {%- if child.type == 'collection_link' and child.object.image -%}
+                        <img class="catnav-mega__link-img" src="{{ child.object.image | image_url: width: 96 }}" alt="" loading="lazy" width="32" height="32">
+                      {%- endif -%}
+                      <span class="catnav-mega__link-title">{{ child.title }}</span>
+                    </a>
+                  {%- endfor -%}
+                </div>
+                {%- if link.url != '' and link.url != '#' -%}
+                  <a href="{{ link.url }}" class="catnav-mega__viewall">View all {{ link.title }} →</a>
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</header>
+
+<script>
+(function () {
+  var root = document.querySelector('[data-catnav-root]');
+  if (!root) return;
+  var mega = root.querySelector('[data-catnav-mega-root]');
+  if (!mega) return; // no parents have children
+  var parents = Array.prototype.slice.call(root.querySelectorAll('[data-catnav-parent]'));
+  var panels = Array.prototype.slice.call(mega.querySelectorAll('[data-catnav-panel]'));
+  var closeTimer = null;
+  var openKey = null;
+  var mq = window.matchMedia('(min-width: 768px)');
+
+  function showPanel(key) {
+    if (openKey === key) return;
+    panels.forEach(function (p) {
+      var match = p.getAttribute('data-catnav-panel') === key;
+      if (match) {
+        p.removeAttribute('hidden');
+        p.setAttribute('data-active', '');
+      } else {
+        p.setAttribute('hidden', '');
+        p.removeAttribute('data-active');
+      }
+    });
+    parents.forEach(function (parent) {
+      var match = parent.getAttribute('data-catnav-parent') === key;
+      parent.classList.toggle('catnav__item--open', match);
+      var link = parent.querySelector('.catnav__link');
+      if (link) link.setAttribute('aria-expanded', match ? 'true' : 'false');
+    });
+    mega.setAttribute('data-open', '');
+    openKey = key;
+  }
+
+  function closePanel() {
+    panels.forEach(function (p) { p.setAttribute('hidden', ''); p.removeAttribute('data-active'); });
+    parents.forEach(function (p) {
+      p.classList.remove('catnav__item--open');
+      var link = p.querySelector('.catnav__link');
+      if (link) link.setAttribute('aria-expanded', 'false');
+    });
+    mega.removeAttribute('data-open');
+    openKey = null;
+  }
+
+  function cancelClose() { if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; } }
+  function scheduleClose(delay) {
+    cancelClose();
+    closeTimer = setTimeout(closePanel, delay || 220);
+  }
+
+  parents.forEach(function (parent) {
+    var key = parent.getAttribute('data-catnav-parent');
+    var link = parent.querySelector('.catnav__link');
+
+    parent.addEventListener('mouseenter', function () {
+      if (!mq.matches) return;
+      cancelClose();
+      showPanel(key);
+    });
+    parent.addEventListener('mouseleave', function () {
+      if (!mq.matches) return;
+      scheduleClose(220);
+    });
+
+    // Keyboard focus opens panel too
+    if (link) {
+      link.addEventListener('focus', function () {
+        if (mq.matches) { cancelClose(); showPanel(key); }
+      });
+      // Click behavior: if the parent has a real URL, let the click navigate.
+      // Click behavior:
+      //  - Mobile (no hover): always preventDefault + toggle the panel.
+      //    The "View all <parent> →" link inside the panel handles parent
+      //    navigation. This makes Products/Programs/About show their children
+      //    instead of going to a parent collection.
+      //  - Desktop with a real parent URL: navigate normally (hover already
+      //    opened the panel; click follows the link).
+      //  - Desktop with '#' or empty URL: toggle the panel.
+      link.addEventListener('click', function (e) {
+        var href = link.getAttribute('href') || '';
+        var hasNoUrl = href === '' || href === '#';
+        if (!mq.matches || hasNoUrl) {
+          e.preventDefault();
+          if (openKey === key) closePanel();
+          else showPanel(key);
+        }
+      });
+    }
+  });
+
+  mega.addEventListener('mouseenter', cancelClose);
+  mega.addEventListener('mouseleave', function () { scheduleClose(220); });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && openKey) {
+      closePanel();
+      var openParent = root.querySelector('.catnav__item--open .catnav__link');
+      if (openParent) openParent.focus();
+    }
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!openKey) return;
+    if (!root.contains(e.target)) closePanel();
+  });
+
+  // Close on scroll past a small threshold (prevents stale panel when sticky header collapses)
+  var lastY = window.scrollY;
+  window.addEventListener('scroll', function () {
+    if (!openKey) { lastY = window.scrollY; return; }
+    if (Math.abs(window.scrollY - lastY) > 40) closePanel();
+    lastY = window.scrollY;
+  }, { passive: true });
+})();
+</script>
+
+<script>
+(function () {
+  var root = document.querySelector('[data-region-root]');
+  if (!root) return;
+  var trigger = root.querySelector('[data-region-trigger]');
+  var panel   = root.querySelector('[data-region-panel]');
+  if (!trigger || !panel) return;
+
+  function open() {
+    panel.removeAttribute('hidden');
+    root.classList.add('header-region--open');
+    trigger.setAttribute('aria-expanded', 'true');
+  }
+  function close() {
+    panel.setAttribute('hidden', '');
+    root.classList.remove('header-region--open');
+    trigger.setAttribute('aria-expanded', 'false');
+  }
+  function toggle() {
+    if (panel.hasAttribute('hidden')) open(); else close();
+  }
+
+  trigger.addEventListener('click', function (e) {
+    e.stopPropagation();
+    toggle();
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!root.contains(e.target)) close();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !panel.hasAttribute('hidden')) {
+      close();
+      trigger.focus();
+    }
+  });
+})();
+</script>
+
+<script>
+(function () {
+  var drawer = document.querySelector('[data-mobile-nav-drawer]');
+  var trigger = document.querySelector('[data-mobile-nav-trigger]');
+  if (!drawer || !trigger) return;
+  var closers = drawer.querySelectorAll('[data-mobile-nav-close]');
+
+  function open() {
+    drawer.hidden = false;
+    drawer.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(function () { drawer.classList.add('is-open'); });
+    document.body.style.overflow = 'hidden';
+  }
+  function close() {
+    drawer.classList.remove('is-open');
+    drawer.setAttribute('aria-hidden', 'true');
+    setTimeout(function () { drawer.hidden = true; document.body.style.overflow = ''; }, 220);
+  }
+
+  trigger.addEventListener('click', open);
+  closers.forEach(function (b) { b.addEventListener('click', close); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !drawer.hidden) { close(); trigger.focus(); }
+  });
+})();
+
+// ---------------------------------------------- Account menu dropdown
+(function () {
+  var root = document.querySelector('[data-account-menu]');
+  if (!root) return;
+  var trigger = root.querySelector('[data-account-trigger]');
+  var menu = root.querySelector('.header-account__menu');
+  if (!trigger || !menu) return;
+
+  function open() {
+    menu.hidden = false;
+    trigger.setAttribute('aria-expanded', 'true');
+    // Escape / outside-click listeners are only attached while open, so
+    // typing Escape on the page normally doesn't do anything unexpected.
+    setTimeout(function () {
+      document.addEventListener('click', onDocClick);
+      document.addEventListener('keydown', onKey);
+    }, 0);
+  }
+  function close() {
+    menu.hidden = true;
+    trigger.setAttribute('aria-expanded', 'false');
+    document.removeEventListener('click', onDocClick);
+    document.removeEventListener('keydown', onKey);
+  }
+  function onDocClick(e) { if (!root.contains(e.target)) close(); }
+  function onKey(e) { if (e.key === 'Escape') { close(); trigger.focus(); } }
+
+  trigger.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (menu.hidden) open(); else close();
+  });
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    { "type": "header", "content": "Menus are managed in Online Store → Navigation" },
+    { "type": "header", "content": "Navigation" },
+    {
+      "type": "select",
+      "id": "nav_alignment",
+      "label": "Alignment",
+      "options": [
+        { "value": "left",   "label": "Left (default)" },
+        { "value": "center", "label": "Center" },
+        { "value": "right",  "label": "Right" }
+      ],
+      "default": "left",
+      "info": "Only takes effect when the nav items fit on one line. When they overflow, the row still scrolls horizontally."
+    }
+  ]
+}
+{% endschema %}

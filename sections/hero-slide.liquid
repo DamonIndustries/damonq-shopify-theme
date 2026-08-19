@@ -1,0 +1,650 @@
+{%- comment -%}
+  Hero — multi-slide carousel with three layout types.
+
+  Block types:
+    - slide          → text on dark gradient (existing layout, default)
+    - slide_image    → full-bleed image with optional caption + CTA overlay
+    - slide_product  → product picker + headline + CTA in a 2-column layout
+    - promo_card     → static sidebar card (does not rotate with slides)
+
+  Carousel controls only show when 2+ slides (of any type) exist.
+  Each slide type renders into the same .hero__slide track and is treated
+  uniformly by the carousel JS — the layout difference is purely visual.
+{%- endcomment -%}
+
+{%- liquid
+  assign slide_count = 0
+  for block in section.blocks
+    case block.type
+      when 'slide'
+        assign slide_count = slide_count | plus: 1
+      when 'slide_image'
+        assign slide_count = slide_count | plus: 1
+      when 'slide_product'
+        assign slide_count = slide_count | plus: 1
+    endcase
+  endfor
+  assign autoplay_ms = section.settings.autoplay_seconds | times: 1000
+  assign promo_blocks = section.blocks | where: 'type', 'promo_card'
+-%}
+
+<section
+  class="hero"
+  data-hero
+  data-autoplay="{% if section.settings.autoplay and slide_count > 1 %}true{% else %}false{% endif %}"
+  data-autoplay-ms="{{ autoplay_ms }}"
+  style="--hero-burst-size: {{ section.settings.burst_size | default: 380 }}px;">
+  <div class="container">
+    <div class="hero__grid{% if promo_blocks.size == 0 %} hero__grid--solo{% endif %}">
+      <div class="hero__slides{% if slide_count > 1 %} hero__slides--carousel{% endif %}">
+
+        {%- assign slide_idx = 0 -%}
+        {%- for block in section.blocks -%}
+          {%- assign is_slide = false -%}
+          {%- case block.type -%}
+            {%- when 'slide' or 'slide_image' or 'slide_product' -%}
+              {%- assign is_slide = true -%}
+          {%- endcase -%}
+
+          {%- if is_slide -%}
+            {%- assign is_first = false -%}
+            {%- if slide_idx == 0 -%}{%- assign is_first = true -%}{%- endif -%}
+
+            <div
+              class="hero__slide hero__slide--{{ block.type | replace: 'slide_', '' | replace: 'slide', 'text' }}{% if is_first %} hero__slide--on{% endif %}"
+              data-hero-slide
+              data-slide-index="{{ slide_idx }}"
+              role="group"
+              aria-roledescription="slide"
+              aria-label="Slide {{ slide_idx | plus: 1 }} of {{ slide_count }}"
+              {{ block.shopify_attributes }}>
+
+              {%- case block.type -%}
+
+                {%- when 'slide' -%}
+                  {%- comment -%} ============ TEXT SLIDE ============ {%- endcomment -%}
+                  {%- assign s = block.settings -%}
+                  {%- if s.badge != blank -%}
+                    <span class="hero__badge">{{ s.badge }}</span>
+                  {%- endif -%}
+                  <h1 class="hero__title">
+                    {{ s.headline }}
+                    {%- if s.headline_accent != blank -%}
+                      <span class="hero__title-accent">{{ s.headline_accent }}</span>
+                    {%- endif -%}
+                  </h1>
+                  {%- if s.lead != blank -%}
+                    <p class="hero__lead">{{ s.lead }}</p>
+                  {%- endif -%}
+                  <div class="hero__ctas">
+                    {%- if s.cta_primary_text != blank -%}
+                      <a href="{{ s.cta_primary_url | default: '#' }}" class="btn btn--red btn--lg">{{ s.cta_primary_text }} →</a>
+                    {%- endif -%}
+                    {%- if s.cta_secondary_text != blank -%}
+                      <a href="{{ s.cta_secondary_url | default: '#' }}" class="btn btn--white btn--lg">{{ s.cta_secondary_text }}</a>
+                    {%- endif -%}
+                  </div>
+                  {%- if s.price_pop_label != blank or s.price_pop_price != blank -%}
+                    <div class="hero__price-pop">
+                      {%- if s.price_pop_label != blank -%}<div class="hero__price-pop-label">{{ s.price_pop_label }}</div>{%- endif -%}
+                      {%- if s.price_pop_price != blank -%}<div class="hero__price-pop-price">{{ s.price_pop_price }}<small> {{ s.price_pop_unit }}</small></div>{%- endif -%}
+                      {%- if s.price_pop_strike != blank -%}<div class="hero__price-pop-strike">{{ s.price_pop_strike }}</div>{%- endif -%}
+                    </div>
+                  {%- endif -%}
+
+                {%- when 'slide_image' -%}
+                  {%- comment -%} ============ IMAGE SLIDE ============ {%- endcomment -%}
+                  {%- assign s = block.settings -%}
+                  {%- if s.image != blank -%}
+                    <img
+                      class="hero__slide-image"
+                      src="{{ s.image | image_url: width: 1600 }}"
+                      srcset="{{ s.image | image_url: width: 800 }} 800w, {{ s.image | image_url: width: 1200 }} 1200w, {{ s.image | image_url: width: 1600 }} 1600w"
+                      sizes="(max-width: 767px) 100vw, 920px"
+                      alt="{{ s.image_alt | default: s.caption_title | escape }}"
+                      loading="lazy">
+                  {%- endif -%}
+                  {%- if s.darken_pct > 0 -%}
+                    <div class="hero__slide-darken" style="background: rgba(0,0,0,{{ s.darken_pct | divided_by: 100.0 }});" aria-hidden="true"></div>
+                  {%- endif -%}
+                  {%- if s.caption_title != blank or s.caption_body != blank or s.cta_text != blank -%}
+                    <div class="hero__slide-caption hero__slide-caption--{{ s.caption_position | default: 'bottom-left' }}">
+                      {%- if s.caption_eyebrow != blank -%}
+                        <span class="hero__badge">{{ s.caption_eyebrow }}</span>
+                      {%- endif -%}
+                      {%- if s.caption_title != blank -%}
+                        <h2 class="hero__title">{{ s.caption_title }}</h2>
+                      {%- endif -%}
+                      {%- if s.caption_body != blank -%}
+                        <p class="hero__lead">{{ s.caption_body }}</p>
+                      {%- endif -%}
+                      {%- if s.cta_text != blank -%}
+                        <div class="hero__ctas">
+                          <a href="{{ s.cta_url | default: '#' }}" class="btn btn--red btn--lg">{{ s.cta_text }} →</a>
+                        </div>
+                      {%- endif -%}
+                    </div>
+                  {%- endif -%}
+
+                {%- when 'slide_product' -%}
+                  {%- comment -%} ============ PRODUCT SLIDE ============ {%- endcomment -%}
+                  {%- assign s = block.settings -%}
+                  {%- assign p = s.product -%}
+                  {%- assign layout = s.layout | default: 'split' -%}
+                  {%- if p != blank -%}
+                    {%- liquid
+                      assign body_text = s.body | default: p.description | strip_html | truncatewords: 28
+                      assign cta_text  = s.cta_text | default: 'Shop now'
+                      assign cta_url   = s.cta_url  | default: p.url
+
+                      # Resolve which image to render: custom upload > selected gallery index > featured.
+                      assign hero_img = blank
+                      if s.image_source == 'custom' and s.custom_image != blank
+                        assign hero_img = s.custom_image
+                      elsif s.image_source != 'featured' and s.image_source != 'custom'
+                        assign image_idx = s.image_source | plus: 0
+                        if p.images.size > image_idx
+                          assign hero_img = p.images[image_idx]
+                        endif
+                      endif
+                      if hero_img == blank
+                        assign hero_img = p.featured_image
+                      endif
+
+                      # Alt text: custom override > image's own alt > product title.
+                      if s.image_source == 'custom' and s.custom_image_alt != blank
+                        assign hero_img_alt = s.custom_image_alt
+                      elsif hero_img.alt != blank
+                        assign hero_img_alt = hero_img.alt
+                      else
+                        assign hero_img_alt = p.title
+                      endif
+                    -%}
+
+                    <div class="hero__slide-product hero__slide-product--{{ layout }}{% if layout == 'split' %} hero__slide-product--{{ s.image_side | default: 'right' }}{% endif %}">
+
+                      {%- comment -%} ----- MEDIA (product image) ----- {%- endcomment -%}
+                      <div class="hero__slide-product__media">
+                        {%- if hero_img -%}
+                          <img
+                            src="{{ hero_img | image_url: width: 800 }}"
+                            srcset="{{ hero_img | image_url: width: 400 }} 400w, {{ hero_img | image_url: width: 800 }} 800w, {{ hero_img | image_url: width: 1200 }} 1200w"
+                            sizes="(max-width: 767px) 100vw, 380px"
+                            alt="{{ hero_img_alt | escape }}"
+                            loading="lazy">
+                        {%- endif -%}
+
+                        {%- comment -%} Floating stat callouts for the stats layout {%- endcomment -%}
+                        {%- if layout == 'stats' and s.stat_callouts != blank -%}
+                          {%- assign stat_lines = s.stat_callouts | newline_to_br | split: '<br />' -%}
+                          {%- assign callout_idx = 0 -%}
+                          {%- for line in stat_lines -%}
+                            {%- assign clean = line | strip -%}
+                            {%- if clean != '' and callout_idx < 3 -%}
+                              {%- assign parts = clean | split: '|' -%}
+                              {%- assign val_part = parts[0] | strip -%}
+                              {%- assign lbl_part = parts[1] | strip -%}
+                              <div class="hero__slide-product__callout hero__slide-product__callout--{{ callout_idx }}">
+                                <b>{{ val_part }}</b>
+                                {%- if lbl_part != '' -%}<span>{{ lbl_part }}</span>{%- endif -%}
+                              </div>
+                              {%- assign callout_idx = callout_idx | plus: 1 -%}
+                            {%- endif -%}
+                          {%- endfor -%}
+                        {%- endif -%}
+                      </div>
+
+                      {%- comment -%} ----- BODY (text + ctas) ----- {%- endcomment -%}
+                      <div class="hero__slide-product__body">
+
+                        {%- comment -%} Magazine layout — pull quote above headline {%- endcomment -%}
+                        {%- if layout == 'magazine' and s.quote_text != blank -%}
+                          <blockquote class="hero__slide-product__quote">
+                            {{ s.quote_text }}
+                            {%- if s.quote_cite != blank -%}<cite>— {{ s.quote_cite }}</cite>{%- endif -%}
+                          </blockquote>
+                        {%- endif -%}
+
+                        {%- if s.eyebrow != blank -%}
+                          <span class="hero__badge">{{ s.eyebrow }}</span>
+                        {%- endif -%}
+
+                        <h2 class="hero__title">{{ s.headline | default: p.title }}</h2>
+
+                        {%- if body_text != blank -%}
+                          <p class="hero__lead">{{ body_text }}</p>
+                        {%- endif -%}
+
+                        {%- comment -%} Centered layout — proof tiles (one per line in settings) {%- endcomment -%}
+                        {%- if layout == 'centered' and s.proof_tiles != blank -%}
+                          <div class="hero__slide-product__tiles">
+                            {%- assign tile_lines = s.proof_tiles | newline_to_br | split: '<br />' -%}
+                            {%- for tile in tile_lines -%}
+                              {%- assign clean = tile | strip -%}
+                              {%- if clean != '' -%}
+                                <span class="hero__slide-product__tile">{{ clean }}</span>
+                              {%- endif -%}
+                            {%- endfor -%}
+                          </div>
+                        {%- endif -%}
+
+                        {%- if s.show_price -%}
+                          <div class="hero__slide-product__price">
+                            <strong>{{ p.price | money }}</strong>
+                            {%- if p.compare_at_price > p.price -%}
+                              <s>{{ p.compare_at_price | money }}</s>
+                            {%- endif -%}
+                          </div>
+                        {%- endif -%}
+
+                        <div class="hero__ctas">
+                          <a href="{{ cta_url }}" class="btn btn--red btn--lg">{{ cta_text }} →</a>
+                          {%- if s.secondary_cta_text != blank -%}
+                            <a href="{{ s.secondary_cta_url | default: '#' }}" class="btn btn--white btn--lg">{{ s.secondary_cta_text }}</a>
+                          {%- endif -%}
+                        </div>
+                      </div>
+                    </div>
+                  {%- else -%}
+                    <div class="hero__slide-empty">
+                      <h2 class="hero__title">Pick a product</h2>
+                      <p class="hero__lead">Open this Product slide block in the theme editor and select a product to feature.</p>
+                    </div>
+                  {%- endif -%}
+
+              {%- endcase -%}
+            </div>
+
+            {%- assign slide_idx = slide_idx | plus: 1 -%}
+          {%- endif -%}
+        {%- else -%}
+          {%- comment -%} No blocks added at all — show editor placeholder {%- endcomment -%}
+          <div class="hero__slide hero__slide--text hero__slide--on">
+            <h1 class="hero__title">Add a Slide block in the theme editor</h1>
+            <p class="hero__lead">This hero needs at least one slide block. Open the section and click "Add block → Text slide / Image slide / Product slide".</p>
+          </div>
+        {%- endfor -%}
+
+        {%- if slide_count > 1 -%}
+          {%- if section.settings.show_arrows -%}
+            <button type="button" class="hero__arrow hero__arrow--prev" data-hero-prev aria-label="Previous slide">‹</button>
+            <button type="button" class="hero__arrow hero__arrow--next" data-hero-next aria-label="Next slide">›</button>
+          {%- endif -%}
+
+          {%- if section.settings.show_dots -%}
+            <div class="hero__dots" role="tablist" aria-label="Slide navigation">
+              {%- for i in (1..slide_count) -%}
+                <button
+                  type="button"
+                  class="hero__dot{% if forloop.first %} hero__dot--on{% endif %}"
+                  data-hero-dot
+                  data-go-to="{{ forloop.index0 }}"
+                  role="tab"
+                  aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                  aria-label="Go to slide {{ forloop.index }}">
+                  <span class="hero__dot-fill" data-hero-dot-fill aria-hidden="true"></span>
+                </button>
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+        {%- endif -%}
+      </div>
+
+      {%- if promo_blocks.size > 0 -%}
+        <div class="hero__promos">
+          {%- for block in promo_blocks -%}
+            <div class="promo-card{% if block.settings.style == 'warm' %} promo-card--warm{% endif %}" {{ block.shopify_attributes }}>
+              <span class="promo-card__tag">{{ block.settings.tag }}</span>
+              <h3 class="promo-card__title">{{ block.settings.title }}</h3>
+              <p class="promo-card__body">{{ block.settings.body }}</p>
+              <a href="{{ block.settings.url | default: '#' }}" class="promo-card__link">{{ block.settings.cta }} →</a>
+            </div>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{%- if slide_count > 1 -%}
+<script>
+(function () {
+  var root = document.querySelector('[data-hero]');
+  if (!root) return;
+  var slides = Array.prototype.slice.call(root.querySelectorAll('[data-hero-slide]'));
+  if (slides.length <= 1) return;
+  var dots       = Array.prototype.slice.call(root.querySelectorAll('[data-hero-dot]'));
+  var fills      = Array.prototype.slice.call(root.querySelectorAll('[data-hero-dot-fill]'));
+  var dotsHost   = root.querySelector('.hero__dots');
+  var prevBtn    = root.querySelector('[data-hero-prev]');
+  var nextBtn    = root.querySelector('[data-hero-next]');
+  var autoplay   = root.getAttribute('data-autoplay') === 'true';
+  var intervalMs = parseInt(root.getAttribute('data-autoplay-ms'), 10) || 6000;
+
+  var current = 0;
+  var startTime = 0;        // when current slide became active
+  var pauseAccum = 0;       // total ms accumulated while paused (hover/tab-hidden)
+  var pauseStart = null;    // timestamp when current pause began
+  var rafId = null;
+  var stopped = false;      // user clicked dot/arrow → autoplay permanently off
+
+  function setFill(idx, pct) {
+    if (fills[idx]) fills[idx].style.width = pct + '%';
+  }
+  function resetFills() {
+    for (var i = 0; i < fills.length; i++) setFill(i, 0);
+  }
+
+  function syncDotsTheme() {
+    if (!dotsHost) return;
+    var s = slides[current];
+    // Light-background slides (currently just product slides) need inverted dots.
+    var isLightBg = s && s.classList.contains('hero__slide--product');
+    dotsHost.classList.toggle('hero__dots--light-bg', !!isLightBg);
+  }
+
+  function activate(idx) {
+    current = ((idx % slides.length) + slides.length) % slides.length;
+    slides.forEach(function (s, i) { s.classList.toggle('hero__slide--on', i === current); });
+    dots.forEach(function (d, i) {
+      d.classList.toggle('hero__dot--on', i === current);
+      d.setAttribute('aria-selected', i === current ? 'true' : 'false');
+    });
+    syncDotsTheme();
+    resetFills();
+    if (!autoplay || stopped) {
+      // Static look — show the active dot fully filled
+      setFill(current, 100);
+      return;
+    }
+    startTime = Date.now();
+    pauseAccum = 0;
+    pauseStart = null;
+    if (rafId == null) rafId = requestAnimationFrame(tick);
+  }
+
+  function next() { activate(current + 1); }
+  function prev() { activate(current - 1); }
+
+  function tick() {
+    rafId = null;
+    if (stopped || !autoplay) return;
+    if (pauseStart != null) {
+      // Frozen — keep ticking but don't advance progress
+      rafId = requestAnimationFrame(tick);
+      return;
+    }
+    var elapsed = Date.now() - startTime - pauseAccum;
+    var pct = (elapsed / intervalMs) * 100;
+    if (pct >= 100) {
+      setFill(current, 100);
+      next();
+      return;
+    }
+    setFill(current, pct);
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function pauseHover() {
+    if (stopped || !autoplay) return;
+    if (pauseStart == null) pauseStart = Date.now();
+  }
+  function resumeHover() {
+    if (stopped || !autoplay) return;
+    if (pauseStart != null) {
+      pauseAccum += Date.now() - pauseStart;
+      pauseStart = null;
+    }
+    if (rafId == null) rafId = requestAnimationFrame(tick);
+  }
+
+  function stopAutoplay() {
+    stopped = true;
+    if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
+    // Show the currently active dot as fully filled (user picked it)
+    resetFills();
+    setFill(current, 100);
+  }
+
+  dots.forEach(function (d) {
+    d.addEventListener('click', function () {
+      var idx = parseInt(d.getAttribute('data-go-to'), 10);
+      activate(idx);
+      stopAutoplay();
+    });
+  });
+  if (prevBtn) prevBtn.addEventListener('click', function () { prev(); stopAutoplay(); });
+  if (nextBtn) nextBtn.addEventListener('click', function () { next(); stopAutoplay(); });
+
+  root.addEventListener('mouseenter', pauseHover);
+  root.addEventListener('mouseleave', resumeHover);
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) pauseHover(); else resumeHover();
+  });
+
+  var touchX = null;
+  root.addEventListener('touchstart', function (e) { touchX = e.touches[0].clientX; }, { passive: true });
+  root.addEventListener('touchend', function (e) {
+    if (touchX == null) return;
+    var dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50) { if (dx < 0) next(); else prev(); stopAutoplay(); }
+    touchX = null;
+  }, { passive: true });
+
+  // Initialize — slide 0 is already marked --on by Liquid. Apply the right
+  // dot theme for that slide, then either start the autoplay timer or show
+  // the active dot fully filled.
+  syncDotsTheme();
+  if (autoplay) {
+    startTime = Date.now();
+    rafId = requestAnimationFrame(tick);
+  } else {
+    setFill(0, 100);
+  }
+})();
+</script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Hero",
+  "settings": [
+    { "type": "header", "content": "Carousel behavior" },
+    { "type": "checkbox", "id": "autoplay", "label": "Autoplay slides", "default": true, "info": "Has no effect when only one slide exists." },
+    { "type": "range", "id": "autoplay_seconds", "label": "Autoplay interval", "min": 3, "max": 15, "step": 1, "default": 6, "unit": "s" },
+    { "type": "checkbox", "id": "show_dots", "label": "Show dots indicator", "default": true },
+    { "type": "checkbox", "id": "show_arrows", "label": "Show arrow navigation", "default": false },
+    { "type": "header", "content": "Visual" },
+    {
+      "type": "range",
+      "id": "burst_size",
+      "label": "Red burst size",
+      "min": 0,
+      "max": 600,
+      "step": 20,
+      "unit": "px",
+      "default": 380,
+      "info": "The decorative red glow in the top-right of text slides. Set to 0 to hide it entirely. Image and product slides have their own background treatments and aren't affected."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Text slide",
+      "limit": 5,
+      "settings": [
+        { "type": "text", "id": "badge", "label": "Badge", "default": "★ Best seller" },
+        { "type": "text", "id": "headline", "label": "Headline", "default": "One‑step disinfectant + sanitizer. Built for the front line." },
+        { "type": "text", "id": "headline_accent", "label": "Headline accent (highlighted span)" },
+        { "type": "textarea", "id": "lead", "label": "Lead copy", "default": "FS Complete kills SARS‑CoV‑2 in 60 seconds. No rinse on food contact. EPA registered. Made in Ohio." },
+        { "type": "text", "id": "cta_primary_text", "label": "Primary CTA text", "default": "Shop FS Complete" },
+        { "type": "url", "id": "cta_primary_url", "label": "Primary CTA URL" },
+        { "type": "text", "id": "cta_secondary_text", "label": "Secondary CTA text", "default": "Add to recurring order" },
+        { "type": "url", "id": "cta_secondary_url", "label": "Secondary CTA URL" },
+        { "type": "header", "content": "Price pop card (bottom-right of slide)" },
+        { "type": "text", "id": "price_pop_label", "label": "Label", "default": "Quart RTU · case of 12" },
+        { "type": "text", "id": "price_pop_price", "label": "Price", "default": "$148" },
+        { "type": "text", "id": "price_pop_unit", "label": "Unit", "default": "/ case" },
+        { "type": "text", "id": "price_pop_strike", "label": "Strike (was)", "default": "$172 list · save 14%" }
+      ]
+    },
+    {
+      "type": "slide_image",
+      "name": "Image slide",
+      "limit": 5,
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image", "info": "Recommended: 1600×900 (16:9). Loads at multiple sizes via Shopify's image CDN." },
+        { "type": "text", "id": "image_alt", "label": "Image alt text (accessibility)" },
+        { "type": "range", "id": "darken_pct", "label": "Darken overlay", "min": 0, "max": 70, "step": 5, "unit": "%", "default": 30, "info": "Helps caption text stay readable on bright images." },
+        { "type": "header", "content": "Caption (optional)" },
+        { "type": "text", "id": "caption_eyebrow", "label": "Eyebrow badge" },
+        { "type": "text", "id": "caption_title", "label": "Title" },
+        { "type": "textarea", "id": "caption_body", "label": "Body copy" },
+        {
+          "type": "select", "id": "caption_position", "label": "Caption position",
+          "options": [
+            { "value": "top-left", "label": "Top left" },
+            { "value": "bottom-left", "label": "Bottom left" },
+            { "value": "bottom-center", "label": "Bottom center" },
+            { "value": "center", "label": "Center" }
+          ],
+          "default": "bottom-left"
+        },
+        { "type": "header", "content": "CTA (optional)" },
+        { "type": "text", "id": "cta_text", "label": "CTA text" },
+        { "type": "url", "id": "cta_url", "label": "CTA URL" }
+      ]
+    },
+    {
+      "type": "slide_product",
+      "name": "Product slide",
+      "limit": 5,
+      "settings": [
+        { "type": "product", "id": "product", "label": "Product", "info": "The featured product. Uses the product's featured image, title, description (truncated), and price unless you override below." },
+
+        { "type": "header", "content": "Image source" },
+        {
+          "type": "select", "id": "image_source", "label": "Which image to use",
+          "options": [
+            { "value": "featured", "label": "Featured image (default)" },
+            { "value": "1", "label": "Product image 2" },
+            { "value": "2", "label": "Product image 3" },
+            { "value": "3", "label": "Product image 4" },
+            { "value": "4", "label": "Product image 5" },
+            { "value": "5", "label": "Product image 6" },
+            { "value": "6", "label": "Product image 7" },
+            { "value": "7", "label": "Product image 8" },
+            { "value": "custom", "label": "Custom upload (field below)" }
+          ],
+          "default": "featured",
+          "info": "Image numbers match the order shown on the product's PDP gallery. Falls back to featured if the index doesn't exist."
+        },
+        {
+          "type": "image_picker", "id": "custom_image", "label": "Custom hero image",
+          "info": "Used only when 'Custom upload' is selected above. Recommended ~800×800 or larger.",
+          "visible_if": "{{ block.settings.image_source == 'custom' }}"
+        },
+        {
+          "type": "text", "id": "custom_image_alt", "label": "Custom image alt text",
+          "info": "For screen readers and SEO. Defaults to the product title if blank.",
+          "visible_if": "{{ block.settings.image_source == 'custom' }}"
+        },
+
+        {
+          "type": "select", "id": "layout", "label": "Layout",
+          "options": [
+            { "value": "split",     "label": "Split — image + text (default)" },
+            { "value": "edgebleed", "label": "Edge-bleed — image fills right side" },
+            { "value": "centered",  "label": "Centered — with proof tiles" },
+            { "value": "magazine",  "label": "Magazine — dark image + pull quote" },
+            { "value": "stats",     "label": "Stats — image with floating callouts" }
+          ],
+          "default": "split",
+          "info": "Each layout reveals its own settings below. See section descriptions below for what fits."
+        },
+        {
+          "type": "select", "id": "image_side", "label": "Image side",
+          "options": [
+            { "value": "right", "label": "Right" },
+            { "value": "left", "label": "Left" }
+          ],
+          "default": "right",
+          "visible_if": "{{ block.settings.layout == 'split' }}",
+          "info": "Only used by the Split layout."
+        },
+        { "type": "header", "content": "Content overrides (optional)" },
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow badge" },
+        { "type": "text", "id": "headline", "label": "Headline override", "info": "Uses the product title if blank." },
+        { "type": "textarea", "id": "body", "label": "Body override", "info": "Uses the product description (truncated) if blank." },
+        { "type": "checkbox", "id": "show_price", "label": "Show product price", "default": true },
+
+        { "type": "header", "content": "Proof tiles · Centered layout only", "visible_if": "{{ block.settings.layout == 'centered' }}" },
+        {
+          "type": "textarea", "id": "proof_tiles", "label": "Proof tiles",
+          "default": "★ EPA registered\n⛟ Ships from OH\n★ 4.9 / 5\n$ Net‑30",
+          "info": "One tile per line. Optional unicode icon prefix (★ ⛟ ⏎ ✓ $ etc.) for visual punch.",
+          "visible_if": "{{ block.settings.layout == 'centered' }}"
+        },
+
+        { "type": "header", "content": "Pull quote · Magazine layout only", "visible_if": "{{ block.settings.layout == 'magazine' }}" },
+        {
+          "type": "textarea", "id": "quote_text", "label": "Quote",
+          "default": "Red‑Kote saved us a $4,200 tank replacement. One application. Still holding three years later.",
+          "info": "Customer testimonial that anchors the text side.",
+          "visible_if": "{{ block.settings.layout == 'magazine' }}"
+        },
+        {
+          "type": "text", "id": "quote_cite", "label": "Attribution",
+          "default": "Jeff M., Independent Grocer",
+          "info": "Name, role, facility — appears beneath the quote.",
+          "visible_if": "{{ block.settings.layout == 'magazine' }}"
+        },
+
+        { "type": "header", "content": "Stat callouts · Stats layout only", "visible_if": "{{ block.settings.layout == 'stats' }}" },
+        {
+          "type": "textarea", "id": "stat_callouts", "label": "Stat callouts (up to 3)",
+          "default": "99.999%|E. coli, Listeria, Salm.\n60 sec|food‑contact dwell\nNO RINSE|rated USDA",
+          "info": "One callout per line, format `big value | small label`. First three are shown — extras are ignored.",
+          "visible_if": "{{ block.settings.layout == 'stats' }}"
+        },
+
+        { "type": "header", "content": "CTA" },
+        { "type": "text", "id": "cta_text", "label": "Primary CTA text", "info": "Defaults to \"Shop now\"." },
+        { "type": "url", "id": "cta_url", "label": "Primary CTA URL", "info": "Defaults to the product URL." },
+        { "type": "text", "id": "secondary_cta_text", "label": "Secondary CTA text (optional)" },
+        { "type": "url", "id": "secondary_cta_url", "label": "Secondary CTA URL" }
+      ]
+    },
+    {
+      "type": "promo_card",
+      "name": "Promo card",
+      "limit": 2,
+      "settings": [
+        {
+          "type": "select", "id": "style", "label": "Style",
+          "options": [
+            { "value": "soft", "label": "Red soft" },
+            { "value": "warm", "label": "Warm cream" }
+          ],
+          "default": "soft"
+        },
+        { "type": "text", "id": "tag", "label": "Tag", "default": "Cleaning Program" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Build a custom Healthcare PPD bundle" },
+        { "type": "textarea", "id": "body", "label": "Body", "default": "Per‑patient‑day chemistry, audits, and quarterly walkthroughs." },
+        { "type": "text", "id": "cta", "label": "CTA text", "default": "Start the wizard" },
+        { "type": "url", "id": "url", "label": "URL" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero",
+      "blocks": [
+        { "type": "slide" },
+        { "type": "promo_card" },
+        { "type": "promo_card" }
+      ]
+    }
+  ]
+}
+{% endschema %}

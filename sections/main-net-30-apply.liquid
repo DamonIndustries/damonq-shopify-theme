@@ -1,0 +1,123 @@
+{%- comment -%}
+  Net-30 application form. Posts via Shopify's contact form (emailed to merchant).
+  All fields prefixed with `Net30 — ` so they're easy to filter in the inbox.
+{%- endcomment -%}
+
+<section class="b2b-page container">
+  <header class="b2b-page__head">
+    <span class="b2b-page__eyebrow">★ For verified facilities</span>
+    <h1 class="b2b-page__title">Apply for Net‑30 terms</h1>
+    <p class="b2b-page__lead">Pay invoices 30 days after receipt. Most accounts approved within 2 business days. We'll request a W‑9 + 3 trade references.</p>
+  </header>
+
+  {% form 'contact', class: 'b2b-form', id: 'net30-form' %}
+    {% if form.posted_successfully? %}
+      <div class="b2b-success">
+        ✓ Application received. We'll email you within 2 business days at the address you provided.
+      </div>
+    {% endif %}
+    {% if form.errors %}
+      <div class="b2b-error">
+        Please fix the highlighted fields below.
+      </div>
+    {% endif %}
+
+    <input type="hidden" name="contact[Net30 - form_type]" value="net-30 application">
+
+    <div class="b2b-form__row">
+      <div class="b2b-field">
+        <label for="net30_facility">Facility / company name</label>
+        <input type="text" id="net30_facility" name="contact[Net30 - Facility name]" required autocomplete="organization">
+      </div>
+      <div class="b2b-field">
+        <label for="net30_dba">DBA (if different)</label>
+        <input type="text" id="net30_dba" name="contact[Net30 - DBA]" autocomplete="organization">
+      </div>
+    </div>
+
+    <div class="b2b-form__row">
+      <div class="b2b-field">
+        <label for="net30_ein">Federal EIN</label>
+        <input type="text" id="net30_ein" name="contact[Net30 - EIN]" placeholder="00-0000000" required>
+        <span class="b2b-field__hint">9 digits. We do not store this; it is forwarded to AP.</span>
+      </div>
+      <div class="b2b-field">
+        <label for="net30_facility_type">Facility type</label>
+        <select id="net30_facility_type" name="contact[Net30 - Facility type]" required>
+          <option value="">Select…</option>
+          <option>Healthcare — hospital / SNF</option>
+          <option>Food processor</option>
+          <option>Quick‑serve restaurant</option>
+          <option>K‑12 / University</option>
+          <option>Grocery / retail</option>
+          <option>Industrial / manufacturing</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="b2b-field b2b-field--full" style="margin-bottom: 16px;">
+      <label for="net30_address">Billing address</label>
+      <input type="text" id="net30_address" name="contact[Net30 - Billing address]" required autocomplete="address-line1">
+    </div>
+
+    <div class="b2b-form__row">
+      <div class="b2b-field">
+        <label for="net30_city">City</label>
+        <input type="text" id="net30_city" name="contact[Net30 - City]" required autocomplete="address-level2">
+      </div>
+      <div class="b2b-field">
+        <label for="net30_state">State / ZIP</label>
+        <input type="text" id="net30_state" name="contact[Net30 - State + ZIP]" placeholder="OH 44601" required>
+      </div>
+    </div>
+
+    <div class="b2b-form__row">
+      <div class="b2b-field">
+        <label for="net30_ap_name">AP contact name</label>
+        <input type="text" id="net30_ap_name" name="contact[Net30 - AP contact name]" required autocomplete="name">
+      </div>
+      <div class="b2b-field">
+        <label for="net30_ap_email">AP contact email</label>
+        <input type="email" id="net30_ap_email" name="contact[email]" required autocomplete="email">
+      </div>
+    </div>
+
+    <div class="b2b-form__row">
+      <div class="b2b-field">
+        <label for="net30_ap_phone">AP contact phone</label>
+        <input type="tel" id="net30_ap_phone" name="contact[phone]" autocomplete="tel">
+      </div>
+      <div class="b2b-field">
+        <label for="net30_volume">Estimated monthly volume</label>
+        <select id="net30_volume" name="contact[Net30 - Monthly volume]" required>
+          <option value="">Select…</option>
+          <option>Under $500</option>
+          <option>$500 – $2,000</option>
+          <option>$2,000 – $10,000</option>
+          <option>$10,000 – $50,000</option>
+          <option>Over $50,000</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="b2b-field b2b-field--full" style="margin-bottom: 16px;">
+      <label for="net30_refs">Three trade references</label>
+      <textarea id="net30_refs" name="contact[Net30 - Trade references]" required placeholder="One reference per line — company name, AP contact, phone or email."></textarea>
+    </div>
+
+    <div class="b2b-field b2b-field--full" style="margin-bottom: 16px;">
+      <label for="net30_notes">Anything we should know?</label>
+      <textarea id="net30_notes" name="contact[Net30 - Notes]" placeholder="Existing AutoStock subscription, special billing requirements, etc."></textarea>
+    </div>
+
+    <div class="b2b-form__actions">
+      <p class="b2b-form__note">Submitting this form does not create an account. We'll review and follow up by email at the address above.</p>
+      <button type="submit" class="btn btn--red btn--lg">Submit application</button>
+    </div>
+  {% endform %}
+</section>
+
+{% schema %}
+{ "name": "Net-30 application", "settings": [] }
+{% endschema %}

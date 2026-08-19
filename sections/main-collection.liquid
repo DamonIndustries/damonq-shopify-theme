@@ -1,0 +1,57 @@
+{%- paginate collection.products by 24 -%}
+<section class="section-row container">
+  <div class="section-head">
+    <div>
+      <span style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--red);font-weight:800;">Collection</span>
+      <h1 class="section-head__title" style="margin-top: 6px;">{{ collection.title }}</h1>
+      {%- if collection.description != blank -%}
+        <p style="color: var(--grey); margin: 8px 0 0; max-width: 640px; font-size: 15px; line-height: 1.55;">{{ collection.description }}</p>
+      {%- endif -%}
+    </div>
+  </div>
+
+  <div class="collection-layout">
+    {% render 'facet-filters', results: collection, form_action: collection.url %}
+
+    <div class="collection-results">
+      {% render 'facet-toolbar', results: collection, form_action: collection.url, count: collection.products_count %}
+
+      {%- if collection.products.size > 0 -%}
+        <div class="product-grid">
+          {%- for product in collection.products -%}
+            {% render 'product-card', product: product %}
+          {%- endfor -%}
+        </div>
+
+        {%- if paginate.pages > 1 -%}
+          <nav class="pagination" role="navigation" aria-label="Pagination" style="margin-top: 32px; display: flex; justify-content: center; gap: 8px;">
+            {%- if paginate.previous -%}
+              <a href="{{ paginate.previous.url }}" class="btn btn--outline">‹ Prev</a>
+            {%- endif -%}
+            {%- for part in paginate.parts -%}
+              {%- if part.is_link -%}
+                <a href="{{ part.url }}" class="btn btn--outline">{{ part.title }}</a>
+              {%- else -%}
+                <span class="btn btn--ink">{{ part.title }}</span>
+              {%- endif -%}
+            {%- endfor -%}
+            {%- if paginate.next -%}
+              <a href="{{ paginate.next.url }}" class="btn btn--outline">Next ›</a>
+            {%- endif -%}
+          </nav>
+        {%- endif -%}
+      {%- else -%}
+        <div class="facet-empty">
+          <h3>No products match those filters</h3>
+          <p>Clear a filter or try a different combination.</p>
+          <a href="{{ collection.url }}" class="btn btn--outline" style="margin-top: 14px;">Clear all filters</a>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+{%- endpaginate -%}
+
+{% schema %}
+{ "name": "Collection", "settings": [] }
+{% endschema %}

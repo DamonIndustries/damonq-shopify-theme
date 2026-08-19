@@ -1,0 +1,97 @@
+{%- comment -%}
+  Talk-to-a-rep / quote request page. Linked from PDP and cart.
+  Accepts ?product=<handle> for context-aware deep-linking from a PDP.
+{%- endcomment -%}
+
+{%- assign linked_handle = request.query_string | split: 'product=' | last | split: '&' | first -%}
+{%- assign linked_product = all_products[linked_handle] -%}
+
+<section class="b2b-page container">
+  <header class="b2b-page__head">
+    <span class="b2b-page__eyebrow">★ Talk to a Damon rep</span>
+    <h1 class="b2b-page__title">Get a quote</h1>
+    <p class="b2b-page__lead">For larger orders, custom kitting, or a chemistry walk‑through. Typical turnaround is one business day, often the same day.</p>
+  </header>
+
+  {% form 'contact', class: 'b2b-form', id: 'rep-form' %}
+    {% if form.posted_successfully? %}
+      <div class="b2b-success">
+        ✓ Got it. A rep will reach out within one business day at the email or phone you provided.
+      </div>
+    {% endif %}
+    {% if form.errors %}
+      <div class="b2b-error">Please fix the highlighted fields below.</div>
+    {% endif %}
+
+    <input type="hidden" name="contact[Quote - form_type]" value="quote / talk-to-rep">
+    {%- if linked_product != blank -%}
+      <input type="hidden" name="contact[Quote - About product]" value="{{ linked_product.title | escape }} — {{ shop.url }}{{ linked_product.url }}">
+      <p style="background: var(--red-soft); border: 1px solid var(--red-tint); border-radius: 12px; padding: 12px 16px; font-size: 13px; margin-bottom: 24px;">
+        About: <b>{{ linked_product.title }}</b> — <a href="{{ linked_product.url }}" style="color: var(--red); font-weight: 700;">view product</a>
+      </p>
+    {%- endif -%}
+
+    <div class="b2b-form__row">
+      <div class="b2b-field">
+        <label for="rep_name">Your name</label>
+        <input type="text" id="rep_name" name="contact[name]" required autocomplete="name">
+      </div>
+      <div class="b2b-field">
+        <label for="rep_facility">Facility / company</label>
+        <input type="text" id="rep_facility" name="contact[Quote - Facility]" required autocomplete="organization">
+      </div>
+    </div>
+
+    <div class="b2b-form__row">
+      <div class="b2b-field">
+        <label for="rep_email">Email</label>
+        <input type="email" id="rep_email" name="contact[email]" required autocomplete="email">
+      </div>
+      <div class="b2b-field">
+        <label for="rep_phone">Phone</label>
+        <input type="tel" id="rep_phone" name="contact[phone]" autocomplete="tel">
+      </div>
+    </div>
+
+    <div class="b2b-form__row">
+      <div class="b2b-field">
+        <label for="rep_role">Your role</label>
+        <select id="rep_role" name="contact[Quote - Role]">
+          <option value="">Select…</option>
+          <option>Purchasing / procurement</option>
+          <option>EVS / housekeeping manager</option>
+          <option>Food safety manager</option>
+          <option>Director of facilities</option>
+          <option>Owner / operator</option>
+          <option>Distributor</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="b2b-field">
+        <label for="rep_topic">Topic</label>
+        <select id="rep_topic" name="contact[Quote - Topic]" required>
+          <option value="">Select…</option>
+          <option>Quote request</option>
+          <option>Custom kit / private label</option>
+          <option>Chemistry walk‑through</option>
+          <option>Distribution inquiry</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="b2b-field b2b-field--full" style="margin-bottom: 16px;">
+      <label for="rep_message">Tell us what you need</label>
+      <textarea id="rep_message" name="contact[body]" required rows="6" placeholder="What products, sizes, target volume, target date — anything that helps us reply with a real number."></textarea>
+    </div>
+
+    <div class="b2b-form__actions">
+      <p class="b2b-form__note">Or call <b style="color: var(--ink);">{{ settings.contact_phone | default: '1‑800‑362‑9850' }}</b> · M–F, 8a–5p ET. Reps in Alliance, Ohio.</p>
+      <button type="submit" class="btn btn--red btn--lg">Send to a rep</button>
+    </div>
+  {% endform %}
+</section>
+
+{% schema %}
+{ "name": "Talk to a rep", "settings": [] }
+{% endschema %}

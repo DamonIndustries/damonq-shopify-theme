@@ -1,0 +1,32 @@
+<section class="section-row container">
+  <div class="section-head">
+    <div>
+      <span style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--red);font-weight:800;">All Collections</span>
+      <h1 class="section-head__title" style="margin-top: 6px;">Browse the catalog</h1>
+    </div>
+  </div>
+
+  <div class="programs-grid">
+    {%- for collection in collections -%}
+      {%- unless collection.handle == 'frontpage' or collection.handle == 'all' -%}
+        <a href="{{ collection.url }}" class="program-tile">
+          <div class="program-tile__icon" aria-hidden="true">
+            {%- if collection.image -%}
+              {{ collection.image | image_url: width: 112 | image_tag: alt: collection.title }}
+            {%- else -%}
+              ⚗
+            {%- endif -%}
+          </div>
+          <div class="program-tile__name">{{ collection.title }}</div>
+          <div class="program-tile__count">{{ collection.products_count }} products</div>
+        </a>
+      {%- endunless -%}
+    {%- else -%}
+      <p style="color: var(--grey); grid-column: 1 / -1;">No collections published yet.</p>
+    {%- endfor -%}
+  </div>
+</section>
+
+{% schema %}
+{ "name": "List collections", "settings": [] }
+{% endschema %}

@@ -1,0 +1,93 @@
+{%- comment -%}
+  My Products — deduped list of products the customer has ordered before,
+  most-recent-first, with a one-click reorder button. Reorder reuses the
+  existing [data-quick-add] handler in theme.js so it hits /cart/add.js,
+  fires the toast notification, and opens the cart drawer for free.
+
+  Dedupe strategy: walk orders newest-first, keep the FIRST occurrence of
+  each product.id (which is the most-recent order for that product) with
+  its variant + qty. Liquid has no dict so we use a comma-delimited
+  string as a set membership test.
+
+  Locked to signed-in customers via the shared customer-required gate.
+{%- endcomment -%}
+
+{% render 'customer-required' %}
+
+{%- if customer -%}
+<section class="account-portal">
+  <div class="container account-portal__body">
+    <header class="account-portal__head">
+      <h1>{{ section.settings.title | default: 'My products' }}</h1>
+      <p class="account-portal__lede">
+        {{- section.settings.lede | default: 'Products you have ordered before. Reorder in one click.' -}}
+      </p>
+    </header>
+
+    {%- assign seen_pids = '' -%}
+    {%- assign has_any = false -%}
+
+    <div class="my-products__grid">
+      {%- for order in customer.orders -%}
+        {%- for line in order.line_items -%}
+          {%- assign product = line.product -%}
+          {%- if product == blank -%}{%- continue -%}{%- endif -%}
+          {%- assign pid_key = product.id | append: ',' -%}
+          {%- unless seen_pids contains pid_key -%}
+            {%- assign seen_pids = seen_pids | append: pid_key -%}
+            {%- assign has_any = true -%}
+            {%- assign variant_id = line.variant_id -%}
+            {%- assign last_qty = line.quantity -%}
+            {%- assign last_date = order.created_at | date: '%b %-d, %Y' -%}
+            <article class="my-products__tile">
+              <a class="my-products__image" href="{{ product.url }}">
+                {%- if product.featured_image -%}
+                  {{ product.featured_image | image_url: width: 320 | image_tag: alt: product.title, loading: 'lazy' }}
+                {%- elsif settings.default_product_image != blank -%}
+                  {{ settings.default_product_image | image_url: width: 320 | image_tag: alt: product.title, loading: 'lazy' }}
+                {%- else -%}
+                  {{ 'product-1' | placeholder_svg_tag: 'my-products__placeholder' }}
+                {%- endif -%}
+              </a>
+              <div class="my-products__info">
+                {%- if product.type != blank -%}
+                  <span class="my-products__cat">{{ product.type }}</span>
+                {%- endif -%}
+                <h3 class="my-products__title">
+                  <a href="{{ product.url }}">{{ product.title }}</a>
+                </h3>
+                <p class="my-products__meta">Last ordered {{ last_date }} &middot; qty {{ last_qty }}</p>
+                <button type="button" class="btn btn--red my-products__reorder"
+                        data-quick-add="{{ variant_id }}"
+                        data-qty="{{ last_qty }}">
+                  Reorder
+                </button>
+              </div>
+            </article>
+          {%- endunless -%}
+        {%- endfor -%}
+      {%- endfor -%}
+    </div>
+
+    {%- unless has_any -%}
+      <div class="account-portal__empty">
+        <p><b>You have not placed any orders yet.</b></p>
+        <p>Once you order, everything you buy will land here for one-click reorder.</p>
+        <a class="btn btn--red" href="{{ routes.all_products_collection_url }}">Browse products</a>
+      </div>
+    {%- endunless -%}
+  </div>
+</section>
+
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "My products",
+  "settings": [
+    { "type": "text", "id": "title", "label": "Page title", "default": "My products" },
+    { "type": "text", "id": "lede", "label": "Page description", "default": "Products you have ordered before. Reorder in one click." }
+  ],
+  "presets": [{ "name": "My products" }]
+}
+{% endschema %}

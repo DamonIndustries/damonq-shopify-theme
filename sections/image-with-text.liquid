@@ -1,0 +1,106 @@
+{%- comment -%}
+  Image-with-text — editorial brand strip. Used on the homepage to tell
+  the "made in Ohio since 1938" story between catalog sections.
+
+  Image on the left (with optional rotated "1938" seal), eyebrow + heading
+  + body + 3 stats + 2 CTAs on the right.
+{%- endcomment -%}
+
+<section class="image-text">
+  <div class="container">
+    <div class="image-text__grid">
+      <div class="image-text__media">
+        {%- if section.settings.image -%}
+          {{ section.settings.image | image_url: width: 1200 | image_tag: alt: section.settings.image.alt, loading: 'lazy', width: 1200, height: 960 }}
+        {%- endif -%}
+        {%- if section.settings.show_seal -%}
+          <div class="image-text__seal" aria-hidden="true">
+            <small>QUALITY SINCE</small>
+            <b>{{ section.settings.seal_year }}</b>
+            <span>{{ section.settings.seal_location }}</span>
+          </div>
+        {%- endif -%}
+      </div>
+
+      <div class="image-text__content">
+        {%- if section.settings.eyebrow != blank -%}
+          <span class="image-text__eyebrow">{{ section.settings.eyebrow }}</span>
+        {%- endif -%}
+        <h2 class="image-text__heading">
+          {{ section.settings.heading_pre }}
+          {%- if section.settings.heading_em != blank -%}
+            <em>{{ section.settings.heading_em }}</em>
+          {%- endif -%}
+          {{ section.settings.heading_post }}
+        </h2>
+        <p class="image-text__body">{{ section.settings.body }}</p>
+
+        {%- if section.blocks.size > 0 -%}
+          <div class="image-text__stats">
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'stat' -%}
+                <div class="image-text__stat" {{ block.shopify_attributes }}>
+                  <span class="v">{{ block.settings.value_pre }}<span class="red">{{ block.settings.value_em }}</span>{{ block.settings.value_post }}</span>
+                  <span class="l">{{ block.settings.label }}</span>
+                </div>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+
+        <div class="image-text__ctas">
+          {%- if section.settings.cta_primary_text != blank -%}
+            <a href="{{ section.settings.cta_primary_url }}" class="btn btn--red btn--lg">{{ section.settings.cta_primary_text }} →</a>
+          {%- endif -%}
+          {%- if section.settings.cta_secondary_text != blank -%}
+            <a href="{{ section.settings.cta_secondary_url }}" class="btn btn--outline btn--lg">{{ section.settings.cta_secondary_text }}</a>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Image with text",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "Image (5:4 recommended)" },
+    { "type": "checkbox", "id": "show_seal", "label": "Show '1938' seal overlay", "default": true },
+    { "type": "text", "id": "seal_year", "label": "Seal year", "default": "1938" },
+    { "type": "text", "id": "seal_location", "label": "Seal location text", "default": "DAMON · OH" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "★ Family-owned · Made in Alliance, Ohio" },
+    { "type": "text", "id": "heading_pre", "label": "Heading (before italic)", "default": "Eighty-six years of cleaning America's" },
+    { "type": "text", "id": "heading_em", "label": "Heading (italic, red)", "default": "hardest places." },
+    { "type": "text", "id": "heading_post", "label": "Heading (after italic)" },
+    { "type": "textarea", "id": "body", "label": "Body", "default": "Four generations. One factory in Ohio. The same red shield. We make every chemistry that leaves our dock — same family, same building, since 1938." },
+    { "type": "text", "id": "cta_primary_text", "label": "Primary CTA", "default": "Read the Damon story" },
+    { "type": "url", "id": "cta_primary_url", "label": "Primary CTA URL" },
+    { "type": "text", "id": "cta_secondary_text", "label": "Secondary CTA", "default": "Tour the factory" },
+    { "type": "url", "id": "cta_secondary_url", "label": "Secondary CTA URL" }
+  ],
+  "blocks": [
+    {
+      "type": "stat",
+      "name": "Stat",
+      "limit": 3,
+      "settings": [
+        { "type": "text", "id": "value_pre", "label": "Value (before red)", "default": "86" },
+        { "type": "text", "id": "value_em", "label": "Value (red part)", "default": "yr" },
+        { "type": "text", "id": "value_post", "label": "Value (after red)" },
+        { "type": "text", "id": "label", "label": "Label", "default": "Years in business" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Image with text",
+      "blocks": [
+        { "type": "stat", "settings": { "value_pre": "86", "value_em": "yr", "label": "Years in business" } },
+        { "type": "stat", "settings": { "value_pre": "4", "label": "Generations of family ownership" } },
+        { "type": "stat", "settings": { "value_pre": "USA", "label": "Manufactured in Alliance, OH" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

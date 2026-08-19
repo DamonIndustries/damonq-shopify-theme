@@ -1,0 +1,156 @@
+{%- comment -%}
+  Notification Preferences — checkbox form for the customer to opt in
+  to order, shipping, restriction alert, SDS update, and promotional
+  emails, plus preferred language.
+
+  Reads customer.metafields.damon.notification_prefs (json) for defaults.
+  Shape: { "order_updates": true, "shipping_updates": true,
+           "restriction_alerts": true, "promo_emails": false,
+           "sds_updates": true, "language": "en" }
+  Missing keys fall back to the data-default value on each checkbox
+  (all true except promo_emails).
+
+  Saving: POSTs to /apps/damon/notification-prefs (Shopify App Proxy
+  endpoint — to be built server-side; theme is UI-only). Until the
+  proxy exists, the fetch will 404 and the UI shows "Could not save".
+  Point the endpoint at a real handler when ready; no theme change
+  required.
+
+  Locked to signed-in customers via the shared customer-required gate.
+{%- endcomment -%}
+
+{% render 'customer-required' %}
+
+{%- if customer -%}
+{%- assign prefs_raw = customer.metafields.damon.notification_prefs.value | default: '{}' -%}
+<section class="account-portal">
+  <div class="container account-portal__body">
+    <header class="account-portal__head">
+      <h1>{{ section.settings.title | default: 'Notification preferences' }}</h1>
+      <p class="account-portal__lede">
+        {{- section.settings.lede | default: 'Choose which emails and texts you want from Damon Industries.' -}}
+      </p>
+    </header>
+
+    <form class="notif-prefs__form" data-prefs-form>
+      <div class="notif-prefs__row">
+        <label class="notif-prefs__opt">
+          <input type="checkbox" name="order_updates" data-default="true">
+          <span>
+            <b>Order updates</b>
+            <em>When your order ships, delivers, or has issues</em>
+          </span>
+        </label>
+        <label class="notif-prefs__opt">
+          <input type="checkbox" name="shipping_updates" data-default="true">
+          <span>
+            <b>Shipping updates</b>
+            <em>Carrier tracking updates and ETA changes</em>
+          </span>
+        </label>
+        <label class="notif-prefs__opt">
+          <input type="checkbox" name="restriction_alerts" data-default="true">
+          <span>
+            <b>State restriction alerts</b>
+            <em>When a product you buy has a new state-shipping restriction (e.g. Q-San)</em>
+          </span>
+        </label>
+        <label class="notif-prefs__opt">
+          <input type="checkbox" name="sds_updates" data-default="true">
+          <span>
+            <b>SDS updates</b>
+            <em>When a Safety Data Sheet for a product you have ordered is revised</em>
+          </span>
+        </label>
+        <label class="notif-prefs__opt">
+          <input type="checkbox" name="promo_emails" data-default="false">
+          <span>
+            <b>Promotions</b>
+            <em>Occasional sale announcements and new-product introductions</em>
+          </span>
+        </label>
+      </div>
+
+      <div class="notif-prefs__lang">
+        <label>
+          <b>Preferred language</b>
+          <select name="language">
+            <option value="en">English</option>
+            <option value="es">Español</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="notif-prefs__actions">
+        <button type="submit" class="btn btn--red btn--lg">Save preferences</button>
+        <span class="notif-prefs__status" data-prefs-status aria-live="polite"></span>
+      </div>
+    </form>
+  </div>
+</section>
+
+<script>
+(function () {
+  var form = document.querySelector('[data-prefs-form]');
+  if (!form) return;
+  var status = document.querySelector('[data-prefs-status]');
+
+  // Server-provided defaults — may be either a JSON string (metafield
+  // json field, un-parsed) or a plain object (Shopify already parsed).
+  // Handle both so we survive whichever shape Liquid emits.
+  var savedRaw = {{ prefs_raw | json }};
+  var saved = {};
+  try {
+    saved = (typeof savedRaw === 'string') ? JSON.parse(savedRaw || '{}') : (savedRaw || {});
+  } catch (e) { saved = {}; }
+
+  form.querySelectorAll('input[type=checkbox]').forEach(function (cb) {
+    var key = cb.name;
+    if (key in saved) {
+      cb.checked = !!saved[key];
+    } else {
+      cb.checked = cb.getAttribute('data-default') === 'true';
+    }
+  });
+  var langSel = form.querySelector('select[name=language]');
+  if (langSel) langSel.value = saved.language || 'en';
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (status) status.textContent = 'Saving…';
+
+    var data = { language: langSel ? langSel.value : 'en' };
+    form.querySelectorAll('input[type=checkbox]').forEach(function (cb) { data[cb.name] = cb.checked; });
+
+    // POST to App Proxy endpoint — the theme is UI-only. Endpoint must
+    // authenticate the customer session and write to customerUpdate via
+    // Admin GraphQL. Returns 200 on success.
+    fetch('/apps/damon/notification-prefs', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(data)
+    })
+      .then(function (r) { if (!r.ok) throw new Error('save-failed'); return r.json(); })
+      .then(function () {
+        if (status) status.textContent = 'Saved';
+        if (window.DamonToast) window.DamonToast('Preferences saved');
+      })
+      .catch(function () {
+        if (status) status.textContent = 'Could not save — try again';
+      });
+  });
+})();
+</script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Notification preferences",
+  "settings": [
+    { "type": "text", "id": "title", "label": "Page title", "default": "Notification preferences" },
+    { "type": "text", "id": "lede", "label": "Page description", "default": "Choose which emails and texts you want from Damon Industries." }
+  ],
+  "presets": [{ "name": "Notification preferences" }]
+}
+{% endschema %}

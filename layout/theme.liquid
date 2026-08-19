@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code | default: 'en' }}" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="theme-color" content="{{ settings.color_brand_red | default: '#C8102E' }}">
+
+    <link rel="canonical" href="{{ canonical_url }}">
+    <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    {%- if settings.favicon != blank -%}
+      <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
+    {%- endif -%}
+
+    <title>
+      {%- if template == 'index' -%}
+        {{ shop.name }} &mdash; {{ shop.description | default: 'More than just chemicals' }}
+      {%- elsif template contains 'product' -%}
+        {{ product.title }} &mdash; {{ shop.name }}
+      {%- elsif template contains 'collection' -%}
+        {{ collection.title }} &mdash; {{ shop.name }}
+      {%- elsif template contains 'page' -%}
+        {{ page.title }} &mdash; {{ shop.name }}
+      {%- elsif template contains 'article' -%}
+        {{ article.title }} &mdash; {{ shop.name }}
+      {%- else -%}
+        {{ page_title }}{% if current_page > 1 %} &mdash; Page {{ current_page }}{% endif %} &mdash; {{ shop.name }}
+      {%- endif -%}
+    </title>
+
+    {%- if page_description -%}
+      <meta name="description" content="{{ page_description | escape }}">
+    {%- endif -%}
+
+    {{ content_for_header }}
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap">
+
+    {%- liquid
+      if settings.control_corner_pill_override
+        assign control_radius = '999px'
+      else
+        assign slider_r = settings.control_corner_radius | default: 6
+        assign control_radius = slider_r | append: 'px'
+      endif
+    -%}
+    <style>
+      :root {
+        --red: {{ settings.color_brand_red | default: '#C8102E' }};
+        --red-dark: {{ settings.color_brand_red_dark | default: '#9C0A22' }};
+        --ink: {{ settings.color_ink | default: '#161A1F' }};
+        --bg-body: {{ settings.color_body_bg | default: '#F8F6EE' }};
+        --radius-pill: {{ control_radius }};
+      }
+    </style>
+
+    {{ 'theme.css' | asset_url | stylesheet_tag }}
+    <script src="{{ 'theme.js' | asset_url }}" defer="defer"></script>
+
+    {%- if settings.hubspot_tracking_enabled and settings.hubspot_portal_id != blank -%}
+      {%- comment -%} HubSpot tracking — drops the hubspotutk cookie so newsletter / lead form submissions can be tied to the visitor's full pageview history. Loads async/defer; no render blocking. {%- endcomment -%}
+      <script type="text/javascript" id="hs-script-loader" async defer src="//js.hs-scripts.com/{{ settings.hubspot_portal_id }}.js"></script>
+    {%- endif -%}
+
+    {%- if settings.zoominfo_tracking_enabled -%}
+      {%- comment -%}
+        ZoomInfo WebSights — identifies visiting companies by IP. Paste
+        provided verbatim from ZoomInfo's install page; the obfuscated
+        function decodes the account key into a window property and the
+        script src into ws.zoominfo.com. Deferred append via load event so
+        it never blocks the initial render.
+      {%- endcomment -%}
+      <script>
+        window[(function(_0vD,_Ja){var _a5Mqh='';for(var _lue6Ny=0;_lue6Ny<_0vD.length;_lue6Ny++){var _Rlq6=_0vD[_lue6Ny].charCodeAt();_Rlq6-=_Ja;_Ja>8;_Rlq6!=_lue6Ny;_Rlq6+=61;_a5Mqh==_a5Mqh;_Rlq6%=94;_Rlq6+=33;_a5Mqh+=String.fromCharCode(_Rlq6)}return _a5Mqh})(atob('ZVRbfXp1cG4hVnAm'), 11)] = '5fde38743e1785872129';
+        var zi = document.createElement('script');
+        (zi.type = 'text/javascript'),
+        (zi.async = true),
+        (zi.src = (function(_lSc,_70){var _WdEJ5='';for(var _crdmFm=0;_crdmFm<_lSc.length;_crdmFm++){var _CbeI=_lSc[_crdmFm].charCodeAt();_WdEJ5==_WdEJ5;_CbeI!=_crdmFm;_CbeI-=_70;_70>2;_CbeI+=61;_CbeI%=94;_CbeI+=33;_WdEJ5+=String.fromCharCode(_CbeI)}return _WdEJ5})(atob('NEBAPD9kWVk2P1hGNVc/Lz41PEA/WC87OVlGNVdALTNYNj8='), 42)),
+        document.readyState === 'complete' ? document.body.appendChild(zi) : window.addEventListener('load', function () { document.body.appendChild(zi); });
+      </script>
+    {%- endif -%}
+  </head>
+
+  <body class="template-{{ template | replace: '.', '-' | handle }}">
+    <a class="skip-to-content" href="#main">{{ 'general.accessibility.skip_to_content' | t }}</a>
+
+    <div class="page-wrap">
+      {% sections 'header-group' %}
+
+      <main id="main" role="main" class="theme-main">
+        {{ content_for_layout }}
+      </main>
+
+      {% sections 'footer-group' %}
+    </div>
+
+    <div class="toasts" data-toasts aria-live="polite" aria-atomic="true"></div>
+
+    <div class="lightbox" hidden aria-hidden="true" data-lightbox role="dialog" aria-label="Image viewer">
+      <button type="button" class="lightbox__close" data-lightbox-close aria-label="Close">×</button>
+      <img class="lightbox__img" data-lightbox-img alt="">
+    </div>
+
+    <div class="modal" hidden aria-hidden="true" data-sample-modal role="dialog" aria-label="Request a sample">
+      <button type="button" class="modal__overlay" aria-label="Close" data-modal-close></button>
+      <div class="modal__panel" role="document">
+        <header class="modal__head">
+          <div>
+            <span class="b2b-page__eyebrow">★ For verified facilities</span>
+            <h2 class="modal__title">Request a <span data-sample-size-label>4 oz</span> sample</h2>
+          </div>
+          <button type="button" class="modal__close" data-modal-close aria-label="Close">×</button>
+        </header>
+        <div class="modal__body">
+          {% form 'contact', class: 'b2b-form', id: 'sample-form' %}
+            {% if form.posted_successfully? %}
+              <div class="b2b-success">✓ Sample requested. We'll ship within 2 business days.</div>
+            {% endif %}
+            {% if form.errors %}
+              <div class="b2b-error">Please fix the highlighted fields below.</div>
+            {% endif %}
+            <input type="hidden" name="contact[Sample - form_type]" value="sample request">
+            <input type="hidden" name="contact[Sample - Product]" value="" data-sample-product>
+            <input type="hidden" name="contact[Sample - Page URL]" value="" data-sample-url>
+
+            <p style="margin: 0 0 18px; color: var(--ink-2); font-size: 14px; line-height: 1.55;">
+              Free <span data-sample-size-label>4 oz</span> sample shipped from Alliance, OH. Limit one per facility per product. We may follow up to confirm shipping details.
+            </p>
+
+            <div class="b2b-form__row">
+              <div class="b2b-field">
+                <label for="sample_name">Name</label>
+                <input type="text" id="sample_name" name="contact[name]" required autocomplete="name">
+              </div>
+              <div class="b2b-field">
+                <label for="sample_facility">Facility</label>
+                <input type="text" id="sample_facility" name="contact[Sample - Facility]" required autocomplete="organization">
+              </div>
+            </div>
+
+            <div class="b2b-form__row">
+              <div class="b2b-field">
+                <label for="sample_email">Work email</label>
+                <input type="email" id="sample_email" name="contact[email]" required autocomplete="email">
+              </div>
+              <div class="b2b-field">
+                <label for="sample_phone">Phone</label>
+                <input type="tel" id="sample_phone" name="contact[phone]" autocomplete="tel">
+              </div>
+            </div>
+
+            <div class="b2b-field b2b-field--full" style="margin-bottom: 16px;">
+              <label for="sample_address">Ship-to address</label>
+              <input type="text" id="sample_address" name="contact[Sample - Address]" required autocomplete="street-address">
+            </div>
+
+            <div class="b2b-field b2b-field--full" style="margin-bottom: 16px;">
+              <label for="sample_notes">What are you testing it on?</label>
+              <textarea id="sample_notes" name="contact[Sample - Use case]" rows="3" placeholder="e.g., 'Replacing our current sanitizer in our two meat departments — need to test on stainless and cutting boards before switching.'"></textarea>
+            </div>
+
+            <div class="b2b-form__actions">
+              <p class="b2b-form__note">By submitting you agree to be contacted by a Damon rep about this sample.</p>
+              <button type="submit" class="btn btn--red btn--lg">Send sample request</button>
+            </div>
+          {% endform %}
+        </div>
+      </div>
+    </div>
+
+    {%- assign free_freight_threshold = settings.free_freight_threshold | default: 250 -%}
+    <aside id="cart-drawer" class="cart-drawer" hidden aria-hidden="true" data-cart-drawer data-free-freight-threshold="{{ free_freight_threshold }}">
+      <button type="button" class="cart-drawer__overlay" aria-label="{{ 'cart.drawer.close' | t }}" data-cart-close></button>
+      <div class="cart-drawer__panel" role="dialog" aria-label="{{ 'cart.drawer.aria_label' | t }}" aria-modal="true">
+        <header class="cart-drawer__head">
+          <h2 class="cart-drawer__title">{{ 'cart.general.title' | t }} · <span data-cart-count>{{ cart.item_count }}</span></h2>
+          <button type="button" class="cart-drawer__close" data-cart-close aria-label="{{ 'cart.drawer.close' | t }}">×</button>
+        </header>
+        <div class="cart-drawer__freight" data-cart-freight hidden>
+          <p class="cart-drawer__freight-msg" data-freight-msg>—</p>
+          <div class="cart-drawer__freight-track"><span class="cart-drawer__freight-fill" data-freight-fill></span></div>
+        </div>
+        <div class="cart-drawer__body" data-cart-body>
+          <p class="cart-drawer__loading">{{ 'cart.general.loading' | t }}</p>
+        </div>
+        <footer class="cart-drawer__foot" data-cart-foot hidden>
+          <div class="cart-drawer__sub">
+            <span>{{ 'cart.general.subtotal' | t }}</span>
+            <b data-cart-subtotal>—</b>
+          </div>
+          <div class="cart-drawer__ctas">
+            <a href="{{ routes.cart_url }}" class="btn btn--outline btn--block">{{ 'cart.general.view_cart' | t }}</a>
+            <a href="/checkout" class="btn btn--red btn--block">{{ 'cart.general.checkout' | t }}</a>
+          </div>
+          {%- assign rep_url = settings.rep_link_page.url | default: '/pages/contact-rep' -%}
+          <p class="cart-drawer__note">{{ 'cart.drawer.net30_note_html' | t: contact_url: rep_url }}</p>
+        </footer>
+      </div>
+    </aside>
+  </body>
+</html>

@@ -1,0 +1,91 @@
+{%- comment -%}
+  Toolbar above the product grid: sort, result count, and active-filter pills.
+  Accepts:
+    results       — collection or search drop
+    form_action   — base URL
+    search_terms  — (optional) search terms to preserve as ?q=
+    count         — int (e.g. collection.products_count or search.results_count)
+{%- endcomment -%}
+
+<div class="facet-toolbar">
+  <button type="button" class="facet-toolbar__trigger" data-filter-open aria-label="Open filters">
+    <span aria-hidden="true">⛬</span> Filters
+    {%- assign active_n = 0 -%}
+    {%- for f in results.filters -%}
+      {%- assign active_n = active_n | plus: f.active_values.size -%}
+      {%- if f.min_value.value or f.max_value.value -%}{%- assign active_n = active_n | plus: 1 -%}{%- endif -%}
+    {%- endfor -%}
+    {%- if active_n > 0 -%}<span class="facet-toolbar__trigger-count">{{ active_n }}</span>{%- endif -%}
+  </button>
+  <div class="facet-toolbar__count">
+    <b>{{ count | default: 0 }}</b> {% if count == 1 %}product{% else %}products{% endif %}
+  </div>
+
+  {%- if results.sort_options.size > 0 -%}
+    <form action="{{ form_action }}" method="get" class="facet-toolbar__sort" data-sort-form>
+      {%- if search_terms != blank -%}
+        <input type="hidden" name="q" value="{{ search_terms | escape }}">
+        <input type="hidden" name="options[prefix]" value="last">
+      {%- endif -%}
+      {%- for f in results.filters -%}
+        {%- case f.type -%}
+          {%- when 'list', 'boolean' -%}
+            {%- for v in f.active_values -%}
+              <input type="hidden" name="{{ v.param_name }}" value="{{ v.value }}">
+            {%- endfor -%}
+          {%- when 'price_range' -%}
+            {%- if f.min_value.value -%}
+              <input type="hidden" name="{{ f.min_value.param_name }}" value="{{ f.min_value.value | money_without_currency | replace: ',', '' }}">
+            {%- endif -%}
+            {%- if f.max_value.value -%}
+              <input type="hidden" name="{{ f.max_value.param_name }}" value="{{ f.max_value.value | money_without_currency | replace: ',', '' }}">
+            {%- endif -%}
+        {%- endcase -%}
+      {%- endfor -%}
+      <label for="SortBy">Sort by</label>
+      <select name="sort_by" id="SortBy" data-sort-select>
+        {%- for opt in results.sort_options -%}
+          <option value="{{ opt.value }}" {% if opt.value == results.sort_by %}selected{% endif %}>{{ opt.name }}</option>
+        {%- endfor -%}
+      </select>
+    </form>
+  {%- endif -%}
+</div>
+
+{%- comment -%} Active filter pills {%- endcomment -%}
+{%- assign has_active_pills = false -%}
+{%- for f in results.filters -%}
+  {%- if f.active_values.size > 0 or f.min_value.value or f.max_value.value -%}
+    {%- assign has_active_pills = true -%}
+  {%- endif -%}
+{%- endfor -%}
+
+{%- if has_active_pills -%}
+  <div class="active-filters" role="region" aria-label="Active filters">
+    {%- for f in results.filters -%}
+      {%- case f.type -%}
+        {%- when 'list', 'boolean' -%}
+          {%- for v in f.active_values -%}
+            <a href="{{ v.url_to_remove }}" class="active-pill">
+              <span>{{ f.label }}: <b>{{ v.label }}</b></span>
+              <span class="active-pill__x" aria-hidden="true">×</span>
+            </a>
+          {%- endfor -%}
+        {%- when 'price_range' -%}
+          {%- if f.min_value.value or f.max_value.value -%}
+            <a href="{{ f.url_to_remove }}" class="active-pill">
+              <span>
+                Price:
+                <b>
+                  {%- if f.min_value.value -%}{{ f.min_value.value | money }}{%- else -%}{{ 0 | money }}{%- endif -%}
+                  &nbsp;–&nbsp;
+                  {%- if f.max_value.value -%}{{ f.max_value.value | money }}{%- else -%}{{ f.range_max | money }}{%- endif -%}
+                </b>
+              </span>
+              <span class="active-pill__x" aria-hidden="true">×</span>
+            </a>
+          {%- endif -%}
+      {%- endcase -%}
+    {%- endfor -%}
+  </div>
+{%- endif -%}

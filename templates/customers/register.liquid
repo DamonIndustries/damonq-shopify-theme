@@ -1,0 +1,38 @@
+<section class="container" style="padding: 64px 0; max-width: 480px;">
+  <h1 style="font-size: 36px; margin: 0 0 14px; letter-spacing: -0.02em; line-height: 1; font-weight: 800; text-align: center;">Create account</h1>
+  <p style="color: var(--grey); text-align: center; margin: 0 0 28px;">For verified facilities. We'll review and follow up about Net‑30 setup within one business day.</p>
+
+  {%- form 'create_customer' -%}
+    {%- if form.errors -%}
+      <div style="background: #FEE2E2; color: #B91C1C; padding: 14px; border-radius: 12px; margin-bottom: 18px; font-size: 14px;">
+        {{ form.errors | default_errors }}
+      </div>
+    {%- endif -%}
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+      <div>
+        <label style="display: block; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--grey); font-weight: 800; margin-bottom: 6px;">First name</label>
+        <input type="text" name="customer[first_name]" required style="width: 100%; padding: 12px 16px; border: 1px solid var(--line); border-radius: 999px; font-size: 15px; outline: none;">
+      </div>
+      <div>
+        <label style="display: block; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--grey); font-weight: 800; margin-bottom: 6px;">Last name</label>
+        <input type="text" name="customer[last_name]" required style="width: 100%; padding: 12px 16px; border: 1px solid var(--line); border-radius: 999px; font-size: 15px; outline: none;">
+      </div>
+    </div>
+
+    <label style="display: block; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--grey); font-weight: 800; margin-bottom: 6px;">Facility / company</label>
+    <input type="text" name="customer[note][facility]" style="width: 100%; padding: 12px 16px; border: 1px solid var(--line); border-radius: 999px; font-size: 15px; outline: none; margin-bottom: 14px;">
+
+    <label style="display: block; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--grey); font-weight: 800; margin-bottom: 6px;">Email</label>
+    <input type="email" name="customer[email]" required autocomplete="email" style="width: 100%; padding: 12px 16px; border: 1px solid var(--line); border-radius: 999px; font-size: 15px; outline: none; margin-bottom: 14px;">
+
+    <label style="display: block; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--grey); font-weight: 800; margin-bottom: 6px;">Password</label>
+    <input type="password" name="customer[password]" required autocomplete="new-password" style="width: 100%; padding: 12px 16px; border: 1px solid var(--line); border-radius: 999px; font-size: 15px; outline: none; margin-bottom: 18px;">
+
+    <button type="submit" class="btn btn--red btn--block btn--lg">Create account</button>
+  {%- endform -%}
+
+  <p style="text-align: center; font-size: 14px; color: var(--grey); margin-top: 16px;">
+    Already have an account? <a href="{{ routes.account_login_url }}" style="color: var(--red); font-weight: 700;">Sign in</a>
+  </p>
+</section>

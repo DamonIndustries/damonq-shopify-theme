@@ -1,0 +1,689 @@
+{%- comment -%}
+  Bulk order builder — table-row mode.
+  One unified view: a row-based table where each row has an autocomplete
+  Part# input that auto-fills description and price, with an editable qty
+  and computed subtotal. Optional collapsible "Paste a list" drawer parses
+  pasted lines into new rows.
+{%- endcomment -%}
+
+{%- assign free_freight_threshold = settings.free_freight_threshold | default: 250 -%}
+
+<section class="b2b-page container" data-bulk-root data-free-freight-threshold="{{ free_freight_threshold }}">
+  <header class="b2b-page__head">
+    <span class="b2b-page__eyebrow">For purchasing teams</span>
+    <h1 class="b2b-page__title">Bulk order builder</h1>
+    <p class="b2b-page__lead">Search by Part #, set quantities, then add the whole list to cart in one click.</p>
+
+    <div class="bulk-page__stats">
+      <div class="bulk-page__stat"><span>⛟</span><span>Same-day ship before 2pm ET</span></div>
+      <div class="bulk-page__stat"><span>$</span><span>Free freight on ${{ free_freight_threshold }}+</span></div>
+      <div class="bulk-page__stat"><span>★</span><span>Net-30 available</span></div>
+      <div class="bulk-page__stat"><span>340+</span><span>products live</span></div>
+    </div>
+  </header>
+
+  <div class="bulk-shell">
+
+    {%- comment -%} Collapsible paste drawer — secondary, but always reachable {%- endcomment -%}
+    <details class="bulk-paste-drawer" data-paste-drawer style="margin-bottom: 14px;">
+      <summary class="bulk-paste-drawer__summary">⚡ Got a list to paste? Click to expand</summary>
+      <div class="bulk-paste-drawer__body">
+        <pre class="bulk-paste-hint">One SKU per line, with quantity.
+DMN0814, 4
+DMN-FLR-001  12
+# lines starting with # are ignored</pre>
+        <textarea
+          class="bulk-paste-textarea"
+          data-bulk-input
+          rows="6"
+          placeholder="DMN0814,4&#10;DMN-FLR-001,12&#10;DMN0900,2"
+          aria-label="SKU and quantity, one per line"></textarea>
+        <div class="bulk-paste-actions">
+          <button type="button" class="btn btn--ink" data-bulk-parse>Parse and add to rows</button>
+          <button type="button" class="btn btn--outline" data-bulk-clear>Clear</button>
+        </div>
+        <div class="bulk-paste-results" data-bulk-paste-results></div>
+      </div>
+    </details>
+
+    <div class="bulk-rows" data-bulk-rows>
+      <div class="bulk-rows__head-bar">
+        <div>
+          <div class="bulk-rows__head-bar-eyebrow">Order builder</div>
+          <div class="bulk-rows__head-bar-title">Search by Part #</div>
+        </div>
+        <div class="bulk-rows__head-bar-meta" data-rows-meta>
+          <b>0</b> lines · <b>0</b> items
+        </div>
+      </div>
+
+      <div class="bulk-rows__cols">
+        <div class="num">#</div>
+        <div>Part #</div>
+        <div>Description</div>
+        <div class="num" style="text-align: right;">Price</div>
+        <div class="center">Qty</div>
+        <div class="num" style="text-align: right;">Subtotal</div>
+        <div></div>
+      </div>
+
+      <div data-rows-list></div>
+
+      <div class="bulk-rows__addbar">
+        <button type="button" class="bulk-rows__add" data-add-rows="1">+ Add row</button>
+        <div class="bulk-rows__split">
+          <button type="button" class="bulk-rows__split-main" data-add-rows="5">+ Add 5 rows</button>
+          <button type="button" class="bulk-rows__split-caret" data-add-menu aria-label="More row options" aria-expanded="false">▾</button>
+          <div class="bulk-rows__split-menu" hidden data-add-menu-list>
+            <button type="button" data-add-rows="1">+ 1 row</button>
+            <button type="button" data-add-rows="5">+ 5 rows</button>
+            <button type="button" data-add-rows="10">+ 10 rows</button>
+            <button type="button" data-add-rows="25">+ 25 rows</button>
+          </div>
+        </div>
+        <div class="bulk-rows__addhint">Press <kbd>Tab</kbd> to move between rows</div>
+      </div>
+
+      <div class="bulk-summary">
+        <div class="bulk-summary__row">
+          <span class="bulk-summary__label">Subtotal · <span data-rows-meta-inline>0 lines</span></span>
+          <span class="bulk-summary__total" data-rows-subtotal>$0.00</span>
+        </div>
+
+        <div class="bulk-summary__freight" data-summary-freight hidden>
+          <p class="bulk-summary__freight-msg" data-summary-freight-msg>—</p>
+          <div class="bulk-summary__freight-track"><span class="bulk-summary__freight-fill" data-summary-freight-fill></span></div>
+        </div>
+
+        <div class="bulk-summary__ctas">
+          <button type="button" class="bulk-summary__cta bulk-summary__cta--primary" data-bulk-checkout disabled>Add all to cart</button>
+          <button type="button" class="bulk-summary__cta" data-bulk-recurring>↻ AutoStock</button>
+          <button type="button" class="bulk-summary__cta" data-bulk-email>✉ Email manager</button>
+          <button type="button" class="bulk-summary__cta" data-bulk-save>★ Save list</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="bulk-saved" data-saved-section hidden>
+    <div class="bulk-saved__head">
+      <div>
+        <h2>Your saved lists</h2>
+        <p>Saved on this device. Click <b>Reorder</b> to load it back into the table.</p>
+      </div>
+    </div>
+    <div class="bulk-saved__grid" data-saved-grid></div>
+  </section>
+</section>
+
+{%- comment -%} Style override for the paste drawer (small, scoped) {%- endcomment -%}
+<style>
+  .bulk-paste-drawer { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 0; }
+  .bulk-paste-drawer__summary {
+    cursor: pointer; padding: 12px 16px;
+    font-size: 13px; font-weight: 700; color: var(--ink);
+    list-style: none;
+  }
+  .bulk-paste-drawer__summary::-webkit-details-marker { display: none; }
+  .bulk-paste-drawer[open] .bulk-paste-drawer__summary { border-bottom: 1px solid var(--line); }
+  .bulk-paste-drawer__body { padding: 16px; }
+</style>
+
+{%- comment -%} Pre-rendered SKU map {%- endcomment -%}
+{%- capture sku_map -%}
+{
+  {%- assign comma = '' -%}
+  {%- for product in collections.all.products limit: 250 -%}
+    {%- for variant in product.variants -%}
+      {%- if variant.sku != blank -%}
+        {{ comma }}"{{ variant.sku | upcase | escape }}":{
+          "id":{{ variant.id }},
+          "sku":{{ variant.sku | json }},
+          "productTitle":{{ product.title | json }},
+          "variantTitle":{{ variant.title | json }},
+          "url":{{ variant.url | json }},
+          "price":{{ variant.price }},
+          "priceFormatted":{{ variant.price | money | json }},
+          "image":{{ variant.featured_image | image_url: width: 96 | json }},
+          "available":{{ variant.available }}
+        }
+        {%- assign comma = ',' -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endfor -%}
+}
+{%- endcapture -%}
+<script type="application/json" data-bulk-sku-map>{{ sku_map }}</script>
+
+<script>
+(function () {
+  // ============= DATA =============
+  var skuMap = {};
+  try { skuMap = JSON.parse(document.querySelector('[data-bulk-sku-map]').textContent); } catch (e) {}
+  var ALL = Object.keys(skuMap).map(function (sku) { return skuMap[sku]; });
+
+  var rowSeq = 0;
+  /** Each row: { id, sku (uppercase string), qty (int), variant (or null), suggestions (array) } */
+  var rows = [];
+
+  // ============= HELPERS =============
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function moneyCents(c) {
+    return '$' + (c / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+  function findRow(id) {
+    for (var i = 0; i < rows.length; i++) if (rows[i].id === id) return { row: rows[i], i: i };
+    return null;
+  }
+
+  // ============= ROW LOGIC =============
+  function newRow(sku, qty) {
+    rowSeq++;
+    return {
+      id: 'r' + rowSeq,
+      sku: sku ? String(sku).toUpperCase() : '',
+      qty: qty || 1,
+      variant: sku ? (skuMap[String(sku).toUpperCase()] || null) : null,
+      suggestions: []
+    };
+  }
+
+  function addRows(n) {
+    for (var i = 0; i < n; i++) rows.push(newRow());
+    render();
+    // Focus the SKU input on the first new row
+    var newId = rows[rows.length - n].id;
+    setTimeout(function () {
+      var input = document.querySelector('[data-row="' + newId + '"] [data-row-sku]');
+      if (input) input.focus();
+    }, 30);
+  }
+
+  function removeRow(id) {
+    var idx = -1;
+    for (var i = 0; i < rows.length; i++) if (rows[i].id === id) { idx = i; break; }
+    if (idx < 0) return;
+    rows.splice(idx, 1);
+    if (rows.length === 0) rows.push(newRow());
+    render();
+  }
+
+  function updateRowSku(id, raw) {
+    var found = findRow(id);
+    if (!found) return;
+    var row = found.row;
+    var query = String(raw || '').toUpperCase().trim();
+    row.sku = query;
+
+    if (!query) {
+      row.variant = null;
+      row.suggestions = [];
+      renderRow(row);
+      updateSummary();
+      return;
+    }
+
+    // Exact match?
+    if (skuMap[query]) {
+      row.variant = skuMap[query];
+      row.suggestions = [];
+    } else {
+      row.variant = null;
+      // Fuzzy match — SKU prefix or product title contains
+      var qLower = query.toLowerCase();
+      row.suggestions = ALL.filter(function (v) {
+        return v.sku.toUpperCase().indexOf(query) >= 0 ||
+               (v.productTitle || '').toLowerCase().indexOf(qLower) >= 0;
+      }).slice(0, 8);
+    }
+    renderRow(row);
+    updateSummary();
+  }
+
+  function pickSuggestion(rowId, sku) {
+    var found = findRow(rowId);
+    if (!found) return;
+    var row = found.row;
+    row.sku = String(sku).toUpperCase();
+    row.variant = skuMap[row.sku] || null;
+    row.suggestions = [];
+    renderRow(row);
+    updateSummary();
+    // Move focus to qty input of this row
+    var qtyInput = document.querySelector('[data-row="' + rowId + '"] [data-row-qty]');
+    if (qtyInput) { qtyInput.focus(); qtyInput.select(); }
+  }
+
+  function updateRowQty(id, q) {
+    var found = findRow(id);
+    if (!found) return;
+    var n = parseInt(q, 10);
+    if (isNaN(n) || n < 0) n = 0;
+    if (n === 0) { removeRow(id); return; }
+    found.row.qty = n;
+    renderRow(found.row);
+    updateSummary();
+  }
+
+  // ============= RENDER =============
+  function rowHtml(row, idx) {
+    var v = row.variant;
+    var resolved = !!v;
+    var typing = !resolved && row.suggestions.length > 0;
+    var error  = !resolved && row.sku && row.suggestions.length === 0;
+
+    var classes = ['bulk-row'];
+    if (resolved) classes.push('is-resolved');
+    else if (typing) classes.push('is-typing');
+    else if (error) classes.push('is-error');
+
+    var descHtml = resolved
+      ? '<b>' + escapeHtml(v.productTitle) + '</b>'
+        + (v.variantTitle && v.variantTitle !== 'Default Title' ? '<span>' + escapeHtml(v.variantTitle) + '</span>' : '')
+      : (error ? '<b style="color:#B91C1C;">No match for ' + escapeHtml(row.sku) + '</b>' : '<span class="bulk-row__desc--empty">—</span>');
+
+    var priceHtml = resolved ? '<div class="bulk-row__price is-set">' + v.priceFormatted + '</div>'
+                             : '<div class="bulk-row__price">—</div>';
+
+    var subtotalHtml = resolved
+      ? '<div class="bulk-row__subtotal is-set">' + moneyCents(v.price * row.qty) + '</div>'
+      : '<div class="bulk-row__subtotal">—</div>';
+
+    var suggestHtml = '';
+    if (row.suggestions.length > 0) {
+      var items = row.suggestions.map(function (s) {
+        return '<button type="button" class="bulk-row__suggest-item" data-pick="' + escapeHtml(s.sku) + '">'
+             +   '<span><span class="bulk-row__suggest-sku">' + escapeHtml(s.sku) + '</span>'
+             +   '<span class="bulk-row__suggest-title">' + escapeHtml(s.productTitle) + (s.variantTitle && s.variantTitle !== 'Default Title' ? ' · ' + escapeHtml(s.variantTitle) : '') + '</span></span>'
+             +   '<span class="bulk-row__suggest-price">' + s.priceFormatted + '</span>'
+             + '</button>';
+      }).join('');
+      suggestHtml = '<div class="bulk-row__suggest" data-row-suggest>' + items + '</div>';
+    } else if (error) {
+      suggestHtml = '<div class="bulk-row__suggest" data-row-suggest><div class="bulk-row__suggest-empty">No matching SKU. Try a different prefix.</div></div>';
+    }
+
+    return '<div class="' + classes.join(' ') + '" data-row="' + row.id + '">'
+         +   '<div class="bulk-row__num">' + (idx + 1) + '</div>'
+         +   '<div class="bulk-row__sku">'
+         +     '<span class="bulk-row__sku-dot"></span>'
+         +     '<input type="text" class="bulk-row__sku-input" data-row-sku value="' + escapeHtml(row.sku) + '" placeholder="Type SKU…" autocomplete="off">'
+         +     suggestHtml
+         +   '</div>'
+         +   '<div class="bulk-row__desc">' + descHtml + '</div>'
+         +   priceHtml
+         +   '<div class="bulk-row__qty"><input type="number" min="1" data-row-qty value="' + row.qty + '"></div>'
+         +   subtotalHtml
+         +   '<button type="button" class="bulk-row__remove" data-row-remove aria-label="Remove row">×</button>'
+         + '</div>';
+  }
+
+  function render() {
+    var listEl = $('[data-rows-list]');
+    if (!listEl) return;
+    listEl.innerHTML = rows.map(function (r, i) { return rowHtml(r, i); }).join('');
+    updateSummary();
+  }
+  function renderRow(row) {
+    var idx = -1;
+    for (var i = 0; i < rows.length; i++) if (rows[i].id === row.id) { idx = i; break; }
+    if (idx < 0) return;
+    var el = document.querySelector('[data-row="' + row.id + '"]');
+    if (!el) return;
+    var temp = document.createElement('div');
+    temp.innerHTML = rowHtml(row, idx);
+    var fresh = temp.firstChild;
+    // Preserve focus + cursor on the SKU input
+    var sel = document.activeElement && document.activeElement.matches('[data-row-sku]');
+    var hadFocus = el.contains(document.activeElement);
+    var focusIsSku = sel && el.contains(document.activeElement);
+    el.parentNode.replaceChild(fresh, el);
+    if (focusIsSku) {
+      var newInput = fresh.querySelector('[data-row-sku]');
+      if (newInput) {
+        newInput.focus();
+        var len = newInput.value.length;
+        try { newInput.setSelectionRange(len, len); } catch (e) {}
+      }
+    }
+  }
+
+  function totals() {
+    var subtotal = 0, lines = 0, items = 0;
+    rows.forEach(function (r) {
+      if (r.variant) {
+        subtotal += r.variant.price * r.qty;
+        lines++;
+        items += r.qty;
+      }
+    });
+    return { subtotal: subtotal, lines: lines, items: items };
+  }
+
+  function updateSummary() {
+    var t = totals();
+    var subEl = $('[data-rows-subtotal]');
+    var metaEl = $('[data-rows-meta]');
+    var inlineEl = $('[data-rows-meta-inline]');
+    var checkout = $('[data-bulk-checkout]');
+    if (subEl) subEl.textContent = moneyCents(t.subtotal);
+    if (metaEl) metaEl.innerHTML = '<b>' + t.lines + '</b> lines · <b>' + t.items + '</b> items';
+    if (inlineEl) inlineEl.textContent = t.lines + ' line' + (t.lines === 1 ? '' : 's') + ' · ' + t.items + ' item' + (t.items === 1 ? '' : 's');
+    if (checkout) checkout.disabled = t.lines === 0;
+
+    // Freight
+    var threshold = parseFloat(document.querySelector('[data-bulk-root]').getAttribute('data-free-freight-threshold')) || 0;
+    var fBlock = $('[data-summary-freight]');
+    var fMsg   = $('[data-summary-freight-msg]');
+    var fFill  = $('[data-summary-freight-fill]');
+    if (fBlock && fMsg && fFill) {
+      if (threshold > 0 && t.lines > 0) {
+        var thresholdCents = threshold * 100;
+        var pct = Math.min(100, (t.subtotal / thresholdCents) * 100);
+        var remaining = Math.max(0, thresholdCents - t.subtotal);
+        fFill.style.width = pct + '%';
+        if (remaining === 0) {
+          fBlock.classList.add('is-met'); fMsg.classList.add('is-met');
+          fMsg.innerHTML = '✓ <b>Free freight unlocked</b> — ships from Alliance, OH';
+        } else {
+          fBlock.classList.remove('is-met'); fMsg.classList.remove('is-met');
+          fMsg.innerHTML = 'Add <b>' + moneyCents(remaining) + '</b> for free freight';
+        }
+        fBlock.hidden = false;
+      } else {
+        fBlock.hidden = true;
+      }
+    }
+  }
+
+  // ============= EVENTS =============
+  document.addEventListener('input', function (e) {
+    var skuInput = e.target.closest('[data-row-sku]');
+    if (skuInput) {
+      var rowEl = skuInput.closest('[data-row]');
+      if (rowEl) updateRowSku(rowEl.getAttribute('data-row'), skuInput.value);
+      return;
+    }
+    var qtyInput = e.target.closest('[data-row-qty]');
+    if (qtyInput) {
+      var rowEl2 = qtyInput.closest('[data-row]');
+      if (rowEl2) updateRowQty(rowEl2.getAttribute('data-row'), qtyInput.value);
+      return;
+    }
+  });
+
+  document.addEventListener('click', function (e) {
+    // Pick suggestion
+    var pick = e.target.closest('[data-pick]');
+    if (pick) {
+      e.preventDefault();
+      var rowEl = pick.closest('[data-row]');
+      if (rowEl) pickSuggestion(rowEl.getAttribute('data-row'), pick.getAttribute('data-pick'));
+      return;
+    }
+    // Remove row
+    var rm = e.target.closest('[data-row-remove]');
+    if (rm) {
+      e.preventDefault();
+      var rowEl2 = rm.closest('[data-row]');
+      if (rowEl2) removeRow(rowEl2.getAttribute('data-row'));
+      return;
+    }
+    // Add rows
+    var add = e.target.closest('[data-add-rows]');
+    if (add) {
+      e.preventDefault();
+      var menu = $('[data-add-menu-list]');
+      if (menu && add.parentElement === menu) menu.hidden = true;
+      addRows(parseInt(add.getAttribute('data-add-rows'), 10) || 1);
+      return;
+    }
+    // Toggle add menu
+    var caret = e.target.closest('[data-add-menu]');
+    if (caret) {
+      e.preventDefault();
+      var m = $('[data-add-menu-list]');
+      if (m) {
+        var open = !m.hidden;
+        m.hidden = open;
+        caret.setAttribute('aria-expanded', String(!open));
+      }
+      return;
+    }
+    // Close add menu on outside click
+    if (!e.target.closest('[data-add-menu], [data-add-menu-list]')) {
+      var m2 = $('[data-add-menu-list]');
+      if (m2 && !m2.hidden) m2.hidden = true;
+    }
+    // Action buttons
+    if (e.target.closest('[data-bulk-checkout]')) { bulkAddToCart(false); return; }
+    if (e.target.closest('[data-bulk-recurring]')) { bulkAddToCart(true); return; }
+    if (e.target.closest('[data-bulk-email]')) { emailManager(); return; }
+    if (e.target.closest('[data-bulk-save]')) { saveListToDevice(); return; }
+    // Saved card actions
+    var ro = e.target.closest('[data-saved-reorder]'); if (ro) { reorderSaved(ro.getAttribute('data-saved-reorder')); return; }
+    var dl = e.target.closest('[data-saved-delete]');  if (dl) { deleteSaved(dl.getAttribute('data-saved-delete')); return; }
+  });
+
+  // Close suggestion dropdown on outside click
+  document.addEventListener('mousedown', function (e) {
+    if (e.target.closest('[data-row-suggest]') || e.target.closest('[data-row-sku]')) return;
+    var anyHadSuggest = false;
+    rows.forEach(function (r) {
+      if (r.suggestions.length > 0 && !r.variant) { r.suggestions = []; anyHadSuggest = true; }
+    });
+    if (anyHadSuggest) render();
+  });
+
+  // Keyboard: Enter on SKU input → if exactly one suggestion or one match, select it; else move to qty
+  document.addEventListener('keydown', function (e) {
+    var skuInput = e.target.closest('[data-row-sku]');
+    if (skuInput && e.key === 'Enter') {
+      e.preventDefault();
+      var rowEl = skuInput.closest('[data-row]');
+      if (!rowEl) return;
+      var found = findRow(rowEl.getAttribute('data-row'));
+      if (!found) return;
+      if (found.row.suggestions.length === 1) {
+        pickSuggestion(found.row.id, found.row.suggestions[0].sku);
+      } else if (found.row.variant) {
+        var qty = rowEl.querySelector('[data-row-qty]');
+        if (qty) { qty.focus(); qty.select(); }
+      }
+    }
+  });
+
+  // ============= ACTIONS =============
+  function bulkAddToCart(recurring) {
+    var resolved = rows.filter(function (r) { return r.variant && r.qty > 0; });
+    if (!resolved.length) return;
+    var items = resolved.map(function (r) {
+      return {
+        id: r.variant.id,
+        quantity: r.qty,
+        properties: recurring ? { '_autostock_cadence': '4_weeks' } : {}
+      };
+    });
+    var btn = $(recurring ? '[data-bulk-recurring]' : '[data-bulk-checkout]');
+    if (btn) btn.disabled = true;
+    fetch('/cart/add.js', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ items: items })
+    })
+      .then(function (r) { if (!r.ok) return r.json().then(function (e) { throw e; }); return r.json(); })
+      .then(function () {
+        if (window.DamonToast) {
+          var t = totals();
+          window.DamonToast(items.length + ' line' + (items.length === 1 ? '' : 's') + ' added to cart' + (recurring ? ' as recurring' : ''), {
+            sub: moneyCents(t.subtotal),
+            action: { label: 'View cart', onClick: function () { document.dispatchEvent(new CustomEvent('cart:open')); } }
+          });
+        }
+        if (btn) btn.disabled = false;
+      })
+      .catch(function (err) {
+        if (window.DamonToast) window.DamonToast('Some items could not be added', { variant: 'error', sub: (err && err.description) || '' });
+        if (btn) btn.disabled = false;
+      });
+  }
+
+  function emailManager() {
+    var resolved = rows.filter(function (r) { return r.variant && r.qty > 0; });
+    if (!resolved.length) return;
+    var lines = resolved.map(function (r) {
+      return r.variant.sku + ' × ' + r.qty + ' — ' + r.variant.productTitle + ' (' + r.variant.priceFormatted + ' each)';
+    });
+    var t = totals();
+    var subj = encodeURIComponent('Damon order for approval — ' + resolved.length + ' lines');
+    var body = encodeURIComponent(
+      'Please review and approve this order:\n\n' +
+      lines.join('\n') +
+      '\n\nSubtotal: ' + moneyCents(t.subtotal) +
+      '\n\nReorder link: ' + window.location.origin + window.location.pathname
+    );
+    window.location.href = 'mailto:?subject=' + subj + '&body=' + body;
+  }
+
+  function saveListToDevice() {
+    var resolved = rows.filter(function (r) { return r.variant && r.qty > 0; });
+    if (!resolved.length) {
+      if (window.DamonToast) window.DamonToast('Nothing to save', { variant: 'info' });
+      return;
+    }
+    try {
+      var saved = JSON.parse(localStorage.getItem('damon-bulk-lists') || '[]');
+      var name = window.prompt('Name this list:', 'Order — ' + new Date().toLocaleDateString());
+      if (!name) return;
+      var t = totals();
+      saved.unshift({
+        id: 'list-' + Date.now(),
+        ts: Date.now(),
+        name: name,
+        items: resolved.map(function (r) { return { sku: r.variant.sku, qty: r.qty }; }),
+        subtotalCents: t.subtotal
+      });
+      if (saved.length > 12) saved.length = 12;
+      localStorage.setItem('damon-bulk-lists', JSON.stringify(saved));
+      if (window.DamonToast) window.DamonToast('List saved', { sub: name });
+      renderSavedLists();
+    } catch (e) {
+      if (window.DamonToast) window.DamonToast('Could not save list', { variant: 'error' });
+    }
+  }
+
+  function getSaved() { try { return JSON.parse(localStorage.getItem('damon-bulk-lists') || '[]'); } catch (e) { return []; } }
+  function setSaved(arr) { try { localStorage.setItem('damon-bulk-lists', JSON.stringify(arr)); } catch (e) {} }
+
+  function renderSavedLists() {
+    var section = $('[data-saved-section]');
+    var grid = $('[data-saved-grid]');
+    var lists = getSaved();
+    if (!section || !grid) return;
+    if (!lists.length) { section.hidden = true; return; }
+    section.hidden = false;
+    grid.innerHTML = lists.map(function (l) {
+      var date = new Date(l.ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      return '<article class="bulk-saved-card">'
+           +   '<div class="bulk-saved-card__head"><b>' + escapeHtml(l.name) + '</b><time>' + date + '</time></div>'
+           +   '<div class="bulk-saved-card__meta">' + l.items.length + ' lines · saved subtotal ' + moneyCents(l.subtotalCents || 0) + '</div>'
+           +   '<div class="bulk-saved-card__row">'
+           +     '<button type="button" class="bulk-saved-card__del" data-saved-delete="' + l.id + '">Delete</button>'
+           +     '<button type="button" class="bulk-saved-card__btn" data-saved-reorder="' + l.id + '">Reorder →</button>'
+           +   '</div>'
+           + '</article>';
+    }).join('');
+  }
+
+  function reorderSaved(id) {
+    var lists = getSaved();
+    var match = lists.filter(function (l) { return l.id === id; })[0];
+    if (!match) return;
+    // Replace empty rows; append all saved items
+    rows = match.items.map(function (i) { return newRow(i.sku, i.qty); });
+    if (rows.length === 0) rows.push(newRow());
+    render();
+    if (window.DamonToast) window.DamonToast('Loaded ' + match.items.length + ' lines', { sub: match.name });
+    var rowsEl = $('[data-bulk-rows]');
+    if (rowsEl) rowsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function deleteSaved(id) {
+    setSaved(getSaved().filter(function (l) { return l.id !== id; }));
+    renderSavedLists();
+  }
+
+  // ============= PASTE DRAWER =============
+  function parsePaste() {
+    var input = $('[data-bulk-input]');
+    var resultsEl = $('[data-bulk-paste-results]');
+    if (!input) return;
+    var lines = (input.value || '').split('\n');
+    var seen = {};
+    lines.forEach(function (raw) {
+      var line = raw.trim();
+      if (!line || line[0] === '#') return;
+      var parts = line.split(/[\s,;\t|]+/).filter(Boolean);
+      if (parts.length === 0) return;
+      var sku = parts[0].toUpperCase();
+      var qty = parseInt(parts[1] || '1', 10);
+      if (isNaN(qty) || qty < 1) qty = 1;
+      seen[sku] = (seen[sku] || 0) + qty;
+    });
+
+    var added = 0, missing = [];
+    Object.keys(seen).forEach(function (sku) {
+      if (skuMap[sku]) {
+        // Replace empty rows first
+        var emptyRow = rows.filter(function (r) { return !r.variant && !r.sku; })[0];
+        if (emptyRow) {
+          emptyRow.sku = sku;
+          emptyRow.qty = seen[sku];
+          emptyRow.variant = skuMap[sku];
+          emptyRow.suggestions = [];
+        } else {
+          rows.push(newRow(sku, seen[sku]));
+        }
+        added++;
+      } else {
+        missing.push(sku);
+      }
+    });
+    render();
+    if (resultsEl) {
+      var html = '<b>' + added + '</b> ' + (added === 1 ? 'line' : 'lines') + ' added.';
+      if (missing.length) html += '<div class="bulk-paste-results__missing">⚠ ' + missing.length + ' SKU' + (missing.length === 1 ? '' : 's') + ' not found: ' + missing.join(', ') + '</div>';
+      resultsEl.classList.add('is-on');
+      resultsEl.innerHTML = html;
+    }
+    if (added > 0 && window.DamonToast) {
+      window.DamonToast(added + ' line' + (added === 1 ? '' : 's') + ' added from paste');
+    }
+    var drawer = $('[data-paste-drawer]');
+    if (drawer && added > 0) drawer.open = false;
+  }
+  var parseBtn = $('[data-bulk-parse]'); if (parseBtn) parseBtn.addEventListener('click', parsePaste);
+  var clearBtn = $('[data-bulk-clear]'); if (clearBtn) clearBtn.addEventListener('click', function () {
+    var input = $('[data-bulk-input]'); if (input) input.value = '';
+    var r = $('[data-bulk-paste-results]'); if (r) { r.classList.remove('is-on'); r.innerHTML = ''; }
+  });
+  var pasteIn = $('[data-bulk-input]'); if (pasteIn) pasteIn.addEventListener('keydown', function (e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); parsePaste(); }
+  });
+
+  // ============= INIT =============
+  rows.push(newRow());  // Start with one empty row
+  render();
+  renderSavedLists();
+})();
+</script>
+
+{% schema %}
+{ "name": "Bulk order builder", "settings": [] }
+{% endschema %}

@@ -1,0 +1,107 @@
+{%- comment -%}
+  Search & Discovery filters sidebar.
+  Reads the storefront filtering API. Works on collection.filters and search.filters.
+
+  Accepts:
+    results       — collection drop or search drop (the thing with .filters)
+    form_action   — URL to submit to (collection.url or routes.search_url)
+    search_terms  — (optional) search terms to preserve as ?q= when on search results
+{%- endcomment -%}
+
+{%- assign filters = results.filters -%}
+
+{%- if filters.size > 0 -%}
+  <button type="button" class="facets__backdrop" data-filter-close aria-label="Close filters" hidden></button>
+  <aside class="facets" data-facets>
+    <button type="button" class="facets__close" data-filter-close aria-label="Close filters">×</button>
+    <form action="{{ form_action }}" method="get" data-facets-form>
+      {%- comment -%} Preserve search term + options on submit {%- endcomment -%}
+      {%- if search_terms != blank -%}
+        <input type="hidden" name="q" value="{{ search_terms | escape }}">
+        <input type="hidden" name="options[prefix]" value="last">
+      {%- endif -%}
+      {%- if results.sort_by != blank -%}
+        <input type="hidden" name="sort_by" value="{{ results.sort_by }}">
+      {%- endif -%}
+
+      <div class="facets__head">
+        <h3 class="facets__title">Filters</h3>
+        {%- assign any_active = false -%}
+        {%- for f in filters -%}
+          {%- if f.active_values.size > 0 -%}{%- assign any_active = true -%}{%- endif -%}
+          {%- if f.type == 'price_range' and f.min_value.value != blank or f.max_value.value != blank -%}{%- assign any_active = true -%}{%- endif -%}
+        {%- endfor -%}
+        {%- if any_active -%}
+          {%- assign clear_url = form_action -%}
+          {%- if search_terms != blank -%}{%- assign clear_url = form_action | append: '?q=' | append: search_terms | url_encode -%}{%- endif -%}
+          <a href="{{ clear_url }}" class="facets__clear">Clear all</a>
+        {%- endif -%}
+      </div>
+
+      {%- for f in filters -%}
+        <details class="facet" {% if forloop.index <= 4 %}open{% endif %}>
+          <summary class="facet__head">
+            <span>{{ f.label }}</span>
+            <span class="facet__chev" aria-hidden="true">⌄</span>
+          </summary>
+          <div class="facet__body">
+            {%- case f.type -%}
+              {%- when 'list', 'boolean' -%}
+                {%- for v in f.values -%}
+                  <label class="facet-row{% if v.count == 0 and v.active == false %} facet-row--off{% endif %}">
+                    <input
+                      type="checkbox"
+                      name="{{ v.param_name }}"
+                      value="{{ v.value }}"
+                      {% if v.active %}checked{% endif %}
+                      {% if v.count == 0 and v.active == false %}disabled{% endif %}>
+                    <span class="facet-row__lbl">{{ v.label }}</span>
+                    <span class="facet-row__ct">{{ v.count }}</span>
+                  </label>
+                {%- endfor -%}
+
+              {%- when 'price_range' -%}
+                {%- liquid
+                  assign min_v = f.min_value.value | default: 0
+                  assign max_v = f.max_value.value | default: f.range_max
+                -%}
+                <div class="facet-price">
+                  <label class="facet-price__col">
+                    <span>Min</span>
+                    <div class="facet-price__input">
+                      <span>{{ cart.currency.symbol }}</span>
+                      <input
+                        type="number"
+                        name="{{ f.min_value.param_name }}"
+                        value="{% if f.min_value.value %}{{ min_v | money_without_currency | replace: ',', '' }}{% endif %}"
+                        placeholder="0"
+                        min="0"
+                        max="{{ f.range_max | money_without_currency | replace: ',', '' }}"
+                        inputmode="decimal">
+                    </div>
+                  </label>
+                  <label class="facet-price__col">
+                    <span>Max</span>
+                    <div class="facet-price__input">
+                      <span>{{ cart.currency.symbol }}</span>
+                      <input
+                        type="number"
+                        name="{{ f.max_value.param_name }}"
+                        value="{% if f.max_value.value %}{{ max_v | money_without_currency | replace: ',', '' }}{% endif %}"
+                        placeholder="{{ f.range_max | money_without_currency | replace: ',', '' }}"
+                        min="0"
+                        max="{{ f.range_max | money_without_currency | replace: ',', '' }}"
+                        inputmode="decimal">
+                    </div>
+                  </label>
+                </div>
+                <p class="facet-price__hint">Range: {{ 0 | money }} – {{ f.range_max | money }}</p>
+            {%- endcase -%}
+          </div>
+        </details>
+      {%- endfor -%}
+
+      <button type="submit" class="btn btn--red btn--block facets__apply">Apply filters</button>
+    </form>
+  </aside>
+{%- endif -%}

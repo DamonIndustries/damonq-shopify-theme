@@ -1,0 +1,73 @@
+{%- paginate search.results by 24 -%}
+<section class="container" style="padding: 56px 0;">
+  <span style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--red);font-weight:800;">{{ 'general.search.title' | t }}</span>
+  <h1 style="font-size: clamp(32px, 4vw, 48px); margin: 8px 0 24px; letter-spacing: -0.02em; line-height: 1; font-weight: 800;">
+    {%- if search.performed -%}
+      Results for "{{ search.terms | escape }}"
+    {%- else -%}
+      Search Damon
+    {%- endif -%}
+  </h1>
+
+  <form action="{{ routes.search_url }}" method="get" role="search" class="search-bar" style="max-width: 640px; margin-bottom: 32px;">
+    <input type="search" name="q" class="search-bar__input" value="{{ search.terms | escape }}" placeholder="Search products" aria-label="Search">
+    <input type="hidden" name="options[prefix]" value="last">
+    <button type="submit" class="search-bar__submit">Search</button>
+  </form>
+
+  {%- if search.performed -%}
+    <div class="collection-layout">
+      {% render 'facet-filters', results: search, form_action: routes.search_url, search_terms: search.terms %}
+
+      <div class="collection-results">
+        {% render 'facet-toolbar', results: search, form_action: routes.search_url, search_terms: search.terms, count: search.results_count %}
+
+        {%- if search.results_count > 0 -%}
+          <div class="product-grid">
+            {%- for item in search.results -%}
+              {%- if item.object_type == 'product' -%}
+                {% render 'product-card', product: item %}
+              {%- else -%}
+                <a href="{{ item.url }}" class="product-card">
+                  <div class="product-card__info">
+                    <span class="product-card__cat">{{ item.object_type }}</span>
+                    <h4 class="product-card__title">{{ item.title }}</h4>
+                  </div>
+                </a>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+
+          {%- if paginate.pages > 1 -%}
+            <nav class="pagination" role="navigation" aria-label="Pagination" style="margin-top: 32px; display: flex; justify-content: center; gap: 8px;">
+              {%- if paginate.previous -%}
+                <a href="{{ paginate.previous.url }}" class="btn btn--outline">‹ Prev</a>
+              {%- endif -%}
+              {%- for part in paginate.parts -%}
+                {%- if part.is_link -%}
+                  <a href="{{ part.url }}" class="btn btn--outline">{{ part.title }}</a>
+                {%- else -%}
+                  <span class="btn btn--ink">{{ part.title }}</span>
+                {%- endif -%}
+              {%- endfor -%}
+              {%- if paginate.next -%}
+                <a href="{{ paginate.next.url }}" class="btn btn--outline">Next ›</a>
+              {%- endif -%}
+            </nav>
+          {%- endif -%}
+        {%- else -%}
+          <div class="facet-empty">
+            <h3>{{ 'general.search.no_results' | t: terms: search.terms }}</h3>
+            <p>Try a different search term, or clear your filters.</p>
+            <a href="{{ routes.search_url }}?q={{ search.terms | url_encode }}" class="btn btn--outline" style="margin-top: 14px;">Clear all filters</a>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  {%- endif -%}
+</section>
+{%- endpaginate -%}
+
+{% schema %}
+{ "name": "Search", "settings": [] }
+{% endschema %}

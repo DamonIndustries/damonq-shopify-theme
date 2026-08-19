@@ -1,0 +1,25 @@
+{%- comment -%}
+  Announcement bar — dark ink stripe above the header.
+{%- endcomment -%}
+
+<div class="announcement-bar" role="region" aria-label="Announcement">
+  <div class="container">
+    {{ section.settings.message }}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Announcement bar",
+  "tag": "aside",
+  "settings": [
+    {
+      "type": "richtext",
+      "id": "message",
+      "label": "Message",
+      "default": "<p>Free freight on orders over <b>$250</b> · Net‑30 for verified facilities · Same‑day shipping from Alliance, OH on orders before 2pm</p>"
+    }
+  ],
+  "presets": [{ "name": "Announcement bar" }]
+}
+{% endschema %}

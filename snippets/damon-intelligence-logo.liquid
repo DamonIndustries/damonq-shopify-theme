@@ -1,0 +1,13 @@
+{%- comment -%}
+  Alt logo — "Damon Intelligence" — easter egg.
+  Hosted PNG served from the Shopify Files CDN. Inline max-height matches
+  the regular logo's setting so swapping in the alt image doesn't change
+  the header layout — only the picture changes.
+{%- endcomment -%}
+{%- assign intel_max_h = settings.logo_max_height | default: 44 -%}
+<img class="damon-intel"
+     src="https://cdn.shopify.com/s/files/1/0988/7442/5629/files/Damon_Inteligence.png?v=1778295034"
+     alt="Damon Intelligence"
+     style="max-height: {{ intel_max_h }}px; width: auto;"
+     loading="eager"
+     decoding="async">

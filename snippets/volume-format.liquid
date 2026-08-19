@@ -1,0 +1,26 @@
+{%- comment -%}
+  Format a Shopify volume metafield value into a short human label.
+  Usage: {% render 'volume-format', volume: variant.metafields.damon.container_volume.value %}
+  Input: { value: 1.0, unit: 'us_gal' }
+  Output: "1 gal"
+{%- endcomment -%}
+{%- if volume and volume.value -%}
+  {%- assign vraw = volume.value | times: 1.0 -%}
+  {%- assign vfloor = vraw | round -%}
+  {%- if vraw == vfloor -%}
+    {%- assign vnum = vraw | round: 0 -%}
+  {%- else -%}
+    {%- assign vnum = vraw | round: 2 -%}
+  {%- endif -%}
+  {%- case volume.unit -%}
+    {%- when 'us_gal' or 'imp_gal' -%}{{ vnum }} gal
+    {%- when 'us_qt' or 'imp_qt' -%}{{ vnum }} qt
+    {%- when 'us_pt' or 'imp_pt' -%}{{ vnum }} pt
+    {%- when 'us_oz' or 'imp_oz' -%}{{ vnum }} oz
+    {%- when 'ml' -%}{{ vnum }} mL
+    {%- when 'cl' -%}{{ vnum }} cL
+    {%- when 'l' -%}{{ vnum }} L
+    {%- when 'm3' -%}{{ vnum }} m³
+    {%- else -%}{{ vnum }} {{ volume.unit }}
+  {%- endcase -%}
+{%- endif -%}

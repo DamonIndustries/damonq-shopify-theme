@@ -1,0 +1,190 @@
+{%- comment -%}
+  Newsletter — red gradient strip with email signup.
+
+  HTML is unchanged from the prior Shopify-customer-form version so the
+  visual treatment stays pixel-identical (white pill input, black pill
+  submit, legal line below). The submit is intercepted by inline JS that
+  POSTs to HubSpot's Forms Submission API:
+
+    POST https://api.hsforms.com/submissions/v3/integration/submit/{portalId}/{formId}
+
+  Portal ID comes from settings.hubspot_portal_id (global theme setting).
+  Form ID is per-section. Visitor's hubspotutk cookie (dropped by the
+  site-wide HubSpot tracking script in theme.liquid) is forwarded for
+  full attribution.
+
+  Bot protection: a CSS-hidden `_hp` honeypot field. Real users leave it
+  empty; bots fill it. Submissions with a value silently "succeed"
+  without hitting HubSpot.
+{%- endcomment -%}
+
+<section
+  class="newsletter"
+  data-newsletter
+  data-hs-portal="{{ settings.hubspot_portal_id }}"
+  data-hs-form="{{ section.settings.hubspot_form_id }}">
+  <div class="container">
+    <div class="newsletter__grid">
+      <div>
+        {%- if section.settings.eyebrow != blank -%}
+          <span class="newsletter__eyebrow">{{ section.settings.eyebrow }}</span>
+        {%- endif -%}
+        <h2>
+          {{ section.settings.heading_pre }}
+          {%- if section.settings.heading_em != blank -%}
+            <em>{{ section.settings.heading_em }}</em>
+          {%- endif -%}
+          {{ section.settings.heading_post }}
+        </h2>
+        <p class="newsletter__body">{{ section.settings.body }}</p>
+      </div>
+
+      <div>
+        <form class="newsletter__form" data-newsletter-form novalidate>
+          <input
+            type="email"
+            name="email"
+            required
+            placeholder="{{ section.settings.placeholder }}"
+            aria-label="Email address"
+            autocomplete="email"
+            data-newsletter-email>
+          <button type="submit" data-newsletter-submit>{{ section.settings.submit_text }}</button>
+
+          {%- comment -%} Honeypot — visually hidden, real users won't fill it. {%- endcomment -%}
+          <input
+            type="text"
+            name="_hp"
+            class="newsletter__hp"
+            tabindex="-1"
+            autocomplete="off"
+            aria-hidden="true"
+            value=""
+            data-newsletter-hp>
+        </form>
+
+        <p class="newsletter__legal" data-newsletter-status>{{ section.settings.legal }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  var root = document.currentScript.closest('[data-newsletter]') || document.querySelector('[data-newsletter]');
+  if (!root) return;
+
+  var form    = root.querySelector('[data-newsletter-form]');
+  var emailEl = root.querySelector('[data-newsletter-email]');
+  var btn     = root.querySelector('[data-newsletter-submit]');
+  var status  = root.querySelector('[data-newsletter-status]');
+  var hp      = root.querySelector('[data-newsletter-hp]');
+  var portal  = root.getAttribute('data-hs-portal');
+  var formId  = root.getAttribute('data-hs-form');
+
+  if (!form || !portal || !formId) return;
+
+  function getCookie(name) {
+    var match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()\[\]\\\/\+^])/g, '\\$1') + '=([^;]*)'));
+    return match ? decodeURIComponent(match[1]) : '';
+  }
+
+  function setStatus(text, kind) {
+    if (!status) return;
+    status.textContent = text;
+    // Use existing color variations from the prior implementation
+    status.style.color = kind === 'error' ? '#ffd0d6' : (kind === 'success' ? '#fff' : '');
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (hp && hp.value) {
+      // Bot — silently succeed
+      setStatus('✦ Subscribed. Watch your inbox.', 'success');
+      form.style.display = 'none';
+      return;
+    }
+
+    var email = (emailEl.value || '').trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setStatus('Please enter a valid email address.', 'error');
+      emailEl.focus();
+      return;
+    }
+
+    if (btn) { btn.disabled = true; btn.dataset._originalText = btn.textContent; btn.textContent = 'Sending…'; }
+    setStatus('', '');
+
+    var payload = {
+      fields: [
+        { objectTypeId: '0-1', name: 'email', value: email }
+      ],
+      context: {
+        hutk: getCookie('hubspotutk'),
+        pageUri: window.location.href,
+        pageName: document.title
+      }
+    };
+
+    fetch('https://api.hsforms.com/submissions/v3/integration/submit/' + encodeURIComponent(portal) + '/' + encodeURIComponent(formId), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (res) {
+        if (res.ok) return res.json().then(function (j) { return { ok: true, j: j }; });
+        return res.json().then(function (j) { return { ok: false, j: j, status: res.status }; }).catch(function () { return { ok: false, j: null, status: res.status }; });
+      })
+      .then(function (result) {
+        if (result.ok) {
+          form.style.display = 'none';
+          setStatus('✦ Subscribed. Watch your inbox.', 'success');
+          // Fire analytics event for GA4 / other listeners
+          document.dispatchEvent(new CustomEvent('newsletter:subscribed', { detail: { email: email, formId: formId } }));
+          if (window.DamonToast) window.DamonToast('Subscribed', { sub: 'Field Notes coming next month.' });
+        } else {
+          // HubSpot returns helpful error details in errors[]
+          var msg = 'Something went wrong. Please try again.';
+          if (result.j && result.j.errors && result.j.errors.length) {
+            var first = result.j.errors[0];
+            if (first.errorType === 'INVALID_EMAIL') msg = 'That email address isn’t valid.';
+            else if (first.errorType === 'BLOCKED_EMAIL') msg = 'That email address can’t be subscribed.';
+          }
+          setStatus(msg, 'error');
+          if (btn) { btn.disabled = false; btn.textContent = btn.dataset._originalText || 'Subscribe'; }
+        }
+      })
+      .catch(function () {
+        setStatus('Network error. Please try again.', 'error');
+        if (btn) { btn.disabled = false; btn.textContent = btn.dataset._originalText || 'Subscribe'; }
+      });
+  });
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Newsletter",
+  "settings": [
+    { "type": "text", "id": "eyebrow",     "label": "Eyebrow",                "default": "★ Damon Field Notes" },
+    { "type": "text", "id": "heading_pre", "label": "Heading (before italic)", "default": "Get" },
+    { "type": "text", "id": "heading_em",  "label": "Heading (italic / pill)", "default": "Field Notes" },
+    { "type": "text", "id": "heading_post","label": "Heading (after italic)",  "default": "in your inbox." },
+    { "type": "textarea", "id": "body",    "label": "Body",                   "default": "One email a month. New programs, training videos, regulatory updates, and the occasional photo of an obscenely clean floor." },
+    { "type": "text", "id": "placeholder", "label": "Email placeholder",      "default": "you@facility.com" },
+    { "type": "text", "id": "submit_text", "label": "Submit button text",     "default": "Subscribe" },
+    { "type": "text", "id": "legal",       "label": "Legal / fine print",     "default": "We send one email a month. Unsubscribe anytime." },
+    { "type": "header", "content": "HubSpot" },
+    {
+      "type": "text",
+      "id": "hubspot_form_id",
+      "label": "HubSpot form ID",
+      "default": "3200db6b-e53d-4b9a-988e-03b4d4f0e7ac",
+      "info": "Find this in HubSpot → Marketing → Forms → Embed → the formId in the snippet. The portal ID is set globally under Theme settings → HubSpot."
+    }
+  ],
+  "presets": [
+    { "name": "Newsletter" }
+  ]
+}
+{% endschema %}

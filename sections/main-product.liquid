@@ -1,0 +1,1437 @@
+{%- comment -%}
+  Product Detail Page — Damon
+  Pixel-matched to design-system/preview/pdp-fs-complete.html
+
+  Reads from the `damon` metafield namespace. See
+  design-system/components.md for the full data contract.
+
+  Reference product (test data live): handle `accelerate-ii-low-fume-low-hazard-stripper`.
+{%- endcomment -%}
+
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign price = current_variant.price
+  assign compare_at = current_variant.compare_at_price
+
+  # ----- product-level scalars
+  assign m = product.metafields.damon
+  assign epa_reg            = m.epa_reg_number
+  assign subtitle           = m.subtitle
+  assign chemistry_type     = m.chemistry_type
+  assign form_type          = m.form
+  assign made_in            = m.made_in
+  assign facilities_using   = m.facilities_using | plus: 0
+  assign is_food_contact    = m.is_food_contact_safe
+  assign requires_rinse     = m.requires_rinse
+  assign net30_eligible     = m.net30_eligible
+  assign usda_aligned       = m.usda_aligned
+  assign is_best_seller     = m.is_best_seller
+  assign what_it_isnt       = m.what_it_isnt
+
+  # ----- product-level metaobject lists
+  assign kill_claims        = m.kill_claims.value
+  assign surfaces           = m.surface_compatibility.value
+  assign fuel_compat        = m.fuel_compatibility.value
+  assign documents          = m.documents.value
+  assign programs           = m.programs.value
+  assign application_steps  = m.application_steps.value
+
+  # ----- ship-row copy (per-product override → theme setting fallback)
+  assign ship_headline    = m.shipping_headline.value | default: settings.ship_row_shipping_headline
+  assign ship_subtext     = m.shipping_subtext.value  | default: settings.ship_row_shipping_subtext
+  assign returns_headline = m.returns_headline.value  | default: settings.ship_row_returns_headline
+  assign returns_subtext  = m.returns_subtext.value   | default: settings.ship_row_returns_subtext
+  assign net30_subtext    = m.net30_subtext.value     | default: settings.ship_row_net30_subtext
+
+  # ----- trust-strip copy (per-product override → hardcoded fallback)
+  assign trust_1_headline = m.trust_tile_1_headline.value | default: 'Ships from Ohio'
+  assign trust_1_subtext  = m.trust_tile_1_subtext.value  | default: 'Same‑day before 2pm ET'
+  assign trust_2_headline = m.trust_tile_2_headline.value | default: '30‑day returns'
+  assign trust_2_subtext  = m.trust_tile_2_subtext.value  | default: 'Even on opened cases'
+  assign trust_3_headline = m.trust_tile_3_headline.value | default: 'Made in Ohio'
+  assign trust_3_subtext  = m.trust_tile_3_subtext.value  | default: 'Since 1938'
+  assign trust_4_headline = m.trust_tile_4_headline.value | default: 'Net‑30 financing'
+  assign trust_4_subtext  = m.trust_tile_4_subtext.value  | default: 'For verified facilities'
+
+  # ----- Compatibility tab label switches when fuels are present
+  assign compat_tab_label = 'damon.pdp.tab_compatibility_surfaces' | t
+  if fuel_compat and fuel_compat.size > 0
+    assign compat_tab_label = 'damon.pdp.tab_compatibility' | t
+  endif
+
+  # ----- Help: FAQ entries linked to this product (damon_faq metaobject
+  # with linked_products list-reference). We compute a boolean flag here
+  # and iterate inline at the render site for the actual filter.
+  assign all_faqs = shop.metaobjects.damon_faq.values
+  assign has_product_faqs = false
+  if all_faqs and all_faqs.size > 0
+    for faq in all_faqs
+      assign linked = faq.linked_products.value
+      if linked and linked.size > 0
+        for lp in linked
+          if lp.id == product.id
+            assign has_product_faqs = true
+            break
+          endif
+        endfor
+      endif
+      if has_product_faqs
+        break
+      endif
+    endfor
+  endif
+-%}
+
+<section class="container pdp">
+
+  <div class="pdp__crumb">
+    <a href="{{ routes.root_url }}">Home</a><span class="pdp__crumb-sep">/</span>
+    <a href="{{ routes.collections_url }}">Catalog</a><span class="pdp__crumb-sep">/</span>
+    {%- if product.collections.first -%}
+      <a href="{{ product.collections.first.url }}">{{ product.collections.first.title }}</a><span class="pdp__crumb-sep">/</span>
+    {%- endif -%}
+    <span class="pdp__crumb-cur">{{ product.title }}</span>
+  </div>
+
+  <div class="pdp__buy">
+
+    <!-- LEFT: gallery -->
+    <div class="pdp__gallery">
+      {%- liquid
+        # Prefer the selected variant's image so the gallery matches the
+        # auto-selected variant. Falls back to the product's featured image.
+        assign hero_image = current_variant.featured_image | default: product.featured_image
+        assign hero_image_id = hero_image.id
+      -%}
+      {%- if product.images.size > 1 -%}
+        <div class="pdp__thumbs">
+          {%- for img in product.images -%}
+            <button
+              type="button"
+              class="pdp__thumb{% if hero_image_id and img.id == hero_image_id %} pdp__thumb--on{% endif %}"
+              data-thumb-index="{{ forloop.index0 }}"
+              data-thumb-img="{{ img | image_url: width: 1200 }}"
+              data-thumb-alt="{{ img.alt | escape }}"
+              data-thumb-image-id="{{ img.id }}"
+              aria-label="View image {{ forloop.index }}">
+              <span class="pdp__thumb-img">
+                {{ img | image_url: width: 176 | image_tag: alt: img.alt, loading: 'lazy', width: 88, height: 88 }}
+              </span>
+            </button>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+      <div class="pdp__main">
+        {%- if is_best_seller.value == true -%}
+          <span class="pdp__corner-stamp">★ Best seller</span>
+        {%- endif -%}
+        {%- if hero_image -%}
+          {{ hero_image | image_url: width: 800 | image_tag: alt: hero_image.alt, width: 800, height: 800 }}
+        {%- elsif settings.default_product_image != blank -%}
+          {{ settings.default_product_image | image_url: width: 800 | image_tag: alt: product.title, width: 800, height: 800 }}
+        {%- else -%}
+          {{ 'product-1' | placeholder_svg_tag }}
+        {%- endif -%}
+        {%- if epa_reg != blank -%}
+          <span class="pdp__epa">EPA Reg. <b>{{ epa_reg }}</b></span>
+        {%- endif -%}
+      </div>
+    </div>
+
+    <!-- RIGHT: info & buy -->
+    <div class="pdp__info">
+      <div class="pdp__info-meta">
+        <span>SKU · {{ current_variant.sku | default: product.id }}</span>
+        {%- if programs and programs.size > 0 -%}
+          {%- for prog in programs -%}
+            <span>·</span>
+            {%- assign prog_url = prog.landing_url.value -%}
+            {%- if prog_url == blank -%}{%- assign prog_url = '/pages/' | append: prog.slug.value -%}{%- endif -%}
+            <a href="{{ prog_url }}">{{ prog.name.value }} program</a>
+          {%- endfor -%}
+        {%- endif -%}
+      </div>
+
+      <h1 class="pdp__title">{{ product.title }}</h1>
+
+      {%- if subtitle != blank -%}
+        <p class="pdp__tagline">{{ subtitle }}</p>
+      {%- elsif product.description != blank -%}
+        <p class="pdp__tagline">{{ product.description | strip_html | truncate: 200 }}</p>
+      {%- endif -%}
+
+      {%- if facilities_using > 0 -%}
+        <div class="pdp__reviews">
+          <span>Used in <b>{% render 'format-int', n: facilities_using %}</b> facilities</span>
+        </div>
+      {%- endif -%}
+
+      {%- comment -%} Build claim chips: top kill_claims (up to 4) + flag-based chips {%- endcomment -%}
+      {%- assign chip_count = 0 -%}
+      {%- capture chips_html -%}
+        {%- if kill_claims and kill_claims.size > 0 -%}
+          {%- assign sorted_claims = kill_claims | sort: 'contact_time_seconds.value' -%}
+          {%- for kc in sorted_claims limit: 4 -%}
+            <span class="claim-chip"><b>{{ kc.contact_time_label.value }}</b> {{ kc.pathogen.value }}</span>
+            {%- assign chip_count = chip_count | plus: 1 -%}
+          {%- endfor -%}
+        {%- endif -%}
+        {%- if is_food_contact.value == true and requires_rinse.value == false -%}
+          <span class="claim-chip"><b>No rinse</b> on food contact</span>
+          {%- assign chip_count = chip_count | plus: 1 -%}
+        {%- endif -%}
+        {%- if usda_aligned.value == true -%}
+          <span class="claim-chip"><b>USDA</b> aligned</span>
+          {%- assign chip_count = chip_count | plus: 1 -%}
+        {%- endif -%}
+        {%- if epa_reg != blank -%}
+          <span class="claim-chip"><b>EPA</b> registered</span>
+          {%- assign chip_count = chip_count | plus: 1 -%}
+        {%- endif -%}
+      {%- endcapture -%}
+      {%- if chip_count > 0 -%}
+        <div class="claim-chips">{{ chips_html }}</div>
+      {%- endif -%}
+
+      {%- form 'product', product, data-add-to-cart-form: '', class: 'pdp__form' -%}
+        <input type="hidden" name="id" value="{{ current_variant.id }}" data-variant-id-input>
+
+        {%- if product.variants.size > 1 and product.options_with_values.size > 1 -%}
+          {%- comment -%}
+            Multi-option picker. Renders one labeled selector row per option
+            (Size, Pack Quantity, Color, ...), each with a button per unique
+            value. JS combines the selected values across rows to pick the
+            matching variant. Unavailable combinations are visually disabled.
+
+            We render this whenever a product has 2+ options. For 1-option
+            products we keep the richer metafield-aware tile picker below —
+            it shows volume formatting, container type, case info, per-tile
+            stock dots, and per-variant prices, which is overkill (and
+            actively wrong) when option values stand on their own.
+          {%- endcomment -%}
+          <div class="pdp__variants pdp__variants--multi" data-variant-picker>
+            {%- for option in product.options_with_values -%}
+              {%- assign opt_idx = forloop.index0 -%}
+              <div class="pdp__option-group" data-option-index="{{ opt_idx }}">
+                <div class="pdp__variants-label">
+                  <span>{{ option.name }}</span>
+                  <span class="pdp__variants-selected" data-selected-option-value="{{ opt_idx }}">{{ option.selected_value }}</span>
+                </div>
+                <div class="pdp__variants-grid pdp__variants-grid--swatches">
+                  {%- for value in option.values -%}
+                    <button type="button"
+                            class="variant-tile variant-tile--swatch{% if option.selected_value == value %} variant-tile--on{% endif %}"
+                            data-option-button
+                            data-option-index="{{ opt_idx }}"
+                            data-option-value="{{ value | escape }}">
+                      <span class="variant-tile__name">{{ value }}</span>
+                    </button>
+                  {%- endfor -%}
+                </div>
+              </div>
+            {%- endfor -%}
+
+            <script type="application/json" data-variants-json>
+              [
+                {%- for variant in product.variants -%}
+                  {%- assign v_type_str = variant.metafields.damon.container_type.value | default: '' -%}
+                  {
+                    "id": {{ variant.id }},
+                    "available": {{ variant.available }},
+                    "options": {{ variant.options | json }},
+                    "price": {{ variant.price | money | json }},
+                    "price_cents": {{ variant.price }},
+                    "container_type": {{ v_type_str | json }},
+                    "quantity_price_breaks": [
+                      {%- for br in variant.quantity_price_breaks -%}
+                        {"min": {{ br.minimum_quantity }}, "cents": {{ br.price }}}{%- unless forloop.last %},{% endunless -%}
+                      {%- endfor -%}
+                    ]
+                    {%- if variant.featured_image -%}
+                      , "image": {{ variant.featured_image | image_url: width: 1200 | json }}
+                      , "image_id": "{{ variant.featured_image.id }}"
+                      , "image_alt": {{ variant.featured_image.alt | default: '' | json }}
+                    {%- endif -%}
+                  }{% unless forloop.last %},{% endunless %}
+                {%- endfor -%}
+              ]
+            </script>
+          </div>
+        {%- elsif product.variants.size > 1 -%}
+          {%- liquid
+            assign cv_vol = current_variant.metafields.damon.container_volume.value
+            assign cv_type = current_variant.metafields.damon.container_type
+            assign cv_units = current_variant.metafields.damon.units_per_case
+            capture cv_label
+              if cv_vol
+                render 'volume-format', volume: cv_vol
+              endif
+              if cv_type != blank
+                echo ' · '
+                echo cv_type
+              endif
+              if cv_units and cv_units > 0
+                echo ' · Case of '
+                echo cv_units
+              endif
+            endcapture
+          -%}
+          <div class="pdp__variants">
+            <div class="pdp__variants-label">
+              <span>{{ product.options.first | default: 'Container size' }}</span>
+              <span class="pdp__variants-selected" data-selected-variant-name>{{ cv_label | default: current_variant.title }}</span>
+            </div>
+            <div class="pdp__variants-grid">
+              {%- for variant in product.variants -%}
+                {%- liquid
+                  assign vvol = variant.metafields.damon.container_volume.value
+                  assign vtype_raw = variant.metafields.damon.container_type.value
+                  assign vtype = vtype_raw | default: ''
+                  assign vunits = variant.metafields.damon.units_per_case.value | plus: 0
+                  capture vname
+                    if vvol
+                      render 'volume-format', volume: vvol
+                    else
+                      echo variant.title | split: ' / ' | first
+                    endif
+                  endcapture
+                  capture vsub
+                    if vtype != blank
+                      echo vtype
+                    endif
+                    if vunits > 1
+                      if vtype != blank
+                        echo ' · '
+                      endif
+                      echo 'Case of '
+                      echo vunits
+                    endif
+                  endcapture
+
+                  # ----- Per-variant stock state. Simplified to two states:
+                  # "Available" vs "Out of stock". variant.available is true
+                  # when inventory is positive, when inventory_policy is
+                  # 'continue' (backorders allowed), or when inventory is
+                  # untracked entirely.
+                  if variant.available
+                    assign v_status = 'in_stock'
+                    assign v_color  = 'good'
+                    assign v_short  = 'Available'
+                    assign v_long   = 'Available · ships today'
+                  else
+                    assign v_status = 'oos'
+                    assign v_color  = 'bad'
+                    assign v_short  = 'Out of stock'
+                    assign v_long   = 'Out of stock'
+                  endif
+                -%}
+                <button type="button"
+                        class="variant-tile{% if variant == current_variant %} variant-tile--on{% endif %}{% if v_status == 'oos' %} variant-tile--oos{% endif %}"
+                        data-variant-tile="{{ variant.id }}"
+                        data-variant-name="{{ vname | strip }}{% if vsub != blank %} · {{ vsub | strip }}{% endif %}"
+                        data-variant-price="{{ variant.price | money }}"
+                        data-variant-price-cents="{{ variant.price }}"
+                        data-variant-breaks='[{%- for br in variant.quantity_price_breaks -%}{"min":{{ br.minimum_quantity }},"cents":{{ br.price }}}{%- unless forloop.last %},{% endunless -%}{%- endfor -%}]'
+                        data-variant-available="{{ variant.available }}"
+                        data-variant-container-type="{{ vtype }}"
+                        data-stock-long="{{ v_long | escape }}"
+                        data-stock-color="{{ v_color }}"
+                        data-stock-status="{{ v_status }}"
+                        {% if variant.featured_image %}data-variant-image="{{ variant.featured_image | image_url: width: 1200 }}" data-variant-image-alt="{{ variant.featured_image.alt | escape }}" data-variant-image-id="{{ variant.featured_image.id }}"{% endif %}
+                        {% unless variant.available %}disabled{% endunless %}>
+                  <span class="variant-tile__name">{{ vname | strip }}</span>
+                  {%- if vsub != blank -%}
+                    <span class="variant-tile__sub">{{ vsub | strip }}</span>
+                  {%- endif -%}
+                  <span class="variant-tile__price">{{ variant.price | money }}</span>
+                  <span class="variant-tile__stock variant-tile__stock--{{ v_color }}">
+                    <span class="variant-tile__stock-dot" aria-hidden="true"></span>{{ v_short }}
+                  </span>
+                </button>
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- endif -%}
+
+        <div class="pdp__price-block">
+          <span class="pdp__price" data-price>
+            {{ price | money }}
+            {%- assign cv_type_disp = current_variant.metafields.damon.container_type -%}
+            {%- if cv_type_disp != blank -%}
+              <small> / {{ cv_type_disp | downcase }}</small>
+            {%- elsif product.unit_price_measurement -%}
+              <small> / {{ product.unit_price_measurement.reference_unit }}</small>
+            {%- endif -%}
+          </span>
+          {%- if compare_at and compare_at > price -%}
+            {%- assign pct = compare_at | minus: price | times: 100.0 | divided_by: compare_at | round -%}
+            <span class="pdp__save">Save {{ pct }}%</span>
+          {%- endif -%}
+          {%- assign ppu_val = current_variant.metafields.damon.price_per_unit_volume.value -%}
+          {%- assign cv_vol_now = current_variant.metafields.damon.container_volume.value -%}
+          {%- if ppu_val -%}
+            {%- capture unit_label_now -%}{%- if cv_vol_now -%}{%- render 'volume-format', volume: cv_vol_now -%}{%- endif -%}{%- endcapture -%}
+            {%- assign unit_only = unit_label_now | split: ' ' | last -%}
+            {%- comment -%} money metafield value can be a Money drop {amount, currency_code} or a plain number — handle both {%- endcomment -%}
+            {%- if ppu_val.amount -%}
+              {%- assign ppu_amount = ppu_val.amount -%}
+            {%- else -%}
+              {%- assign ppu_amount = ppu_val -%}
+            {%- endif -%}
+            <span class="pdp__each">{{ ppu_amount | money }} <b>/ {{ unit_only | default: 'unit' }}</b></span>
+          {%- endif -%}
+        </div>
+
+        {%- if section.settings.show_autostock -%}
+          <div class="autostock-toggle">
+            <div>
+              <span class="autostock-toggle__tag">Damon AutoStock</span>
+              <h4>Subscribe &amp; save 5%</h4>
+              <p>Locked pricing for 12 months · skip or swap anytime</p>
+            </div>
+            <select name="properties[_autostock_cadence]" aria-label="{{ 'damon.pdp.autostock_cadence_aria' | t }}">
+              <option value="">One‑time only</option>
+              <option value="4_weeks">{{ 'damon.cart.cadence_4_weeks' | t }}</option>
+              <option value="6_weeks">{{ 'damon.cart.cadence_6_weeks' | t }}</option>
+              <option value="8_weeks">{{ 'damon.cart.cadence_8_weeks' | t }}</option>
+            </select>
+          </div>
+        {%- endif -%}
+
+        {%- comment -%}
+          Locksmith manual mode — gated by `section.settings.locksmith_enabled`
+          so merchants can deploy this template before installing Locksmith,
+          then flip the toggle on once the app + locks are configured.
+
+          Fail-secure: when the toggle is ON, default to LOCKED. Only grant
+          access when Locksmith's snippet *explicitly* returns 'true'. This
+          way a missing snippet, render error, or misconfigured lock keeps
+          the product gated rather than silently leaking access.
+
+          The `initialized` check is only meaningful for remote keys
+          (passcode / IP / secret-link / newsletter). If Locksmith reports
+          'false' for initialized, we're still loading — show a placeholder
+          and reload. Otherwise (snippet missing, returns 'true', or no
+          remote keys), treat as ready.
+
+          `request.design_mode` is true in the Shopify theme editor only —
+          we use it to honor the "Preview as locked" toggle without ever
+          affecting the live storefront.
+
+          Docs: https://www.locksmith.guide/tutorials/more/manual-mode
+        {%- endcomment -%}
+        {%- assign locksmith_access_granted = true -%}
+        {%- assign locksmith_initialized = true -%}
+        {%- comment -%}
+          Honor the global setting (Theme settings → Access control) OR the
+          legacy section-level toggle (kept for any merchant who enabled it
+          before this consolidation). Either turns Locksmith mode on.
+        {%- endcomment -%}
+        {%- assign locksmith_on = false -%}
+        {%- if settings.locksmith_enabled or section.settings.locksmith_enabled -%}
+          {%- assign locksmith_on = true -%}
+        {%- endif -%}
+        {%- if locksmith_on -%}
+          {%- assign locksmith_access_granted = false -%}
+          {%- capture ls_access_str -%}{%- render 'locksmith-variables', variable: 'access_granted', scope: 'subject', subject: product -%}{%- endcapture -%}
+          {%- if ls_access_str == 'true' -%}{%- assign locksmith_access_granted = true -%}{%- endif -%}
+          {%- capture ls_init_str -%}{%- render 'locksmith-variables', variable: 'initialized', scope: 'subject', subject: product -%}{%- endcapture -%}
+          {%- if ls_init_str == 'false' -%}{%- assign locksmith_initialized = false -%}{%- endif -%}
+
+          {%- comment -%} Theme-editor-only override so merchants can see the locked UI {%- endcomment -%}
+          {%- assign preview_locked = false -%}
+          {%- if settings.locksmith_preview_locked or section.settings.locksmith_preview_locked -%}
+            {%- assign preview_locked = true -%}
+          {%- endif -%}
+          {%- if preview_locked and request.design_mode -%}
+            {%- assign locksmith_access_granted = false -%}
+            {%- assign locksmith_initialized = true -%}
+          {%- endif -%}
+        {%- endif -%}
+
+        {%- if locksmith_access_granted -%}
+          <div class="pdp__qty-buy">
+            <div class="qty-stepper">
+              <button type="button" data-qty-minus aria-label="{{ 'products.product.decrease_quantity' | t }}">−</button>
+              <input type="number" name="quantity" value="1" min="1" data-qty-input aria-label="{{ 'products.product.quantity' | t }}">
+              <button type="button" data-qty-plus aria-label="{{ 'products.product.increase_quantity' | t }}">+</button>
+            </div>
+            <button type="submit" class="btn btn--red btn--lg btn--block" data-buy-btn
+                    {% unless current_variant.available %}disabled aria-disabled="true"{% endunless %}>
+              {%- if current_variant.available -%}
+                {{ 'products.product.add_to_cart' | t }} · <span data-line-total>{{ price | money }}</span>
+              {%- else -%}
+                {{ 'products.product.sold_out' | t }}
+              {%- endif -%}
+            </button>
+          </div>
+          {%- if section.settings.show_save_bundle -%}
+            <button type="button" class="btn btn--outline btn--block" data-save-bundle>Save to a bundle</button>
+          {%- endif -%}
+        {%- elsif locksmith_initialized -%}
+          {%- liquid
+            assign rep_url = settings.rep_link_page.url | default: '/pages/contact-rep'
+            assign rep_label = settings.rep_link_label | default: 'Contact the Q Team'
+            assign ls_label = section.settings.locksmith_button_label | default: 'Request access to purchase'
+            assign ls_icon = section.settings.locksmith_button_icon
+            assign ls_note = section.settings.locksmith_note
+          -%}
+          <a href="{{ rep_url }}?product={{ product.handle }}&reason=request_access"
+             class="btn btn--red btn--lg btn--block pdp__request-access">
+            {%- if ls_icon != blank -%}<span aria-hidden="true">{{ ls_icon }}</span> {% endif -%}
+            {{ ls_label }}
+          </a>
+          {%- if ls_note != blank -%}
+            <p class="pdp__request-access-note">
+              {{ ls_note }} {{ rep_label }} to request access.
+            </p>
+          {%- endif -%}
+        {%- else -%}
+          {%- comment -%} Remote-key initialization in progress — show placeholder and reload when Locksmith finishes {%- endcomment -%}
+          <button type="button" class="btn btn--lg btn--block" disabled>Loading…</button>
+          <script>
+            if (window.Locksmith) {
+              Locksmith.on('initialize', function () { window.location.reload(); });
+            }
+          </script>
+        {%- endif -%}
+
+        <div class="pdp__b2b-links">
+          {%- comment -%}
+            Sample request — driven by product-level metafield `damon.sample_size`
+            (single-line text, e.g. "4 oz", "8 oz", "100 mL"). When the metafield
+            has a value, the button renders with that size in the label. When the
+            metafield is empty, the entire button is hidden — products without
+            sample availability (drums, services, custom kits) don't show it.
+          {%- endcomment -%}
+          {%- assign sample_size = product.metafields.damon.sample_size | strip -%}
+          {%- if sample_size != blank -%}
+            <button
+              type="button"
+              class="pdp__b2b-link"
+              data-sample-trigger
+              data-product-title="{{ product.title | escape }}"
+              data-sample-size="{{ sample_size | escape }}">
+              <span aria-hidden="true">★</span> Request a {{ sample_size }} sample
+            </button>
+          {%- endif -%}
+          {%- liquid
+            assign rep_url = settings.rep_link_page.url | default: '/pages/contact-rep'
+            assign rep_label = settings.rep_link_label | default: 'Contact the Q Team'
+          -%}
+          <a href="{{ rep_url }}?product={{ product.handle }}" class="pdp__b2b-link">
+            <span aria-hidden="true">⛬</span> {{ rep_label }}
+          </a>
+          {%- if section.settings.show_bulk_order_link -%}
+            <a href="{{ routes.root_url }}pages/bulk-order" class="pdp__b2b-link">
+              <span aria-hidden="true">⊞</span> Bulk order
+            </a>
+          {%- endif -%}
+        </div>
+
+        {%- comment -%} ============ Ship-row tiles ============ {%- endcomment -%}
+        {%- liquid
+          # ----- Stock — computed once for the current variant and re-used.
+          # Mirrors the logic on each variant tile below so they stay in sync.
+          #
+          # Data source: variant.inventory_quantity (Liquid). This is the
+          # "available" count (on_hand minus committed) summed across all
+          # inventory locations. For a single-location store it equals
+          # InventoryLevel.quantities[available] from the Admin API.
+          # If a second location is added later, we'd need a Storefront API
+          # call to expose per-location availability for accurate ship-from
+          # promises.
+          assign low_threshold = 5
+          assign units_per_case = current_variant.metafields.damon.units_per_case.value | plus: 0
+          assign container_type_str = current_variant.metafields.damon.container_type.value | default: 'unit' | downcase
+
+          if units_per_case > 1
+            assign unit_single = 'case'
+            assign unit_plural = 'cases'
+          else
+            assign unit_single = container_type_str
+            assign unit_plural = unit_single | append: 's'
+          endif
+
+          # Compute volume noun for "12 cases · 144 quarts" secondary line
+          assign vol = current_variant.metafields.damon.container_volume.value
+          assign vol_unit = 'units'
+          if vol and vol.unit
+            case vol.unit
+              when 'us_qt' or 'imp_qt'  ; assign vol_unit = 'quarts'
+              when 'us_pt' or 'imp_pt'  ; assign vol_unit = 'pints'
+              when 'us_gal' or 'imp_gal'; assign vol_unit = 'gallons'
+              when 'us_oz' or 'imp_oz'  ; assign vol_unit = 'ounces'
+              when 'l'                  ; assign vol_unit = 'liters'
+              when 'ml'                 ; assign vol_unit = 'milliliters'
+            endcase
+          endif
+
+          # ----- Stock state for the ship-row.
+          # Simplified to two states for now: in-stock vs out-of-stock.
+          # Uses Shopify's standard variant.available check, which handles
+          # tracked inventory, backorder policy, and untracked products.
+          if current_variant.available
+            assign stock_status = 'in_stock'
+            assign stock_color  = 'good'
+            assign stock_long   = 'Available · ships today'
+          else
+            assign stock_status = 'oos'
+            assign stock_color  = 'bad'
+            assign stock_long   = 'Out of stock'
+          endif
+
+          # ----- Lot age
+          assign lot_at = current_variant.metafields.damon.lot_manufactured_at.value
+          assign lot_subtext = ''
+          if lot_at
+            assign now_s = 'now' | date: '%s' | plus: 0
+            assign lot_s = lot_at | date: '%s' | plus: 0
+            assign days_ago = now_s | minus: lot_s | divided_by: 86400
+            if days_ago < 0
+              assign days_ago = 0
+            endif
+            if days_ago == 0
+              assign lot_subtext = 'Manufactured today'
+            elsif days_ago == 1
+              assign lot_subtext = 'Manufactured 1 day ago'
+            else
+              assign lot_subtext = 'Manufactured ' | append: days_ago | append: ' days ago'
+            endif
+          endif
+        -%}
+        <div class="pdp__ship-row">
+          <div>
+            <span class="pdp__ship-icon" aria-hidden="true">⛟</span>
+            <div><b>{{ ship_headline }}</b><span>{{ ship_subtext }}</span></div>
+          </div>
+          <div data-ship-stock>
+            <span class="pdp__ship-icon pdp__ship-icon--{{ stock_color }}" aria-hidden="true" data-stock-icon>●</span>
+            <div>
+              <b data-stock-text>{{ stock_long }}</b>
+              {%- if lot_subtext != blank -%}<span>{{ lot_subtext }}</span>{%- endif -%}
+            </div>
+          </div>
+          <div>
+            <span class="pdp__ship-icon" aria-hidden="true">⏎</span>
+            <div><b>{{ returns_headline }}</b><span>{{ returns_subtext }}</span></div>
+          </div>
+          {%- if net30_eligible.value == true -%}
+            <div>
+              <span class="pdp__ship-icon" aria-hidden="true">$</span>
+              <div><b>{{ 'damon.pdp.net30_available' | t }}</b><span>{{ net30_subtext }}</span></div>
+            </div>
+          {%- endif -%}
+        </div>
+
+        {%- if programs and programs.size > 0 -%}
+          <div class="pdp__in-prog">
+            <span class="pdp__in-prog-label">★ In these cleaning programs</span>
+            <h4>This product ships as part of:</h4>
+            <div class="pdp__in-prog-pills">
+              {%- for prog in programs -%}
+                {%- assign prog_url = prog.landing_url.value -%}
+                {%- if prog_url == blank -%}{%- assign prog_url = '/pages/' | append: prog.slug.value -%}{%- endif -%}
+                <a href="{{ prog_url }}" class="pdp__in-prog-pill">{{ prog.name.value }}</a>
+              {%- endfor -%}
+            </div>
+          </div>
+        {%- endif -%}
+      {%- endform -%}
+    </div>
+  </div>
+
+  <div style="margin-top: 32px;">
+    <div class="trust-strip" role="region" aria-label="{{ 'products.product.trust_signals' | t }}">
+      <div class="trust-strip__item"><span class="trust-strip__icon">⛟</span><div><b>{{ trust_1_headline }}</b><span>{{ trust_1_subtext }}</span></div></div>
+      <div class="trust-strip__item"><span class="trust-strip__icon">⏎</span><div><b>{{ trust_2_headline }}</b><span>{{ trust_2_subtext }}</span></div></div>
+      <div class="trust-strip__item"><span class="trust-strip__icon">★</span><div><b>{{ trust_3_headline }}</b><span>{{ trust_3_subtext }}</span></div></div>
+      <div class="trust-strip__item"><span class="trust-strip__icon">$</span><div><b>{{ trust_4_headline }}</b><span>{{ trust_4_subtext }}</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="pdp-details container">
+  <div class="pdp-tabs" role="tablist">
+    <button class="pdp-tab pdp-tab--on" data-tab="description" role="tab" type="button">{{ 'damon.pdp.tab_description' | t }}</button>
+    {%- if application_steps and application_steps.size > 0 -%}
+      <button class="pdp-tab" data-tab="directions" role="tab" type="button">{{ 'damon.pdp.tab_directions' | t }} <span class="pdp-tab__count">({{ application_steps.size }})</span></button>
+    {%- endif -%}
+    {%- if kill_claims and kill_claims.size > 0 -%}
+      <button class="pdp-tab" data-tab="dilution" role="tab" type="button">{{ 'damon.pdp.tab_directions_dilution' | t }}</button>
+    {%- endif -%}
+    {%- if surfaces and surfaces.size > 0 or fuel_compat and fuel_compat.size > 0 -%}
+      <button class="pdp-tab" data-tab="surfaces" role="tab" type="button">{{ compat_tab_label }}</button>
+    {%- endif -%}
+    {%- if kill_claims and kill_claims.size > 0 -%}
+      <button class="pdp-tab" data-tab="claims" role="tab" type="button">Kill claims <span class="pdp-tab__count">({{ kill_claims.size }})</span></button>
+    {%- endif -%}
+    {%- if documents and documents.size > 0 -%}
+      <button class="pdp-tab" data-tab="docs" role="tab" type="button">{{ 'damon.pdp.tab_documentation' | t }} <span class="pdp-tab__count">({{ documents.size }})</span></button>
+    {%- endif -%}
+  </div>
+
+  <!-- DESCRIPTION PANEL — also renders dilution + surfaces stacked (matches mockup) -->
+  <div class="pdp-panel pdp-panel--on" data-panel="description">
+    <div class="pdp-panel__grid">
+      <div>
+        <h2>{{ product.metafields.custom.long_pitch_title | default: product.title }}</h2>
+        <div class="rte">{{ product.description }}</div>
+
+        {%- if what_it_isnt != blank -%}
+          <div class="pdp-callout">
+            <h4>What it isn't</h4>
+            <p>{{ what_it_isnt | newline_to_br }}</p>
+          </div>
+        {%- endif -%}
+      </div>
+
+      <aside>
+        {%- if chemistry_type != blank or form_type != blank or made_in != blank -%}
+          <div class="pdp-spec-list">
+            <h4>★ At a glance</h4>
+            <dl>
+              {%- if chemistry_type != blank -%}
+                <div class="row"><dt>Chemistry</dt><dd>{{ chemistry_type }}</dd></div>
+              {%- endif -%}
+              {%- if form_type != blank -%}
+                <div class="row"><dt>Form</dt><dd>{{ form_type }}</dd></div>
+              {%- endif -%}
+              {%- if made_in != blank -%}
+                <div class="row"><dt>Made in</dt><dd>{{ made_in }}</dd></div>
+              {%- endif -%}
+              {%- if epa_reg != blank -%}
+                <div class="row"><dt>EPA Reg.</dt><dd>{{ epa_reg }}</dd></div>
+              {%- endif -%}
+            </dl>
+          </div>
+        {%- endif -%}
+
+        {%- if documents and documents.size > 0 -%}
+          <div class="pdp-side-card">
+            <h4>★ Documentation</h4>
+            {%- for doc in documents -%}
+              {%- assign doc_file = doc.file.value -%}
+              {%- assign doc_href = '#' -%}
+              {%- if doc_file and doc_file.url -%}{%- assign doc_href = doc_file.url -%}{%- endif -%}
+              {%- assign doc_type_str = doc.doc_type.value | default: 'OTHER' -%}
+              {%- case doc_type_str -%}
+                {%- when 'SDS' -%}{%- assign doc_icon = 'SDS' -%}
+                {%- when 'TDS' -%}{%- assign doc_icon = 'TDS' -%}
+                {%- when 'EPA_LABEL' -%}{%- assign doc_icon = 'EPA' -%}
+                {%- when 'PROTOCOL' -%}{%- assign doc_icon = 'QR' -%}
+                {%- else -%}{%- assign doc_icon = 'DOC' -%}
+              {%- endcase -%}
+              <a href="{{ doc_href }}" target="_blank" rel="noopener" class="pdp-doc-row">
+                <div class="pdp-doc-row__icon">{{ doc_icon }}</div>
+                <div>
+                  <b>{{ doc.title.value | default: doc_type_str }}</b>
+                  {%- if doc.subtitle.value != blank -%}<p>{{ doc.subtitle.value }}</p>{%- endif -%}
+                </div>
+                <span class="pdp-doc-row__dl">↓ PDF</span>
+              </a>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </aside>
+    </div>
+
+    {%- if kill_claims and kill_claims.size > 0 -%}
+      {%- assign sorted_claims2 = kill_claims | sort: 'contact_time_seconds.value' -%}
+      <h3 style="margin-top: 48px;">Directions for use &amp; dilution</h3>
+      <p style="color: var(--grey); font-size: 14px;">EPA‑listed contact times. Refer to the product label for complete instructions.</p>
+      <table class="pdp-dilution">
+        <thead>
+          <tr><th>Application</th><th>Concentration</th><th>Contact time</th><th>Rinse required?</th></tr>
+        </thead>
+        <tbody>
+          {%- for kc in sorted_claims2 -%}
+            <tr>
+              <td>
+                <b>{{ kc.application.value | default: kc.pathogen.value }}</b>
+                {%- if kc.notes.value != blank -%}<br/><span style="color: var(--grey); font-size: 12px;">{{ kc.notes.value }}</span>{%- endif -%}
+              </td>
+              <td>{{ kc.concentration.value | default: '—' }}</td>
+              <td><b>{{ kc.contact_time_label.value }}</b></td>
+              <td>
+                {%- if kc.rinse_required.value -%}
+                  <span class="pdp-dilution__pill">Rinse required</span>
+                {%- else -%}
+                  <span class="pdp-dilution__pill">No rinse</span>
+                {%- endif -%}
+              </td>
+            </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
+    {%- endif -%}
+
+    {%- if has_product_faqs -%}
+      <section class="pdp-faq" style="margin-top: 40px;">
+        <div class="pdp-faq__head">
+          <h3 style="margin: 0;">Common questions about {{ product.title }}</h3>
+          <a href="{{ routes.root_url }}pages/help" class="pdp-faq__link">All help articles →</a>
+        </div>
+        <div class="pdp-faq__list">
+          {%- for faq in all_faqs -%}
+            {%- assign linked = faq.linked_products.value -%}
+            {%- assign show = false -%}
+            {%- if linked and linked.size > 0 -%}
+              {%- for lp in linked -%}{%- if lp.id == product.id -%}{%- assign show = true -%}{%- break -%}{%- endif -%}{%- endfor -%}
+            {%- endif -%}
+            {%- if show -%}
+              {%- assign faq_cat = faq.category.value | default: 'General' -%}
+              <details class="help-item">
+                <summary>
+                  <span class="help-item__cat">{{ faq_cat }}</span>
+                  <span class="help-item__q">{{ faq.question.value }}</span>
+                  <span class="help-item__chev" aria-hidden="true">⌄</span>
+                </summary>
+                <div class="help-item__body">
+                  <p>{{ faq.answer.value | newline_to_br }}</p>
+                </div>
+              </details>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      </section>
+    {%- endif -%}
+
+    {%- if surfaces and surfaces.size > 0 -%}
+      <h3 style="margin-top: 48px;">Surface compatibility</h3>
+      <p style="color: var(--grey); font-size: 14px;">Tested at label concentration on common facility surfaces. For uncommon substrates, request a compatibility test from your Damon rep.</p>
+      <div class="pdp-surface-grid">
+        {%- for s in surfaces -%}
+          {%- assign st = s.status.value -%}
+          {%- case st -%}
+            {%- when 'compatible' -%}
+              <div class="surf"><span class="surf__yes">✓</span><div>{{ s.surface_name.value }}{% if s.note.value != blank %}<span class="surf__note">{{ s.note.value }}</span>{% endif %}</div></div>
+            {%- when 'caution' -%}
+              <div class="surf surf--caution"><span class="surf__caution">!</span><div>{{ s.surface_name.value }}{% if s.note.value != blank %}<span class="surf__note">{{ s.note.value }}</span>{% endif %}</div></div>
+            {%- else -%}
+              <div class="surf surf--no"><span class="surf__no">!</span><div>{{ s.surface_name.value }}{% if s.note.value != blank %}<span class="surf__note">{{ s.note.value }}</span>{% endif %}</div></div>
+          {%- endcase -%}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+
+  {%- if kill_claims and kill_claims.size > 0 -%}
+    <div class="pdp-panel" data-panel="dilution">
+      {%- assign sorted_claims3 = kill_claims | sort: 'contact_time_seconds.value' -%}
+      <h2>Directions for use &amp; dilution</h2>
+      <p style="color: var(--grey); font-size: 14px;">EPA‑listed contact times. Refer to the product label for complete instructions.</p>
+      <table class="pdp-dilution">
+        <thead><tr><th>Application</th><th>Concentration</th><th>Contact time</th><th>Rinse?</th></tr></thead>
+        <tbody>
+          {%- for kc in sorted_claims3 -%}
+            <tr>
+              <td><b>{{ kc.application.value | default: kc.pathogen.value }}</b></td>
+              <td>{{ kc.concentration.value | default: '—' }}</td>
+              <td><b>{{ kc.contact_time_label.value }}</b></td>
+              <td><span class="pdp-dilution__pill">{% if kc.rinse_required.value %}Rinse required{% else %}No rinse{% endif %}</span></td>
+            </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
+    </div>
+  {%- endif -%}
+
+  {%- if surfaces and surfaces.size > 0 or fuel_compat and fuel_compat.size > 0 -%}
+    <div class="pdp-panel" data-panel="surfaces">
+      {%- if surfaces and surfaces.size > 0 -%}
+        <h2>Surface compatibility</h2>
+        <div class="pdp-surface-grid">
+          {%- for s in surfaces -%}
+            {%- assign st = s.status.value -%}
+            {%- case st -%}
+              {%- when 'compatible' -%}
+                <div class="surf"><span class="surf__yes">✓</span><div>{{ s.surface_name.value }}{% if s.note.value != blank %}<span class="surf__note">{{ s.note.value }}</span>{% endif %}</div></div>
+              {%- when 'caution' -%}
+                <div class="surf surf--caution"><span class="surf__caution">!</span><div>{{ s.surface_name.value }}{% if s.note.value != blank %}<span class="surf__note">{{ s.note.value }}</span>{% endif %}</div></div>
+              {%- else -%}
+                <div class="surf surf--no"><span class="surf__no">!</span><div>{{ s.surface_name.value }}{% if s.note.value != blank %}<span class="surf__note">{{ s.note.value }}</span>{% endif %}</div></div>
+            {%- endcase -%}
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+
+      {%- if fuel_compat and fuel_compat.size > 0 -%}
+        <h2 style="margin-top: 40px;">Fuel compatibility</h2>
+        <div class="pdp-surface-grid">
+          {%- for f in fuel_compat -%}
+            {%- assign fst = f.status.value -%}
+            {%- case fst -%}
+              {%- when 'compatible' -%}
+                <div class="surf"><span class="surf__yes">✓</span><div>{{ f.surface_name.value }}{% if f.note.value != blank %}<span class="surf__note">{{ f.note.value }}</span>{% endif %}</div></div>
+              {%- when 'caution' -%}
+                <div class="surf surf--caution"><span class="surf__caution">!</span><div>{{ f.surface_name.value }}{% if f.note.value != blank %}<span class="surf__note">{{ f.note.value }}</span>{% endif %}</div></div>
+              {%- else -%}
+                <div class="surf surf--no"><span class="surf__no">!</span><div>{{ f.surface_name.value }}{% if f.note.value != blank %}<span class="surf__note">{{ f.note.value }}</span>{% endif %}</div></div>
+            {%- endcase -%}
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  {%- if application_steps and application_steps.size > 0 -%}
+    {%- assign sorted_steps = application_steps | sort: 'step_number.value' -%}
+    <div class="pdp-panel" data-panel="directions">
+      <h2>Application directions</h2>
+      <p style="color: var(--grey); font-size: 14px;">Step-by-step instructions. Read all steps and any caution-flagged steps in full before starting.</p>
+      <ol class="pdp-directions">
+        {%- for step in sorted_steps -%}
+          {%- assign is_caution = step.is_caution.value -%}
+          <li class="pdp-directions__step{% if is_caution %} pdp-directions__step--caution{% endif %}">
+            <span class="pdp-directions__num">
+              {%- if is_caution -%}<span aria-hidden="true" class="pdp-directions__warn">⚠</span>{%- endif -%}
+              {{ step.step_number.value }}
+            </span>
+            <div class="pdp-directions__body">
+              <h4 class="pdp-directions__title">{{ step.title.value }}</h4>
+              <p>{{ step.description.value | newline_to_br }}</p>
+            </div>
+          </li>
+        {%- endfor -%}
+      </ol>
+    </div>
+  {%- endif -%}
+
+  {%- if kill_claims and kill_claims.size > 0 -%}
+    <div class="pdp-panel" data-panel="claims">
+      <h2>EPA-listed kill claims</h2>
+      {%- if epa_reg != blank -%}
+        <p style="color: var(--grey); font-size: 14px;">EPA Reg. <b style="color: var(--red);">{{ epa_reg }}</b></p>
+      {%- endif -%}
+      <div class="claim-chips" style="margin-top: 18px;">
+        {%- assign sorted_claims4 = kill_claims | sort: 'contact_time_seconds.value' -%}
+        {%- for kc in sorted_claims4 -%}
+          <span class="claim-chip"><b>{{ kc.contact_time_label.value }}</b> {{ kc.pathogen.value }}</span>
+        {%- endfor -%}
+      </div>
+    </div>
+  {%- endif -%}
+
+  {%- if documents and documents.size > 0 -%}
+    <div class="pdp-panel" data-panel="docs">
+      <h2>Documentation</h2>
+      <p style="color: var(--grey); font-size: 14px;">Audit‑ready PDFs. Use these for Joint Commission / CMS / OSHA compliance.</p>
+      {%- for doc in documents -%}
+        {%- assign doc_file = doc.file.value -%}
+        {%- assign doc_href = '#' -%}
+        {%- if doc_file and doc_file.url -%}{%- assign doc_href = doc_file.url -%}{%- endif -%}
+        {%- assign doc_type_str = doc.doc_type.value | default: 'OTHER' -%}
+        {%- case doc_type_str -%}
+          {%- when 'SDS' -%}{%- assign doc_icon = 'SDS' -%}
+          {%- when 'TDS' -%}{%- assign doc_icon = 'TDS' -%}
+          {%- when 'EPA_LABEL' -%}{%- assign doc_icon = 'EPA' -%}
+          {%- when 'PROTOCOL' -%}{%- assign doc_icon = 'QR' -%}
+          {%- else -%}{%- assign doc_icon = 'DOC' -%}
+        {%- endcase -%}
+        <a href="{{ doc_href }}" target="_blank" rel="noopener" class="pdp-doc-row" style="background: var(--bg); padding: 14px; border-radius: 12px; margin: 8px 0;">
+          <div class="pdp-doc-row__icon">{{ doc_icon }}</div>
+          <div>
+            <b>{{ doc.title.value | default: doc_type_str }}</b>
+            {%- if doc.subtitle.value != blank -%}<p>{{ doc.subtitle.value }}</p>{%- endif -%}
+          </div>
+          <span class="pdp-doc-row__dl">↓ Download PDF</span>
+        </a>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+</section>
+
+{%- comment -%} ============ Related products (Goes with) ============ {%- endcomment -%}
+{%- if product.collections.first.products.size > 1 -%}
+  <section class="pdp-related">
+    <div class="container">
+      <div class="pdp-related__head">
+        <h2>Goes <span class="red">with</span></h2>
+        <a href="{{ product.collections.first.url }}" class="pdp-related__link">Build a bundle →</a>
+      </div>
+      <div class="product-grid">
+        {%- assign related_count = 0 -%}
+        {%- for related in product.collections.first.products -%}
+          {%- if related.id != product.id and related_count < 4 -%}
+            {% render 'product-card', product: related %}
+            {%- assign related_count = related_count | plus: 1 -%}
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  </section>
+{%- endif -%}
+
+<script>
+(function () {
+  // Gallery thumb → swap main image
+  var mainImg = document.querySelector('.pdp__main img');
+  document.querySelectorAll('.pdp__thumb[data-thumb-index]').forEach(function (thumb) {
+    thumb.addEventListener('click', function () {
+      var src = thumb.getAttribute('data-thumb-img');
+      if (!src || !mainImg) return;
+      mainImg.src = src;
+      mainImg.srcset = '';
+      mainImg.alt = thumb.getAttribute('data-thumb-alt') || '';
+      document.querySelectorAll('.pdp__thumb').forEach(function (t) { t.classList.remove('pdp__thumb--on'); });
+      thumb.classList.add('pdp__thumb--on');
+    });
+  });
+
+  // Tab switching
+  document.querySelectorAll('[data-tab]').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      var target = tab.getAttribute('data-tab');
+      document.querySelectorAll('.pdp-tab').forEach(function (t) { t.classList.remove('pdp-tab--on'); });
+      tab.classList.add('pdp-tab--on');
+      document.querySelectorAll('.pdp-panel').forEach(function (p) { p.classList.remove('pdp-panel--on'); });
+      var panel = document.querySelector('[data-panel="' + target + '"]');
+      if (panel) panel.classList.add('pdp-panel--on');
+    });
+  });
+
+  // Track current variant price in cents — single source of truth for the
+  // line total. `currentPriceBreaks` holds Shopify B2B volume price breaks
+  // (array of {min, cents}); empty when the store isn't B2B or the customer
+  // isn't on a catalog with volume pricing. Shopify's cart applies the
+  // correct tiered price at checkout regardless — this state is only so
+  // the Add-to-cart button preview matches what will actually charge.
+  var currentPriceCents = {{ current_variant.price | default: 0 }};
+  var currentPriceBreaks = [
+    {%- for br in current_variant.quantity_price_breaks -%}
+      {"min": {{ br.minimum_quantity }}, "cents": {{ br.price }}}{%- unless forloop.last %},{% endunless -%}
+    {%- endfor -%}
+  ];
+
+  // Pick the applicable per-unit price cents for a given quantity. Walks
+  // all breaks; the winning tier is the lowest price among those whose
+  // minimum_quantity <= qty (which is normally the highest-min tier, but
+  // we compare on price to be safe against weirdly-ordered rules).
+  function priceCentsForQty(qty) {
+    var best = currentPriceCents;
+    for (var i = 0; i < currentPriceBreaks.length; i++) {
+      var br = currentPriceBreaks[i];
+      if (qty >= br.min && br.cents < best) best = br.cents;
+    }
+    return best;
+  }
+
+  function formatCents(c) {
+    return '$' + (c / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  function getQty() {
+    var qtyInput = document.querySelector('[data-qty-input]');
+    var n = parseInt((qtyInput && qtyInput.value) || '1', 10);
+    if (isNaN(n) || n < 1) n = 1;
+    return n;
+  }
+
+  function updateLineTotal() {
+    var lineTotal = document.querySelector('[data-line-total]');
+    if (!lineTotal) return;
+    var qty = getQty();
+    lineTotal.textContent = formatCents(priceCentsForQty(qty) * qty);
+  }
+
+  // Re-render the Add-to-cart button to match the currently-selected
+  // variant. Without this, picking an OOS variant leaves a clickable
+  // "Add to cart" submit button that POSTs the OOS id to /cart/add.js.
+  // Shopify would reject it server-side, but UX-wise we should never
+  // even let the request fire.
+  function syncBuyButton(v) {
+    var btn = document.querySelector('[data-buy-btn]');
+    if (!btn || !v) return;
+    if (v.available) {
+      btn.disabled = false;
+      btn.removeAttribute('aria-disabled');
+      btn.innerHTML = 'Add to cart · <span data-line-total>' + (v.price || '') + '</span>';
+      // Re-compute line total against the just-rendered span
+      updateLineTotal();
+    } else {
+      btn.disabled = true;
+      btn.setAttribute('aria-disabled', 'true');
+      btn.textContent = 'Sold out';
+    }
+  }
+
+  // ---------- Multi-option variant picker ----------
+  // Active when product has 2+ options (Size × Pack Quantity, etc.). Each
+  // option group has its own row of buttons; selecting one combines with
+  // selections from other groups to pick a variant.
+  var picker = document.querySelector('[data-variant-picker]');
+  if (picker) {
+    var variantsJsonEl = picker.querySelector('[data-variants-json]');
+    var variants = [];
+    try { variants = JSON.parse(variantsJsonEl.textContent); } catch (e) { variants = []; }
+
+    var groups = picker.querySelectorAll('.pdp__option-group');
+    // Seed selectedOptions from whichever button is currently --on per group.
+    var selectedOptions = [];
+    groups.forEach(function (g) {
+      var on = g.querySelector('.variant-tile--on');
+      selectedOptions[parseInt(g.getAttribute('data-option-index'), 10)] = on ? on.getAttribute('data-option-value') : null;
+    });
+
+    function findVariantByOptions(opts) {
+      for (var i = 0; i < variants.length; i++) {
+        var v = variants[i];
+        var match = true;
+        for (var j = 0; j < opts.length; j++) {
+          if (v.options[j] !== opts[j]) { match = false; break; }
+        }
+        if (match) return v;
+      }
+      return null;
+    }
+
+    // Does ANY variant exist that matches `opts` only at the indices listed
+    // in `fixedIdxs`? (Used to test partial combinations during auto-correct.)
+    function variantExistsMatchingIdxs(opts, fixedIdxs) {
+      return variants.some(function (v) {
+        for (var i = 0; i < fixedIdxs.length; i++) {
+          var idx = fixedIdxs[i];
+          if (v.options[idx] !== opts[idx]) return false;
+        }
+        return true;
+      });
+    }
+
+    // After a click sets `opts[changedIdx]`, walk every OTHER group and, if
+    // the current value at that index would produce an impossible combo,
+    // swap it for the first value that yields a valid (and ideally
+    // available) variant. Always returns a `opts` array that maps to a real
+    // variant — or the original `opts` if no variant exists at all.
+    function autoCorrect(opts, changedIdx) {
+      var fixed = [changedIdx];
+      for (var i = 0; i < groups.length; i++) {
+        if (i === changedIdx) continue;
+        var fixedSoFar = fixed.slice();
+        fixedSoFar.push(i);
+        // If the current value at this index still works, keep it.
+        if (variantExistsMatchingIdxs(opts, fixedSoFar)) {
+          fixed.push(i);
+          continue;
+        }
+        // Otherwise try every value in this group; prefer one with an
+        // available matching variant, fall back to any existing variant.
+        var group = groups[i];
+        var buttons = group.querySelectorAll('[data-option-button]');
+        var preferredValue = null;
+        var fallbackValue = null;
+        for (var b = 0; b < buttons.length; b++) {
+          var candidate = buttons[b].getAttribute('data-option-value');
+          var testOpts = opts.slice();
+          testOpts[i] = candidate;
+          var testFixed = fixed.slice();
+          testFixed.push(i);
+          var hasVariant = variantExistsMatchingIdxs(testOpts, testFixed);
+          if (!hasVariant) continue;
+          if (!fallbackValue) fallbackValue = candidate;
+          // Prefer an in-stock match
+          var match = findVariantByOptions(testOpts);
+          if (match && match.available) { preferredValue = candidate; break; }
+        }
+        var chosen = preferredValue || fallbackValue;
+        if (chosen) {
+          opts[i] = chosen;
+          fixed.push(i);
+        }
+      }
+      return opts;
+    }
+
+    // Update visible state of every group: active button per group + the
+    // selected-value text in the label. Used after auto-correct so the UI
+    // reflects swaps the user didn't explicitly make.
+    function syncGroupsToSelection() {
+      groups.forEach(function (g) {
+        var idx = parseInt(g.getAttribute('data-option-index'), 10);
+        var current = selectedOptions[idx];
+        g.querySelectorAll('[data-option-button]').forEach(function (b) {
+          b.classList.toggle('variant-tile--on', b.getAttribute('data-option-value') === current);
+        });
+        var label = g.querySelector('[data-selected-option-value]');
+        if (label && current != null) label.textContent = current;
+      });
+    }
+
+    // Mark a button dimmed when combining its value with the OTHER groups'
+    // current selections produces no variant at all (impossible combo —
+    // e.g. "55 gal / 4-pack" when only Single exists at that size).
+    //
+    // We deliberately do NOT dim a button just because its matching variant
+    // is sold out (variant exists, inventory = 0) — that's already conveyed
+    // by the Add-to-cart button + ship-row stock pill, and dimming here
+    // would falsely suggest the value itself is unreachable.
+    function refreshAvailability() {
+      groups.forEach(function (g) {
+        var idx = parseInt(g.getAttribute('data-option-index'), 10);
+        g.querySelectorAll('[data-option-button]').forEach(function (btn) {
+          var testOpts = selectedOptions.slice();
+          testOpts[idx] = btn.getAttribute('data-option-value');
+          var combinedExists = !!findVariantByOptions(testOpts);
+          btn.classList.toggle('variant-tile--oos', !combinedExists);
+        });
+      });
+    }
+
+    function applyVariant(v) {
+      if (!v) return;
+      // Hidden form input
+      var input = document.querySelector('[data-variant-id-input]');
+      if (input) input.value = String(v.id);
+
+      // Buy button — must reflect the NEW variant's availability. Without
+      // this, switching to an OOS variant leaves a clickable "Add to cart"
+      // that POSTs the OOS id to /cart/add.js (Shopify will reject, but
+      // we shouldn't even let the request happen).
+      syncBuyButton(v);
+
+      // Price block
+      var priceEl = document.querySelector('[data-price]');
+      if (priceEl && v.price) {
+        var unitHtml = v.container_type
+          ? '<small> / ' + v.container_type.toLowerCase() + '</small>'
+          : '';
+        priceEl.innerHTML = v.price + unitHtml;
+      }
+
+      // Line total (qty × variant with volume-break lookup)
+      if (typeof v.price_cents === 'number' && v.price_cents > 0) {
+        currentPriceCents = v.price_cents;
+      }
+      currentPriceBreaks = Array.isArray(v.quantity_price_breaks) ? v.quantity_price_breaks : [];
+      updateLineTotal();
+
+      // Stock pill in ship-row
+      var stockTextEl = document.querySelector('[data-stock-text]');
+      var stockIconEl = document.querySelector('[data-stock-icon]');
+      var stockColor = v.available ? 'good' : 'bad';
+      var stockText  = v.available ? 'Available · ships today' : 'Out of stock';
+      if (stockTextEl) stockTextEl.textContent = stockText;
+      if (stockIconEl) {
+        stockIconEl.classList.remove('pdp__ship-icon--good', 'pdp__ship-icon--warn', 'pdp__ship-icon--bad');
+        stockIconEl.classList.add('pdp__ship-icon--' + stockColor);
+      }
+
+      // Main image
+      if (mainImg && v.image) {
+        mainImg.src = v.image;
+        mainImg.srcset = '';
+        mainImg.alt = v.image_alt || '';
+        document.querySelectorAll('.pdp__thumb').forEach(function (t) { t.classList.remove('pdp__thumb--on'); });
+        if (v.image_id) {
+          var matchThumb = document.querySelector('.pdp__thumb[data-thumb-image-id="' + v.image_id + '"]');
+          if (matchThumb) matchThumb.classList.add('pdp__thumb--on');
+        }
+      }
+
+      // URL ?variant=
+      var url = new URL(window.location.href);
+      url.searchParams.set('variant', String(v.id));
+      window.history.replaceState({}, '', url);
+    }
+
+    picker.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-option-button]');
+      if (!btn || !picker.contains(btn)) return;
+      var idx = parseInt(btn.getAttribute('data-option-index'), 10);
+      var value = btn.getAttribute('data-option-value');
+
+      // Tentatively set the clicked value; then auto-correct other groups
+      // if the resulting combo doesn't map to a real variant.
+      selectedOptions[idx] = value;
+      selectedOptions = autoCorrect(selectedOptions, idx);
+
+      // Re-sync all groups (the clicked one and any auto-corrected ones)
+      syncGroupsToSelection();
+
+      var v = findVariantByOptions(selectedOptions);
+      applyVariant(v);
+      refreshAvailability();
+    });
+
+    // First paint — disable any unavailable values given the seeded selection.
+    refreshAvailability();
+  }
+
+  // ---------- Single-option rich tile picker (1 option only) ----------
+  document.querySelectorAll('[data-variant-tile]').forEach(function (tile) {
+    tile.addEventListener('click', function () {
+      // Active state on tiles
+      document.querySelectorAll('[data-variant-tile]').forEach(function (t) { t.classList.remove('variant-tile--on'); });
+      tile.classList.add('variant-tile--on');
+
+      var variantId = tile.getAttribute('data-variant-tile');
+      var input = document.querySelector('[data-variant-id-input]');
+      if (input) input.value = variantId;
+
+      // Update the "selected" name in the label
+      var nameEl = document.querySelector('[data-selected-variant-name]');
+      var newName = tile.getAttribute('data-variant-name');
+      if (nameEl && newName) nameEl.textContent = newName;
+
+      // Update price block (per-unit price, no qty multiplier here)
+      var priceEl = document.querySelector('[data-price]');
+      var newPrice = tile.getAttribute('data-variant-price');
+      var newType = tile.getAttribute('data-variant-container-type');
+      if (priceEl && newPrice) {
+        var unitHtml = newType
+          ? '<small> / ' + newType.toLowerCase() + '</small>'
+          : '';
+        priceEl.innerHTML = newPrice + unitHtml;
+      }
+
+      // Update tracked variant price + recompute Add-to-cart line total
+      var newPriceCents = parseInt(tile.getAttribute('data-variant-price-cents') || '0', 10);
+      if (!isNaN(newPriceCents) && newPriceCents > 0) {
+        currentPriceCents = newPriceCents;
+      }
+      try {
+        currentPriceBreaks = JSON.parse(tile.getAttribute('data-variant-breaks') || '[]');
+      } catch (e) {
+        currentPriceBreaks = [];
+      }
+
+      // Sync the buy button to the newly selected variant's availability
+      // BEFORE updateLineTotal, since syncBuyButton may re-render the
+      // [data-line-total] span that updateLineTotal writes into.
+      syncBuyButton({
+        available: tile.getAttribute('data-variant-available') === 'true',
+        price: tile.getAttribute('data-variant-price')
+      });
+      updateLineTotal();
+
+      // Sync ship-row stock tile to the newly selected variant
+      var stockText  = tile.getAttribute('data-stock-long');
+      var stockColor = tile.getAttribute('data-stock-color');
+      var stockTextEl = document.querySelector('[data-stock-text]');
+      var stockIconEl = document.querySelector('[data-stock-icon]');
+      if (stockTextEl && stockText) stockTextEl.textContent = stockText;
+      if (stockIconEl && stockColor) {
+        stockIconEl.classList.remove('pdp__ship-icon--good', 'pdp__ship-icon--warn', 'pdp__ship-icon--bad');
+        stockIconEl.classList.add('pdp__ship-icon--' + stockColor);
+      }
+
+      // Swap main image if variant has one
+      var newImg = tile.getAttribute('data-variant-image');
+      var newImgId = tile.getAttribute('data-variant-image-id');
+      if (mainImg && newImg) {
+        mainImg.src = newImg;
+        mainImg.srcset = '';
+        mainImg.alt = tile.getAttribute('data-variant-image-alt') || '';
+        // Highlight matching thumb if the variant image is one of them
+        document.querySelectorAll('.pdp__thumb').forEach(function (t) { t.classList.remove('pdp__thumb--on'); });
+        if (newImgId) {
+          var matchThumb = document.querySelector('.pdp__thumb[data-thumb-image-id="' + newImgId + '"]');
+          if (matchThumb) matchThumb.classList.add('pdp__thumb--on');
+        }
+      }
+
+      // Update the URL without reload so refresh keeps the choice
+      var url = new URL(window.location.href);
+      url.searchParams.set('variant', variantId);
+      window.history.replaceState({}, '', url);
+    });
+  });
+
+  // Quantity stepper — every change re-computes line total
+  var qtyInput = document.querySelector('[data-qty-input]');
+  if (qtyInput) {
+    var minus = document.querySelector('[data-qty-minus]');
+    var plus = document.querySelector('[data-qty-plus]');
+    if (minus) minus.addEventListener('click', function () {
+      qtyInput.value = Math.max(1, parseInt(qtyInput.value || '1', 10) - 1);
+      updateLineTotal();
+    });
+    if (plus) plus.addEventListener('click', function () {
+      qtyInput.value = parseInt(qtyInput.value || '1', 10) + 1;
+      updateLineTotal();
+    });
+    qtyInput.addEventListener('input', updateLineTotal);
+    qtyInput.addEventListener('change', function () {
+      // Clamp to min 1 if user types 0 or negative
+      var n = parseInt(qtyInput.value || '1', 10);
+      if (isNaN(n) || n < 1) qtyInput.value = 1;
+      updateLineTotal();
+    });
+  }
+
+  // Initial paint — covers the case where qty starts > 1 from a refresh
+  updateLineTotal();
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Product",
+  "settings": [
+    { "type": "header", "content": "AutoStock subscribe-and-save" },
+    {
+      "type": "checkbox",
+      "id": "show_autostock",
+      "label": "Show AutoStock toggle on this page",
+      "default": true,
+      "info": "When on, shows the Subscribe & save AutoStock cadence picker above the Add to cart button. Turn off for products that are not eligible for the recurring program (samples, one-off SKUs, bulk drums, etc.)."
+    },
+    { "type": "header", "content": "Save to a bundle" },
+    {
+      "type": "checkbox",
+      "id": "show_save_bundle",
+      "label": "Show Save to a bundle button",
+      "default": true,
+      "info": "Shows the secondary 'Save to a bundle' button below Add to cart. Turn off for products that don't make sense to bundle (drums, services, one-off items)."
+    },
+    { "type": "header", "content": "Bulk order link" },
+    {
+      "type": "checkbox",
+      "id": "show_bulk_order_link",
+      "label": "Show Bulk order link",
+      "default": false,
+      "info": "Shows the 'Bulk order' link in the B2B link group on the PDP. Hidden by default — turn on once the bulk order tool is in place."
+    },
+    { "type": "header", "content": "Locksmith access control" },
+    {
+      "type": "paragraph",
+      "content": "Wraps the Add-to-cart button so customers without access see a 'Request access' link instead. Requires the Locksmith Shopify app — in each lock you want to gate, open Advanced → tick 'Enable manual locking'. Leave this off until Locksmith is installed and locks are configured."
+    },
+    {
+      "type": "checkbox",
+      "id": "locksmith_enabled",
+      "label": "Enable Locksmith manual mode on Add to cart",
+      "default": false,
+      "info": "When on, calls Locksmith's locksmith-variables snippet to check access. Fail-secure: if the snippet is missing, errors, or returns anything other than 'true', the product stays locked. When this toggle is off, Add to cart always renders normally."
+    },
+    {
+      "type": "checkbox",
+      "id": "locksmith_preview_locked",
+      "label": "Preview as locked (theme editor only)",
+      "default": false,
+      "info": "Forces the locked UI in the Shopify theme editor preview so you can style and verify the Request access state. Has no effect on the live storefront — Shopify's request.design_mode gates this off in production. Locksmith normally grants admin/staff users access, which is why the editor preview otherwise looks unlocked."
+    },
+    {
+      "type": "text",
+      "id": "locksmith_button_label",
+      "label": "Request access button label",
+      "default": "Request access to purchase",
+      "info": "Shown in place of Add to cart when the visitor does not have access."
+    },
+    {
+      "type": "text",
+      "id": "locksmith_button_icon",
+      "label": "Request access button icon",
+      "default": "🔒",
+      "info": "Small prefix shown before the label. Leave blank for no icon."
+    },
+    {
+      "type": "textarea",
+      "id": "locksmith_note",
+      "label": "Request access note",
+      "default": "This product requires approval before purchase.",
+      "info": "Short explanation shown below the Request access button. The rep link label from Theme settings → Contact is appended automatically."
+    }
+  ]
+}
+{% endschema %}

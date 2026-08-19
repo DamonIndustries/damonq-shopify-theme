@@ -1,0 +1,10 @@
+<section class="container" style="padding: 96px 0; text-align: center;">
+  <span style="font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--red); font-weight: 800;">404</span>
+  <h1 style="font-size: clamp(40px, 5vw, 72px); margin: 12px 0 16px; letter-spacing: -0.02em; line-height: 1; font-weight: 800;">{{ 'general.404.title' | t }}</h1>
+  <p style="color: var(--grey); font-size: 17px; max-width: 520px; margin: 0 auto 28px;">The page you're looking for doesn't exist. It might have been moved, or never existed in the first place.</p>
+  <a href="{{ routes.root_url }}" class="btn btn--red btn--lg">{{ 'general.404.link' | t }} →</a>
+</section>
+
+{% schema %}
+{ "name": "404", "settings": [] }
+{% endschema %}
