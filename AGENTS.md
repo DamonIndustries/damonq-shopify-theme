@@ -59,6 +59,37 @@ Promotion flow: `feature/* → dev → qa → main`.
 5. Promotion `dev → qa` and `qa → main` is done by maintainers via PR/merge.
    Do not perform these merges unless explicitly asked.
 
+## Committing and pushing
+
+**Where you may commit:** feature branches (`feature/*`, `fix/*`) only,
+branched from `dev`. Never commit directly on `main`, `qa`, or `dev` — even
+for "trivial" changes. `dev` receives changes via PR; `qa` and `main` via
+maintainer promotion merges; `main` additionally receives Shopify bot sync
+commits.
+
+**When to commit:** in small, logical units — one concern per commit (a
+section, a bug fix, a style change), not one giant commit per task. Before
+every commit: `shopify theme check` passes, and `git status` shows no
+unintended files (especially no `config/settings_data.json` or
+`templates/*.json` changes you didn't deliberately make — if they appear
+modified, restore them: `git checkout -- <file>`).
+
+**Commit messages:** imperative subject line under 72 chars, e.g.
+`Add announcement bar section with schedule settings`. Add a body when the
+"why" isn't obvious. If your tooling adds a `Co-Authored-By` trailer,
+keep it — commits should be attributable to agent vs. human.
+
+**When to push:** push your feature branch to `origin` whenever the work is
+in a shareable state, and always before opening the PR into `dev`. Do not
+push to `main`, `qa`, or `dev` directly — remember every push to a connected
+branch deploys to its Shopify theme immediately. **Never force-push any
+long-lived branch** (`main`/`qa`/`dev`); force-pushing your own unshared
+feature branch is acceptable.
+
+**Never:** commit secrets or tokens; commit generated noise (`node_modules/`,
+`.shopify/`, `.DS_Store`); rewrite history on connected branches; merge
+`dev → qa` or `qa → main` unless explicitly instructed.
+
 ## Conventions
 
 - Dawn architecture: sections in `sections/`, reusable blocks in `blocks/`
