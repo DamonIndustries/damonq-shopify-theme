@@ -1,0 +1,9 @@
+# Require developer review on theme code.
+# NOTE: verify/update the handles below — they must be real GitHub usernames
+# or @DamonIndustries/<team> teams, or GitHub flags the line as an error.
+
+* @andrewbgetz
+
+# CI and repo policy changes deserve extra scrutiny.
+/.github/ @andrewbgetz
+/AGENTS.md @andrewbgetz

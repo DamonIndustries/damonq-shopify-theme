@@ -1,0 +1,62 @@
+# .github/workflows/sync-qa-from-main.yml
+#
+# Monthly reset: make qa an exact copy of main (production theme, incl.
+# marketing's customizer edits synced back by the Shopify GitHub integration).
+#
+# Implementation note: this is NOT a force-push. It creates a "snapshot merge"
+# commit whose content is exactly main's tree, with the old qa tip as a parent.
+# - qa ends up byte-for-byte identical to main
+# - no conflicts are possible, ever
+# - the push is a normal fast-forward, so the Shopify GitHub integration
+#   stays happy (it doesn't tolerate history rewrites on connected branches)
+# - anything that was QA'd but never shipped remains recoverable in
+#   `git log qa` / the branch's commit history
+
+name: Monthly QA reset to prod
+
+on:
+  schedule:
+    # 1st of each month, 09:00 UTC = 5:00 AM ET (4:00 AM during EST)
+    - cron: "0 9 1 * *"
+  workflow_dispatch: {}   # allows manual runs from the Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-qa
+  cancel-in-progress: false
+
+jobs:
+  reset-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: qa
+          fetch-depth: 0
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Snapshot qa to match main exactly
+        run: |
+          git fetch origin main
+
+          # Nothing to do if qa's content already matches main's
+          if [ "$(git rev-parse HEAD^{tree})" = "$(git rev-parse origin/main^{tree})" ]; then
+            echo "qa already matches main — nothing to do."
+            exit 0
+          fi
+
+          # New commit: content = main's tree, parents = old qa tip + main tip.
+          # This preserves qa's full history while making it identical to prod.
+          new_commit=$(git commit-tree "origin/main^{tree}" \
+            -p HEAD \
+            -p origin/main \
+            -m "chore: monthly QA reset — snapshot of prod (main @ $(git rev-parse --short origin/main))")
+
+          git push origin "${new_commit}:refs/heads/qa"
+          echo "qa reset to match main (${new_commit})"

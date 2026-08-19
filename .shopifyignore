@@ -1,0 +1,14 @@
+# Files the Shopify CLI should never push/pull as part of the theme.
+# (The GitHub integration and CLI only sync theme directories, but this keeps
+# manual `shopify theme pull` runs from ever colliding with repo files.)
+README.md
+AGENTS.md
+CLAUDE.md
+.github/
+.mcp.json
+.theme-check.yml
+.prettierrc.json
+.editorconfig
+package.json
+package-lock.json
+node_modules/
