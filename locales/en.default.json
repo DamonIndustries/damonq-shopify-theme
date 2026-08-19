@@ -94,6 +94,15 @@
       "post_comment": "Post comment"
     }
   },
+  "gift_cards": {
+    "issued": {
+      "title": "Here's your {{ value }} gift card for {{ shop }}!",
+      "subtext": "Use the code below at checkout.",
+      "expired": "Expired",
+      "shop_link": "Start shopping",
+      "disabled": "If this gift card has been disabled or you have trouble redeeming it, please contact us."
+    }
+  },
   "damon": {
     "header": {
       "cart_label_html": "Cart · <span data-cart-count>{{ count }}</span>",
