@@ -3,3 +3,10 @@ extends: theme-check:recommended
 ignore:
   - node_modules/**
   - .github/**
+
+# Locksmith's snippets are generated and overwritten by the app — we don't
+# hand-edit them, so exempt them from this check rather than "fixing" code
+# the app will replace.
+ContentForHeaderModification:
+  ignore:
+    - snippets/locksmith.liquid
