@@ -1,0 +1,218 @@
+{%- comment -%}
+  Facility / problem router — the homepage's primary call to action.
+  Dark panel: facility <select> × problem <select> → recommended route
+  (title, body, chemistry / equipment / funding, link). Routes and
+  facilities are blocks so the copy is editable in the theme editor.
+
+  The default route is server-rendered (works without JS, indexable), the
+  route data is emitted as a JSON blob, and theme.js swaps the panel on
+  change. Route blocks match problems by `problem_key`.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign anchor = s.anchor_id | default: 'router'
+  assign facilities = section.blocks | where: 'type', 'facility'
+  assign routes = section.blocks | where: 'type', 'route'
+  assign uid = section.id | handleize
+
+  assign default_facility = s.default_facility | strip
+  assign default_problem = s.default_problem | strip
+
+  assign facility_phrase = ''
+  for f in facilities
+    if f.settings.key == default_facility
+      assign facility_phrase = f.settings.phrase
+    endif
+  endfor
+  if facility_phrase == blank and facilities.size > 0
+    assign first_facility = facilities | first
+    assign default_facility = first_facility.settings.key
+    assign facility_phrase = first_facility.settings.phrase
+  endif
+
+  assign current = nil
+  for r in routes
+    if r.settings.problem_key == default_problem
+      assign current = r
+    endif
+  endfor
+  if current == nil and routes.size > 0
+    assign current = routes | first
+    assign default_problem = current.settings.problem_key
+  endif
+-%}
+
+<section class="page-section router" id="{{ anchor }}">
+  <div class="container">
+    <div class="router__panel" data-router>
+      <div class="router__grid">
+        <div class="router__intro">
+          {%- if s.eyebrow != blank -%}
+            <span class="eyebrow eyebrow--on-dark">
+              {%- if s.eyebrow_no != blank -%}<span>{{ s.eyebrow_no }}</span>{%- endif -%}
+              <span class="eyebrow__rule" aria-hidden="true"></span>
+              <span>{{ s.eyebrow }}</span>
+            </span>
+          {%- endif -%}
+          <h2 class="router__title">
+            {{ s.heading_pre }}
+            {%- if s.heading_post != blank -%}<br>{{ s.heading_post }}{%- endif -%}
+          </h2>
+          {%- if s.subheading != blank -%}
+            <p class="router__sub">{{ s.subheading }}</p>
+          {%- endif -%}
+
+          <div class="router__field">
+            <label class="router__label" for="router-facility-{{ uid }}">{{ s.facility_label }}</label>
+            <select class="router__select" id="router-facility-{{ uid }}" name="facility" data-router-facility>
+              {%- for f in facilities -%}
+                <option value="{{ f.settings.key | escape }}"{% if f.settings.key == default_facility %} selected{% endif %}>{{ f.settings.label | escape }}</option>
+              {%- endfor -%}
+            </select>
+          </div>
+          <div class="router__field">
+            <label class="router__label" for="router-problem-{{ uid }}">{{ s.problem_label }}</label>
+            <select class="router__select" id="router-problem-{{ uid }}" name="problem" data-router-problem>
+              {%- for r in routes -%}
+                <option value="{{ r.settings.problem_key | escape }}"{% if r.settings.problem_key == default_problem %} selected{% endif %}>{{ r.settings.problem_label | escape }}</option>
+              {%- endfor -%}
+            </select>
+          </div>
+        </div>
+
+        <div class="route" aria-live="polite" aria-atomic="true">
+          {%- if s.kicker != blank -%}
+            <div class="route__kicker">{{ s.kicker }}</div>
+          {%- endif -%}
+          {%- if current -%}
+            {%- assign c = current.settings -%}
+            <h3 class="route__title" data-route-title>{{ c.title | escape }}</h3>
+            <p class="route__body" data-route-body>{{ c.body | escape }}{% if s.typical_prefix != blank and facility_phrase != blank %} {{ s.typical_prefix | escape }} {{ facility_phrase | escape }}.{% endif %}</p>
+            <div class="route__facts">
+              <div class="route__fact"><div class="route__fact-k">{{ s.chemistry_label }}</div><div class="route__fact-v" data-route-chemistry>{{ c.chemistry | escape }}</div></div>
+              <div class="route__fact"><div class="route__fact-k">{{ s.equipment_label }}</div><div class="route__fact-v" data-route-equipment>{{ c.equipment | escape }}</div></div>
+              <div class="route__fact"><div class="route__fact-k">{{ s.funding_label }}</div><div class="route__fact-v route__fact-v--accent" data-route-funding>{{ c.funding | escape }}</div></div>
+            </div>
+            <div class="route__ctas">
+              {%- if s.cta_text != blank -%}
+                <a href="{{ s.cta_url }}" class="btn btn--red">{{ s.cta_text }}</a>
+              {%- endif -%}
+              <a href="{{ c.link_url | default: '#' }}" class="btn btn--outline-on-dark" data-route-link{% if c.link_text == blank %} hidden{% endif %}>{{ c.link_text | escape }}</a>
+              {%- if s.note != blank -%}
+                <span class="route__note">{{ s.note }}</span>
+              {%- endif -%}
+            </div>
+          {%- else -%}
+            <p class="route__body">{{ s.empty_text }}</p>
+          {%- endif -%}
+        </div>
+      </div>
+
+      <script type="application/json" data-router-routes>
+        {
+          "typical": {{ s.typical_prefix | json }},
+          "facilities": {
+            {%- for f in facilities -%}
+              {{ f.settings.key | json }}: {{ f.settings.phrase | json }}{%- unless forloop.last -%},{%- endunless -%}
+            {%- endfor -%}
+          },
+          "routes": {
+            {%- for r in routes -%}
+              {{ r.settings.problem_key | json }}: {
+                "title": {{ r.settings.title | json }},
+                "body": {{ r.settings.body | json }},
+                "chemistry": {{ r.settings.chemistry | json }},
+                "equipment": {{ r.settings.equipment | json }},
+                "funding": {{ r.settings.funding | json }},
+                "link_text": {{ r.settings.link_text | json }},
+                "link_url": {{ r.settings.link_url | json }}
+              }{%- unless forloop.last -%},{%- endunless -%}
+            {%- endfor -%}
+          }
+        }
+      </script>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Facility router",
+  "tag": "div",
+  "settings": [
+    { "type": "text", "id": "anchor_id", "label": "Anchor id", "default": "router", "info": "Used by in-page links and the section rail. Letters, numbers and dashes only." },
+    { "type": "text", "id": "eyebrow_no", "label": "Eyebrow number", "default": "02" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Get routed" },
+    { "type": "text", "id": "heading_pre", "label": "Heading line 1", "default": "Tell us the facility" },
+    { "type": "text", "id": "heading_post", "label": "Heading line 2", "default": "and the problem." },
+    { "type": "textarea", "id": "subheading", "label": "Subheading", "default": "Not a product search. Two questions and you land on the person who has solved this before — with the chemistry, the equipment and the funding angle already attached." },
+    { "type": "header", "content": "Selectors" },
+    { "type": "text", "id": "facility_label", "label": "Facility dropdown label", "default": "Your facility" },
+    { "type": "text", "id": "problem_label", "label": "Problem dropdown label", "default": "What you're up against" },
+    { "type": "text", "id": "default_facility", "label": "Default facility key", "default": "schools", "info": "Must match a Facility block key. Falls back to the first facility." },
+    { "type": "text", "id": "default_problem", "label": "Default problem key", "default": "budget", "info": "Must match a Route block problem key. Falls back to the first route." },
+    { "type": "header", "content": "Result panel" },
+    { "type": "text", "id": "kicker", "label": "Result kicker", "default": "Recommended route" },
+    { "type": "text", "id": "typical_prefix", "label": "Facility sentence prefix", "default": "Typical for", "info": "Appended to the route body as “Typical for <facility phrase>.” Leave blank to omit." },
+    { "type": "text", "id": "chemistry_label", "label": "Fact 1 label", "default": "Chemistry" },
+    { "type": "text", "id": "equipment_label", "label": "Fact 2 label", "default": "Equipment" },
+    { "type": "text", "id": "funding_label", "label": "Fact 3 label (accent)", "default": "Funding" },
+    { "type": "text", "id": "cta_text", "label": "Primary button", "default": "Book a 15‑minute call →" },
+    { "type": "text", "id": "cta_url", "label": "Primary link (URL or #anchor)", "default": "/pages/contact-rep" },
+    { "type": "text", "id": "note", "label": "Note beside buttons", "default": "Free sample and SDS attached automatically" },
+    { "type": "text", "id": "empty_text", "label": "Text when no routes exist", "default": "Add a Route block to show a recommendation here." }
+  ],
+  "blocks": [
+    {
+      "type": "facility",
+      "name": "Facility",
+      "limit": 12,
+      "settings": [
+        { "type": "text", "id": "key", "label": "Key", "default": "schools", "info": "Short unique id (letters, numbers, dashes)." },
+        { "type": "text", "id": "label", "label": "Dropdown label", "default": "Schools & universities", "info": "Keep under 50 characters." },
+        { "type": "text", "id": "phrase", "label": "Sentence phrase", "default": "schools & universities", "info": "Used as “Typical for <phrase>.”" }
+      ]
+    },
+    {
+      "type": "route",
+      "name": "Route (problem → answer)",
+      "limit": 12,
+      "settings": [
+        { "type": "text", "id": "problem_key", "label": "Problem key", "default": "budget", "info": "Short unique id (letters, numbers, dashes)." },
+        { "type": "text", "id": "problem_label", "label": "Problem dropdown label", "default": "No capital budget for what we need", "info": "Keep under 50 characters." },
+        { "type": "text", "id": "title", "label": "Route title", "default": "Start with the grant, not the quote" },
+        { "type": "textarea", "id": "body", "label": "Route body", "default": "Our grant people check which cycles are open for your entity type, tell you honestly whether you qualify, and help write the equipment into the narrative. We have done this paperwork before." },
+        { "type": "text", "id": "chemistry", "label": "Chemistry", "default": "Specced after award" },
+        { "type": "text", "id": "equipment", "label": "Equipment", "default": "Written into the ask" },
+        { "type": "text", "id": "funding", "label": "Funding", "default": "This is the route" },
+        { "type": "text", "id": "link_text", "label": "Secondary link text", "default": "Equipment & grants" },
+        { "type": "text", "id": "link_url", "label": "Secondary link (URL or #anchor)", "default": "#equipment" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Facility router",
+      "category": "Homepage",
+      "blocks": [
+        { "type": "facility", "settings": { "key": "grocery", "label": "Grocery & retail", "phrase": "grocery & retail" } },
+        { "type": "facility", "settings": { "key": "food", "label": "Food processing", "phrase": "food processing" } },
+        { "type": "facility", "settings": { "key": "qsr", "label": "Quick service restaurant", "phrase": "quick service restaurants" } },
+        { "type": "facility", "settings": { "key": "schools", "label": "Schools & universities", "phrase": "schools & universities" } },
+        { "type": "facility", "settings": { "key": "health", "label": "Healthcare & long‑term care", "phrase": "healthcare & long‑term care" } },
+        { "type": "facility", "settings": { "key": "muni", "label": "Municipal & parks", "phrase": "municipal & parks" } },
+        { "type": "facility", "settings": { "key": "auto", "label": "Automotive & radiator shop", "phrase": "automotive & radiator shops" } },
+        { "type": "facility", "settings": { "key": "ind", "label": "Industrial & machining", "phrase": "industrial & machining" } },
+        { "type": "route", "settings": { "problem_key": "odor", "problem_label": "Odor, drains & grease traps", "title": "Enzyme program, not another fragrance", "body": "Fragrance masks for four hours. A dosed enzyme program digests the organic film in the drain line and the trap so the smell stops being generated in the first place. We start with a two‑week trial on your worst line.", "chemistry": "Enzyme line", "equipment": "Drain dosing pump", "funding": "Not typical", "link_text": "Enzyme page", "link_url": "#enzymes" } },
+        { "type": "route", "settings": { "problem_key": "grease", "problem_label": "Baked‑on grease & carbon", "title": "Concentrate plus the right dispenser", "body": "Hoods, fryers and rotisserie carbon are a chemistry‑and‑dilution problem. We spec the concentrate to your soil, then mount a dilution station so your crew stops free‑pouring at four times the cost.", "chemistry": "Non‑butyl concentrate", "equipment": "Wall dilution station", "funding": "Not typical", "link_text": "Equipment page", "link_url": "#equipment" } },
+        { "type": "route", "settings": { "problem_key": "floors", "problem_label": "Floors — finish, stripping, scrubbing", "title": "Floor program with the machine included", "body": "Finish, stripper and daily neutral cleaner specced against your substrate — then the autoscrubber sized to your square footage, installed, trained and serviced by our techs.", "chemistry": "Finish & stripper", "equipment": "Autoscrubber", "funding": "Often eligible", "link_text": "Equipment page", "link_url": "#equipment" } },
+        { "type": "route", "settings": { "problem_key": "sanitize", "problem_label": "Sanitizing & documented kill claims", "title": "Documented kill claims and the binder to prove it", "body": "EPA‑registered chemistry with the dwell times your surveyor will ask about, plus an auto‑assembled SDS and registration binder for the products on your account.", "chemistry": "EPA‑registered", "equipment": "Metered dispensing", "funding": "Sometimes eligible", "link_text": "Talk to a specialist", "link_url": "/pages/contact-rep" } },
+        { "type": "route", "settings": { "problem_key": "equipment", "problem_label": "Equipment down or aging out", "title": "Mobile repair first, replacement second", "body": "Before you buy, our tech comes to the building and looks at what you have — any brand. Most machines we see are one part and a calibration away from another two years.", "chemistry": "Machine‑safe line", "equipment": "On‑site repair", "funding": "Often eligible", "link_text": "Mobile repair", "link_url": "#mobile" } },
+        { "type": "route", "settings": { "problem_key": "budget", "problem_label": "No capital budget for what we need", "title": "Start with the grant, not the quote", "body": "Our grant people check which cycles are open for your entity type, tell you honestly whether you qualify, and help write the equipment into the narrative. We have done this paperwork before.", "chemistry": "Specced after award", "equipment": "Written into the ask", "funding": "This is the route", "link_text": "Equipment & grants", "link_url": "#equipment" } },
+        { "type": "route", "settings": { "problem_key": "custom", "problem_label": "Nothing on the market works", "title": "A formula built for one customer — yours", "body": "Roughly a third of what leaves our dock was built for a single account. Tell the chemist the surface, the soil and the water; we blend against it and you can have it under your own label.", "chemistry": "Custom blend", "equipment": "As required", "funding": "Not typical", "link_text": "Talk to a chemist", "link_url": "/pages/contact-rep" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

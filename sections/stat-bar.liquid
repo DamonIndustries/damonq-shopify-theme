@@ -1,0 +1,53 @@
+{%- comment -%}
+  Stat bar — four proof cells under the hero (1938 / 300+ / 1M+ / 1).
+  Each cell: value (plain part + red part) and a short label.
+{%- endcomment -%}
+
+<section class="stat-bar" aria-label="{{ section.settings.aria_label | escape }}">
+  <div class="container">
+    <div class="stat-bar__grid">
+      {%- for block in section.blocks -%}
+        <div class="stat-bar__cell" {{ block.shopify_attributes }}>
+          <div class="stat-bar__value">{{ block.settings.value_pre }}{%- if block.settings.value_em != blank -%}<span class="stat-bar__em">{{ block.settings.value_em }}</span>{%- endif -%}</div>
+          {%- if block.settings.label != blank -%}
+            <div class="stat-bar__label">{{ block.settings.label }}</div>
+          {%- endif -%}
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Stat bar",
+  "tag": "div",
+  "settings": [
+    { "type": "text", "id": "aria_label", "label": "Accessible region name", "default": "Damon by the numbers", "info": "Read by screen readers; not shown on the page." }
+  ],
+  "blocks": [
+    {
+      "type": "stat",
+      "name": "Stat",
+      "limit": 4,
+      "settings": [
+        { "type": "text", "id": "value_pre", "label": "Value", "default": "300" },
+        { "type": "text", "id": "value_em", "label": "Value suffix (red)", "default": "+", "info": "Leave the Value blank and put the whole number here to make it red." },
+        { "type": "text", "id": "label", "label": "Label", "default": "Formulas we own outright — not distributed, not repacked." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Stat bar",
+      "category": "Homepage",
+      "blocks": [
+        { "type": "stat", "settings": { "value_pre": "1938", "value_em": "", "label": "Third‑generation family ownership. No roll‑up, no private equity." } },
+        { "type": "stat", "settings": { "value_pre": "300", "value_em": "+", "label": "Formulas we own outright — not distributed, not repacked." } },
+        { "type": "stat", "settings": { "value_pre": "1M", "value_em": "+", "label": "Fuel tanks lined with Red‑Kote since 1985. Under 200 issues, all application." } },
+        { "type": "stat", "settings": { "value_pre": "", "value_em": "1", "label": "Phone number. The chemist who can change the formula is down the hall." } }
+      ]
+    }
+  ]
+}
+{% endschema %}
