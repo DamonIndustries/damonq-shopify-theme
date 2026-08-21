@@ -247,7 +247,7 @@
           "type": "facility",
           "settings": {
             "key": "grocery",
-            "label": "Grocery & retail",
+            "title": "Grocery & retail",
             "phrase": "grocery & retail"
           }
         },
@@ -255,7 +255,7 @@
           "type": "facility",
           "settings": {
             "key": "food",
-            "label": "Food processing",
+            "title": "Food processing",
             "phrase": "food processing"
           }
         },
@@ -263,7 +263,7 @@
           "type": "facility",
           "settings": {
             "key": "qsr",
-            "label": "Quick service restaurant",
+            "title": "Quick service restaurant",
             "phrase": "quick service restaurants"
           }
         },
@@ -271,7 +271,7 @@
           "type": "facility",
           "settings": {
             "key": "schools",
-            "label": "Schools & universities",
+            "title": "Schools & universities",
             "phrase": "schools & universities"
           }
         },
@@ -279,7 +279,7 @@
           "type": "facility",
           "settings": {
             "key": "health",
-            "label": "Healthcare & long‑term care",
+            "title": "Healthcare & long‑term care",
             "phrase": "healthcare & long‑term care"
           }
         },
@@ -287,7 +287,7 @@
           "type": "facility",
           "settings": {
             "key": "muni",
-            "label": "Municipal & parks",
+            "title": "Municipal & parks",
             "phrase": "municipal & parks"
           }
         },
@@ -295,7 +295,7 @@
           "type": "facility",
           "settings": {
             "key": "auto",
-            "label": "Automotive & radiator shop",
+            "title": "Automotive & radiator shop",
             "phrase": "automotive & radiator shops"
           }
         },
@@ -303,7 +303,7 @@
           "type": "facility",
           "settings": {
             "key": "ind",
-            "label": "Industrial & machining",
+            "title": "Industrial & machining",
             "phrase": "industrial & machining"
           }
         },
@@ -762,7 +762,7 @@
         "channel_1": {
           "type": "channel",
           "settings": {
-            "network": "Instagram",
+            "title": "Instagram",
             "handle": "@damonindustries",
             "note": "One fix a day",
             "url": "",
@@ -772,7 +772,7 @@
         "channel_2": {
           "type": "channel",
           "settings": {
-            "network": "LinkedIn",
+            "title": "LinkedIn",
             "handle": "/damon‑industries",
             "note": "Programs & hiring",
             "url": "",
@@ -782,7 +782,7 @@
         "channel_3": {
           "type": "channel",
           "settings": {
-            "network": "YouTube",
+            "title": "YouTube",
             "handle": "@damonq",
             "note": "Application protocols",
             "url": "",
@@ -792,7 +792,7 @@
         "channel_4": {
           "type": "channel",
           "settings": {
-            "network": "TikTok",
+            "title": "TikTok",
             "handle": "@damonq",
             "note": "Plant floor",
             "url": "",
