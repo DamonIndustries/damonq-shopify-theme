@@ -6038,7 +6038,7 @@ button { font: inherit; cursor: pointer; }
 .catalog-strip__ctas { display: flex; gap: 12px; flex-wrap: wrap; }
 
 /* ---------- cta-banner */
-.cta-banner { background: var(--red); color: #fff; margin-top: 72px; }
+.cta-banner { background: var(--red); color: #fff; margin-top: 72px; border-bottom: 1px solid rgba(255,255,255,.22); }
 .cta-banner__in { max-width: var(--container); margin: 0 auto; padding: 80px var(--container-padding) 84px; }
 .cta-banner__eye { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; font-weight: 800; opacity: .8; margin-bottom: 26px; }
 .cta-banner__title { font-size: clamp(42px, 7vw, 116px); line-height: .9; letter-spacing: -.04em; margin: 0 0 26px; max-width: 18ch; font-weight: 800; }
