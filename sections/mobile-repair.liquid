@@ -1,0 +1,117 @@
+{%- comment -%}
+  Mobile repair — dark panel with a full-bleed image, text, three
+  mini-stats (blocks) and two CTAs. "The machine gets fixed in your building."
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign anchor = s.anchor_id | default: 'mobile'
+  assign img_alt = s.image_alt
+  if img_alt == blank
+    assign img_alt = s.image.alt
+  endif
+-%}
+
+<section class="page-section mobile-repair" id="{{ anchor }}">
+  <div class="container">
+    <div class="mobile-repair__panel">
+      <div class="mobile-repair__grid">
+        <figure class="mobile-repair__fig">
+          <div class="mobile-repair__frame">
+            {%- if s.image != blank -%}
+              {{ s.image | image_url: width: 1200 | image_tag: loading: 'lazy', widths: '600, 900, 1200', sizes: '(max-width: 1000px) 100vw, 44vw', alt: img_alt }}
+            {%- else -%}
+              <div class="photo-slot photo-slot--dark">
+                <span class="photo-slot__label">{{ s.image_placeholder }}</span>
+              </div>
+            {%- endif -%}
+          </div>
+        </figure>
+
+        <div class="mobile-repair__content">
+          {%- if s.eyebrow != blank -%}
+            <span class="eyebrow eyebrow--on-dark">
+              {%- if s.eyebrow_no != blank -%}<span>{{ s.eyebrow_no }}</span>{%- endif -%}
+              <span class="eyebrow__rule" aria-hidden="true"></span>
+              <span>{{ s.eyebrow }}</span>
+            </span>
+          {%- endif -%}
+          <h2 class="mobile-repair__title">{{ s.heading }}</h2>
+          {%- if s.lead != blank -%}
+            <p class="mobile-repair__lead">{{ s.lead }}</p>
+          {%- endif -%}
+
+          {%- if section.blocks.size > 0 -%}
+            <div class="mobile-repair__stats">
+              {%- for block in section.blocks -%}
+                <div class="mobile-repair__stat" {{ block.shopify_attributes }}>
+                  <div class="mobile-repair__stat-t{% if block.settings.accent %} mobile-repair__stat-t--accent{% endif %}">{{ block.settings.title }}</div>
+                  {%- if block.settings.body != blank -%}
+                    <div class="mobile-repair__stat-d">{{ block.settings.body }}</div>
+                  {%- endif -%}
+                </div>
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+
+          {%- if s.cta_primary_text != blank or s.cta_secondary_text != blank -%}
+            <div class="mobile-repair__ctas">
+              {%- if s.cta_primary_text != blank -%}
+                <a href="{{ s.cta_primary_url }}" class="btn btn--red btn--lg">{{ s.cta_primary_text }}</a>
+              {%- endif -%}
+              {%- if s.cta_secondary_text != blank -%}
+                <a href="{{ s.cta_secondary_url }}" class="btn btn--outline-on-dark btn--lg">{{ s.cta_secondary_text }}</a>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Mobile repair",
+  "tag": "div",
+  "settings": [
+    { "type": "text", "id": "anchor_id", "label": "Anchor id", "default": "mobile", "info": "Used by in-page links and the section rail. Letters, numbers and dashes only." },
+    { "type": "text", "id": "eyebrow_no", "label": "Eyebrow number", "default": "05" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Mobile repair" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "The machine gets fixed in your building." },
+    { "type": "textarea", "id": "lead", "label": "Lead paragraph", "default": "A broken autoscrubber is not a shipping problem, it is a floor nobody is cleaning. Our techs come to you with the parts on the van — whatever brand it is, whoever sold it to you." },
+    { "type": "header", "content": "Calls to action" },
+    { "type": "text", "id": "cta_primary_text", "label": "Primary button", "default": "Request a service visit →" },
+    { "type": "text", "id": "cta_primary_url", "label": "Primary link (URL or #anchor)", "default": "/pages/contact-rep" },
+    { "type": "text", "id": "cta_secondary_text", "label": "Secondary button", "default": "See the service area" },
+    { "type": "text", "id": "cta_secondary_url", "label": "Secondary link (URL or #anchor)", "default": "#router" },
+    { "type": "header", "content": "Image" },
+    { "type": "image_picker", "id": "image", "label": "Image (4:3)" },
+    { "type": "text", "id": "image_alt", "label": "Image alt text", "default": "Damon service technician repairing an autoscrubber on site" },
+    { "type": "text", "id": "image_placeholder", "label": "Placeholder label (no image)", "default": "Service van or a tech repairing an autoscrubber" }
+  ],
+  "blocks": [
+    {
+      "type": "stat",
+      "name": "Mini stat",
+      "limit": 3,
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "On site" },
+        { "type": "text", "id": "body", "label": "Body", "default": "No crating, no freight" },
+        { "type": "checkbox", "id": "accent", "label": "Accent color title", "default": false }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Mobile repair",
+      "category": "Homepage",
+      "blocks": [
+        { "type": "stat", "settings": { "title": "On site", "body": "No crating, no freight", "accent": false } },
+        { "type": "stat", "settings": { "title": "Any brand", "body": "Including what we didn't sell", "accent": false } },
+        { "type": "stat", "settings": { "title": "PM plans", "body": "Scheduled, not reactive", "accent": true } }
+      ]
+    }
+  ]
+}
+{% endschema %}

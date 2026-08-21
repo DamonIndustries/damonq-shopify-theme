@@ -1,0 +1,104 @@
+{%- comment -%}
+  Capabilities grid — "Six things we do that a distributor cannot."
+  Numbered eyebrow + section head + six linked cards (number, status tag,
+  title, body, CTA). Each card is a `capability` block.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign anchor = s.anchor_id | default: 'capabilities'
+-%}
+
+<section class="page-section capabilities" id="{{ anchor }}">
+  <div class="container">
+    {%- if s.eyebrow != blank -%}
+      <span class="eyebrow">
+        {%- if s.eyebrow_no != blank -%}<span>{{ s.eyebrow_no }}</span>{%- endif -%}
+        <span class="eyebrow__rule" aria-hidden="true"></span>
+        <span>{{ s.eyebrow }}</span>
+      </span>
+    {%- endif -%}
+
+    <div class="page-section__head">
+      <h2 class="page-section__title">{{ s.heading }}</h2>
+      {%- if s.description != blank -%}
+        <p class="page-section__desc">{{ s.description }}</p>
+      {%- endif -%}
+    </div>
+
+    <div class="capabilities__grid">
+      {%- for block in section.blocks -%}
+        {%- assign b = block.settings -%}
+        <a class="capability" href="{{ b.url | default: '#' }}" {{ block.shopify_attributes }}>
+          <div class="capability__top">
+            <span class="capability__no">{{ b.no }}</span>
+            {%- if b.tag != blank -%}
+              <span class="tag tag--{{ b.tag_style | default: 'neutral' }}">{{ b.tag }}</span>
+            {%- endif -%}
+          </div>
+          <h3 class="capability__title">{{ b.title }}</h3>
+          {%- if b.body != blank -%}
+            <p class="capability__body">{{ b.body }}</p>
+          {%- endif -%}
+          {%- if b.cta != blank -%}
+            <span class="capability__cta">{{ b.cta }}</span>
+          {%- endif -%}
+        </a>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Capabilities grid",
+  "tag": "div",
+  "settings": [
+    { "type": "text", "id": "anchor_id", "label": "Anchor id", "default": "capabilities", "info": "Used by in-page links and the section rail. Letters, numbers and dashes only." },
+    { "type": "text", "id": "eyebrow_no", "label": "Eyebrow number", "default": "01" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Capabilities" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Six things we do that a distributor cannot." },
+    { "type": "textarea", "id": "description", "label": "Description", "default": "Each of these is a full page on the new site. The homepage's only job is to make you realize we do it at all." }
+  ],
+  "blocks": [
+    {
+      "type": "capability",
+      "name": "Capability card",
+      "limit": 6,
+      "settings": [
+        { "type": "text", "id": "no", "label": "Number", "default": "01" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Custom formulation" },
+        { "type": "text", "id": "tag", "label": "Status tag", "default": "Core" },
+        {
+          "type": "select",
+          "id": "tag_style",
+          "label": "Tag style",
+          "options": [
+            { "value": "neutral", "label": "Neutral" },
+            { "value": "red", "label": "Red" },
+            { "value": "good", "label": "Green" }
+          ],
+          "default": "neutral"
+        },
+        { "type": "textarea", "id": "body", "label": "Body", "default": "We own the formulas and the plant. When the shelf product does not fit your water, your surface or your soil, our chemists change it — from one pallet." },
+        { "type": "text", "id": "cta", "label": "Link text", "default": "How custom blending works →" },
+        { "type": "text", "id": "url", "label": "Link (URL or #anchor)", "default": "#router" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Capabilities grid",
+      "category": "Homepage",
+      "blocks": [
+        { "type": "capability", "settings": { "no": "01", "tag": "Core", "title": "Custom formulation", "body": "We own the formulas and the plant. When the shelf product does not fit your water, your surface or your soil, our chemists change it — from one pallet. Nobody who buys from a distributor can say that.", "cta": "How custom blending works →", "url": "#router" } },
+        { "type": "capability", "settings": { "no": "02", "tag": "Page to build", "title": "Enzyme technology", "body": "Live biological chemistry for drains, traps, odor and organic soil — the part of the line that keeps working long after the crew clocks out.", "cta": "Enzyme page →", "url": "#enzymes" } },
+        { "type": "capability", "settings": { "no": "03", "tag": "Page to build", "title": "Equipment & grant experts", "body": "Autoscrubbers, dispensers, laundry and foaming systems specced to the building — plus people on staff who write the grant that pays for them.", "cta": "Equipment & grants →", "url": "#equipment" } },
+        { "type": "capability", "settings": { "no": "04", "tag": "Page to build", "title": "Mobile repair", "body": "Techs and parts come to your facility. Any brand, including equipment we never sold you. Preventive plans so the floor machine does not die mid‑shift.", "cta": "Mobile repair →", "url": "#mobile" } },
+        { "type": "capability", "settings": { "no": "05", "tag": "Page to build", "title": "The Q Team", "body": "Chemists, service techs, grant writers and inside sales, listed by name and specialty. One phone number, and the person who can change the formula is down the hall.", "cta": "Meet the Q Team →", "url": "#qteam" } },
+        { "type": "capability", "settings": { "no": "06", "tag": "Core", "title": "Private label", "body": "Your label, your contact info, your dilution chart, our chemistry. Artwork approval to shipment in three to four weeks, one pallet minimum.", "cta": "Private label program →", "url": "#router" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

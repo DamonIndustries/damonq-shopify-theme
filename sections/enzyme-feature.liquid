@@ -1,0 +1,116 @@
+{%- comment -%}
+  Enzyme feature — image + text: "Biology does the work after your crew
+  goes home." Four fact cells (blocks) and two CTAs. Modeled on
+  image-with-text; image on the right.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign anchor = s.anchor_id | default: 'enzymes'
+  assign img_alt = s.image_alt
+  if img_alt == blank
+    assign img_alt = s.image.alt
+  endif
+-%}
+
+<section class="page-section enzyme" id="{{ anchor }}">
+  <div class="container">
+    <div class="enzyme__grid">
+      <div class="enzyme__content">
+        {%- if s.eyebrow != blank -%}
+          <span class="eyebrow">
+            {%- if s.eyebrow_no != blank -%}<span>{{ s.eyebrow_no }}</span>{%- endif -%}
+            <span class="eyebrow__rule" aria-hidden="true"></span>
+            <span>{{ s.eyebrow }}</span>
+          </span>
+        {%- endif -%}
+        <h2 class="enzyme__title">{{ s.heading }}</h2>
+        {%- if s.lead != blank -%}
+          <p class="enzyme__lead">{{ s.lead }}</p>
+        {%- endif -%}
+
+        {%- if section.blocks.size > 0 -%}
+          <div class="enzyme__facts">
+            {%- for block in section.blocks -%}
+              <div class="enzyme__fact" {{ block.shopify_attributes }}>
+                <div class="enzyme__fact-t">{{ block.settings.title }}</div>
+                {%- if block.settings.body != blank -%}
+                  <div class="enzyme__fact-d">{{ block.settings.body }}</div>
+                {%- endif -%}
+              </div>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+
+        {%- if s.cta_primary_text != blank or s.cta_secondary_text != blank -%}
+          <div class="enzyme__ctas">
+            {%- if s.cta_primary_text != blank -%}
+              <a href="{{ s.cta_primary_url }}" class="btn btn--red btn--lg">{{ s.cta_primary_text }}</a>
+            {%- endif -%}
+            {%- if s.cta_secondary_text != blank -%}
+              <a href="{{ s.cta_secondary_url }}" class="btn btn--outline btn--lg">{{ s.cta_secondary_text }}</a>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      <figure class="enzyme__fig">
+        <div class="enzyme__frame">
+          {%- if s.image != blank -%}
+            {{ s.image | image_url: width: 1200 | image_tag: loading: 'lazy', widths: '600, 900, 1200', sizes: '(max-width: 1000px) 100vw, 40vw', alt: img_alt }}
+          {%- else -%}
+            <div class="photo-slot">
+              <span class="photo-slot__label">{{ s.image_placeholder }}</span>
+            </div>
+          {%- endif -%}
+        </div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Enzyme feature",
+  "tag": "div",
+  "settings": [
+    { "type": "text", "id": "anchor_id", "label": "Anchor id", "default": "enzymes", "info": "Used by in-page links and the section rail. Letters, numbers and dashes only." },
+    { "type": "text", "id": "eyebrow_no", "label": "Eyebrow number", "default": "03" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Enzyme technology" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Biology does the work after your crew goes home." },
+    { "type": "textarea", "id": "lead", "label": "Lead paragraph", "default": "A surfactant cleans what you can reach. Enzymes keep working down the drain line, in the grease trap, under the tile, in the mop bucket — digesting the organic soil that causes the odor instead of perfuming over it. It is the least understood thing we make and the most defensible." },
+    { "type": "header", "content": "Calls to action" },
+    { "type": "text", "id": "cta_primary_text", "label": "Primary button", "default": "Explore the enzyme page →" },
+    { "type": "text", "id": "cta_primary_url", "label": "Primary link (URL or #anchor)", "default": "#router" },
+    { "type": "text", "id": "cta_secondary_text", "label": "Secondary button", "default": "Request a drain‑line trial" },
+    { "type": "text", "id": "cta_secondary_url", "label": "Secondary link (URL or #anchor)", "default": "/pages/contact-rep" },
+    { "type": "header", "content": "Image" },
+    { "type": "image_picker", "id": "image", "label": "Image (square)" },
+    { "type": "text", "id": "image_alt", "label": "Image alt text", "default": "Damon enzyme chemistry at work in a drain line" },
+    { "type": "text", "id": "image_placeholder", "label": "Placeholder label (no image)", "default": "Enzyme photo — drain line, grease trap or lab bench" }
+  ],
+  "blocks": [
+    {
+      "type": "fact",
+      "name": "Fact cell",
+      "limit": 4,
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Works after hours" },
+        { "type": "text", "id": "body", "label": "Body", "default": "Bacteria keep digesting through the night in lines you cannot reach." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Enzyme feature",
+      "category": "Homepage",
+      "blocks": [
+        { "type": "fact", "settings": { "title": "Works after hours", "body": "Bacteria keep digesting through the night in lines you cannot reach." } },
+        { "type": "fact", "settings": { "title": "Odor at the source", "body": "Removes the organic film generating the smell instead of covering it." } },
+        { "type": "fact", "settings": { "title": "Drain, trap, floor, laundry", "body": "One technology across four programs in the same building." } },
+        { "type": "fact", "settings": { "title": "Safer on the crew", "body": "Low‑hazard chemistry for spaces where kids and patients are present." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

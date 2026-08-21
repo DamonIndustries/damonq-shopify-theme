@@ -1,1 +1,913 @@
-{"sections":{"hero":{"type":"hero-slide","blocks":{"slide_product_dAHAxJ":{"type":"slide_product","settings":{"product":"red-kote","image_source":"custom","custom_image":"shopify:\/\/shop_images\/Red-Kot-oversided.jpg","custom_image_alt":"","layout":"split","image_side":"left","eyebrow":"★ Best Seller","headline":"Red-Kote - Fuel Tank Liner","body":"","show_price":true,"proof_tiles":"★ EPA registered\n⛟ Ships from OH\n★ 4.9 \/ 5\n$ Net‑30","quote_text":"Red‑Kote saved us a $4,200 tank replacement. One application. Still holding three years later.","quote_cite":"Jeff M., Independent Grocer","stat_callouts":"99.999%|E. coli, Listeria, Salm.\n60 sec|food‑contact dwell\nNO RINSE|rated USDA","cta_text":"Shop Now","cta_url":"shopify:\/\/products\/red-kote","secondary_cta_text":"","secondary_cta_url":""}},"slide_product_zUhccc":{"type":"slide_product","settings":{"product":"sf-77","image_source":"custom","custom_image":"shopify:\/\/shop_images\/SF-77-gal-oversized.jpg","custom_image_alt":"","layout":"split","image_side":"left","eyebrow":"★ Best Seller","headline":"SF-77 Industrial Degreaser","body":"","show_price":true,"proof_tiles":"★ EPA registered\n⛟ Ships from OH\n★ 4.9 \/ 5\n$ Net‑30","quote_text":"Red‑Kote saved us a $4,200 tank replacement. One application. Still holding three years later.","quote_cite":"Jeff M., Independent Grocer","stat_callouts":"99.999%|E. coli, Listeria, Salm.\n60 sec|food‑contact dwell\nNO RINSE|rated USDA","cta_text":"Shop Now","cta_url":"shopify:\/\/products\/sf-77","secondary_cta_text":"","secondary_cta_url":""}},"slide_fhBXD6":{"type":"slide","disabled":true,"settings":{"badge":"★ Best seller","headline":"One‑step disinfectant + sanitizer. Built for the front line.","headline_accent":"","lead":"FS Complete kills SARS‑CoV‑2 in 60 seconds. No rinse on food contact. EPA registered. Made in Ohio.","cta_primary_text":"Shop FS Complete","cta_primary_url":"","cta_secondary_text":"Add to recurring order","cta_secondary_url":"","price_pop_label":"Quart RTU · case of 12","price_pop_price":"$148","price_pop_unit":"\/ case","price_pop_strike":"$172 list · save 14%"}},"slide_image_BViD8T":{"type":"slide_image","disabled":true,"settings":{"image_alt":"","darken_pct":30,"caption_eyebrow":"","caption_title":"","caption_body":"","caption_position":"bottom-left","cta_text":"","cta_url":""}},"promo_1":{"type":"promo_card","disabled":true,"settings":{"style":"soft","tag":"Cleaning Program","title":"Build a custom Healthcare PPD bundle","body":"Per‑patient‑day chemistry, audits, and quarterly walkthroughs.","cta":"Start the wizard","url":"\/pages\/program-studio"}},"promo_2":{"type":"promo_card","disabled":true,"settings":{"style":"warm","tag":"Solution · Reset","title":"Meat Department Reset bundle — $118","body":"Da‑Clean A.P.C. + Q‑San + checklist. Ships in 24h.","cta":"Shop the bundle","url":"\/collections\/meat-department-reset"}}},"block_order":["slide_product_dAHAxJ","slide_product_zUhccc","slide_fhBXD6","slide_image_BViD8T","promo_1","promo_2"],"settings":{"autoplay":true,"autoplay_seconds":5,"show_dots":true,"show_arrows":true,"burst_size":600}},"trust":{"type":"trust-strip","blocks":{"ships":{"type":"cell","settings":{"icon":"⛟","title":"Ships from Ohio","body":"Fast shipping"}},"returns":{"type":"cell","settings":{"icon":"⏎","title":"30‑day returns","body":""}},"rating":{"type":"cell","settings":{"icon":"★","title":"Highly Recommended","body":"Across 500+ facility"}},"net30":{"type":"cell","settings":{"icon":"$","title":"Net‑30 financing","body":"For verified facilities"}}},"block_order":["ships","returns","rating","net30"],"settings":{}},"programs":{"type":"programs-grid","blocks":{"p01":{"type":"program","settings":{"icon":"⚕","name":"Healthcare PPD","count":"42 SKUs","url":"\/pages\/healthcare-ppd"}},"p02":{"type":"program","settings":{"icon":"🥩","name":"Food Processors","count":"38 SKUs","url":"\/pages\/food-processors"}},"p03":{"type":"program","settings":{"icon":"🍔","name":"Quick Serve","count":"29 SKUs","url":"\/pages\/quick-serve"}},"p04":{"type":"program","settings":{"icon":"🎓","name":"Schools","count":"34 SKUs","url":"\/pages\/schools"}},"p05":{"type":"program","settings":{"icon":"🍃","name":"Green Program","count":"26 SKUs","url":"\/pages\/green-program"}},"p06":{"type":"program","settings":{"icon":"🤖","name":"Robotic Floors","count":"11 SKUs","url":"\/pages\/robotic-floors"}},"p07":{"type":"program","settings":{"icon":"⛽","name":"Fuel Tanks","count":"8 SKUs","url":"\/pages\/fuel-tanks"}},"p08":{"type":"program","settings":{"icon":"🔧","name":"Radiator Mfg.","count":"14 SKUs","url":"\/pages\/radiator"}},"p09":{"type":"program","settings":{"icon":"🛒","name":"Grocery","count":"22 SKUs","url":"\/pages\/grocery"}},"p10":{"type":"program","settings":{"icon":"🐾","name":"Pets & Animal","count":"9 SKUs","url":"\/pages\/pets-animal"}},"p11":{"type":"program","settings":{"icon":"🧺","name":"Laundry & Ware","count":"31 SKUs","url":"\/pages\/laundry-ware"}},"p12":{"type":"program","settings":{"icon":"🛢","name":"Bulk & Drum","count":"18 SKUs","url":"\/pages\/bulk-drum"}}},"block_order":["p01","p02","p03","p04","p05","p06","p07","p08","p09","p10","p11","p12"],"settings":{"heading":"Shop by cleaning collection","link_text":"See all collections","link_url":"shopify:\/\/collections","collections":["automotive","carpet-care","cleaners-degreasers","deodorants","floor-care-strippers","radiator-gas-tank-repair"],"fallback_icon":""}},"solutions":{"type":"solutions-row","blocks":{"s1":{"type":"solution","settings":{"color":"red","eyebrow":"Solution · Food Safety","title":"Meat Department Reset","pitch":"Da‑Clean A.P.C. enzyme cleaner, Q‑San no‑rinse food‑contact sanitizer, and the end‑of‑shift checklist USDA inspectors actually want to see.","included":"Da‑Clean A.P.C. ×4\nQ‑San No‑Rinse ×6\nWall dispenser ×2\nInspector checklist","price":"$118","price_unit":"\/ bundle","cta":"Shop bundle","url":"\/collections\/meat-department-reset"}},"s2":{"type":"solution","settings":{"color":"green","eyebrow":"Solution · Schools","title":"Healthy Schools Starter","pitch":"Green Seal cleaners, microfiber, and a custodian training packet aligned with the Healthy Schools Campaign.","included":"Green Seal cleaners ×6\nMicrofiber program ×2\nCustodian training packet\nIndoor air‑safe certified","price":"$240","price_unit":"\/ starter","cta":"Shop starter","url":"\/collections\/healthy-schools-starter"}},"s3":{"type":"solution","settings":{"color":"ink","eyebrow":"Solution · Restoration","title":"Red‑Kote Tank Kit","pitch":"Restores leaking fuel tanks without removal. The 1940s formula chosen by independent garages and farm operators, still made in Ohio.","included":"Red‑Kote tank liner\nTank prep solvent\nApplicator brushes\nApplication guide","price":"$84.50","price_unit":"\/ kit","cta":"Shop kit","url":"\/collections\/red-kote-kit"}}},"block_order":["s1","s2","s3"],"disabled":true,"settings":{"heading":"Cleaning solutions —","heading_accent":"ready-made bundles","link_text":"Browse all solutions","link_url":"\/collections\/solutions"}},"story":{"type":"image-with-text","blocks":{"stat_1":{"type":"stat","settings":{"value_pre":"86","value_em":"yr","value_post":"","label":"Years in business"}},"stat_3":{"type":"stat","settings":{"value_pre":"USA","value_em":"","value_post":"","label":"Manufactured in Alliance, OH"}}},"block_order":["stat_1","stat_3"],"settings":{"image":"shopify:\/\/shop_images\/history4.jpg","show_seal":true,"seal_year":"1938","seal_location":"DAMON · OH","eyebrow":"★ Made in Alliance, Ohio","heading_pre":"Eighty-six years of cleaning America's","heading_em":"hardest places.","heading_post":"","body":"One factory in Ohio. The same red shield. We make every chemistry that leaves our dock - since 1938.","cta_primary_text":"Read the Damon story","cta_primary_url":"\/pages\/history","cta_secondary_text":"","cta_secondary_url":"\/pages\/factory"}},"products":{"type":"featured-products","blocks":{"f1":{"type":"filter","settings":{"label":"All","count":"340"}},"f2":{"type":"filter","settings":{"label":"Disinfectants","count":"42"}},"f3":{"type":"filter","settings":{"label":"Sanitizers","count":"28"}},"f4":{"type":"filter","settings":{"label":"Floor Care","count":"61"}},"f5":{"type":"filter","settings":{"label":"EPA Registered","count":"87"}},"f6":{"type":"filter","settings":{"label":"Green Seal","count":"26"}}},"block_order":["f1","f2","f3","f4","f5","f6"],"disabled":true,"settings":{"heading":"Best‑selling cleaning solutions","collection":"cleaners-degreasers","limit":4,"link_text":"View all 340","link_url":"","show_filters":true}},"autostock":{"type":"autostock-promo","blocks":{"perk_1":{"type":"perk","settings":{"icon":"⏰","title":"Set & forget cadence","body":"Weekly, monthly, or per‑PO"}},"perk_2":{"type":"perk","settings":{"icon":"%","title":"5% off every order","body":"Plus locked pricing for 12 months"}},"perk_3":{"type":"perk","settings":{"icon":"🔁","title":"Skip or swap anytime","body":"From your account dashboard"}},"perk_4":{"type":"perk","settings":{"icon":"★","title":"Quarterly walkthrough","body":"Free with any active program"}},"item_1":{"type":"sample_item","settings":{"code":"FS","name":"FS Complete RTU · case","meta":"Disinfectant · ships 1st of month","qty":4,"line_total":"$148","line_total_cents":14800}},"item_2":{"type":"sample_item","settings":{"code":"DA","name":"Da‑Clean A.P.C. · gallon","meta":"Enzyme cleaner · ships 1st","qty":6,"line_total":"$149","line_total_cents":14940}},"item_3":{"type":"sample_item","settings":{"code":"QS","name":"Q‑San No‑Rinse · case","meta":"Sanitizer · ships 1st","qty":2,"line_total":"$63","line_total_cents":6300}},"item_4":{"type":"sample_item","settings":{"code":"EZ","name":"EarthSafe Neutral · gallon","meta":"Floor cleaner · ships 1st","qty":3,"line_total":"$58","line_total_cents":5820}}},"block_order":["perk_1","perk_2","perk_3","perk_4","item_1","item_2","item_3","item_4"],"disabled":true,"settings":{"section_enabled":true,"eyebrow":"Damon AutoStock","headline_pre":"Never run out of","headline_accent":"FS Complete","headline_post":"on a Saturday again.","body":"Set a recurring order for any Damon program. We ship on your schedule — and walk through the facility once a quarter to make sure the program is still right.","cta_text":"Set up AutoStock","cta_url":"","panel_title":"Sample monthly cart · St. Mary's Cafeteria","total_label":"Monthly total · locked","total_value":"$486.20","activate_text":"Activate this AutoStock cart","activate_url":"\/account"}},"reviews":{"type":"reviews-row","blocks":{"r1":{"type":"review","settings":{"body":"Switched our four buildings to the Healthy Schools Starter and our parent complaints dropped to zero. The fixed‑payment program is easier to budget than line‑item buys.","name":"Carla R.","role":"Director of Facilities · Stark County Schools","initials":"CR"}},"r2":{"type":"review","settings":{"body":"FS Complete replaced three different products in our meat case. One bottle, one SDS, one training. My team actually uses it.","name":"Jeff M.","role":"Meat Manager · Independent Grocer","initials":"JM"}},"r3":{"type":"review","settings":{"body":"AutoStock is the first chemical subscription I've ever recommended. Damon's rep walks the building. They actually know the floor.","name":"Pat B.","role":"EVS Manager · 240‑bed Hospital","initials":"PB"}}},"block_order":["r1","r2","r3"],"disabled":true,"settings":{"heading":"What facility managers say","link_text":"2,400 reviews","link_url":""}}},"order":["hero","trust","programs","solutions","story","products","autostock","reviews"]}
+{
+  "sections": {
+    "rail": {
+      "type": "section-rail",
+      "blocks": {
+        "link_1": {
+          "type": "link",
+          "settings": {
+            "label": "Capabilities",
+            "target": "capabilities"
+          }
+        },
+        "link_2": {
+          "type": "link",
+          "settings": {
+            "label": "Get routed",
+            "target": "router"
+          }
+        },
+        "link_3": {
+          "type": "link",
+          "settings": {
+            "label": "Enzymes",
+            "target": "enzymes"
+          }
+        },
+        "link_4": {
+          "type": "link",
+          "settings": {
+            "label": "Equipment & grants",
+            "target": "equipment"
+          }
+        },
+        "link_5": {
+          "type": "link",
+          "settings": {
+            "label": "Mobile repair",
+            "target": "mobile"
+          }
+        },
+        "link_6": {
+          "type": "link",
+          "settings": {
+            "label": "Q Team",
+            "target": "qteam"
+          }
+        },
+        "link_7": {
+          "type": "link",
+          "settings": {
+            "label": "Industries",
+            "target": "industries"
+          }
+        },
+        "link_8": {
+          "type": "link",
+          "settings": {
+            "label": "In the field",
+            "target": "social"
+          }
+        },
+        "link_9": {
+          "type": "link",
+          "settings": {
+            "label": "Shop the catalog",
+            "target": "shop"
+          }
+        }
+      },
+      "block_order": [
+        "link_1",
+        "link_2",
+        "link_3",
+        "link_4",
+        "link_5",
+        "link_6",
+        "link_7",
+        "link_8",
+        "link_9"
+      ],
+      "settings": {
+        "aria_label": "Jump to section",
+        "offset": 108
+      }
+    },
+    "hero": {
+      "type": "hero-statement",
+      "settings": {
+        "layout": "split",
+        "anchor_id": "top",
+        "eyebrow": "Chemistry · Equipment · Service · Expertise",
+        "heading_pre": "Most suppliers sell you a drum.",
+        "heading_em": "We run the whole system.",
+        "lead": "Damon formulates the chemistry, engineers the enzymes, installs and repairs the equipment, writes your grant application, trains your crew and answers the phone with a chemist. Eighty‑eight years in, that is still one building in Ohio.",
+        "cta_primary_text": "See what we do →",
+        "cta_primary_url": "#capabilities",
+        "cta_secondary_text": "Route me to the right expert",
+        "cta_secondary_url": "#router",
+        "image_alt": "Damon Industries, Alliance, Ohio",
+        "caption": "Alliance, Ohio — one plant since 1938",
+        "image_placeholder": "Factory photo — the Alliance, Ohio plant",
+        "image": "shopify://shop_images/history4.jpg"
+      }
+    },
+    "stats": {
+      "type": "stat-bar",
+      "blocks": {
+        "stat_1": {
+          "type": "stat",
+          "settings": {
+            "value_pre": "1938",
+            "value_em": "",
+            "label": "Third‑generation family ownership. No roll‑up, no private equity."
+          }
+        },
+        "stat_2": {
+          "type": "stat",
+          "settings": {
+            "value_pre": "300",
+            "value_em": "+",
+            "label": "Formulas we own outright — not distributed, not repacked."
+          }
+        },
+        "stat_3": {
+          "type": "stat",
+          "settings": {
+            "value_pre": "1M",
+            "value_em": "+",
+            "label": "Fuel tanks lined with Red‑Kote since 1985. Under 200 issues, all application."
+          }
+        },
+        "stat_4": {
+          "type": "stat",
+          "settings": {
+            "value_pre": "",
+            "value_em": "1",
+            "label": "Phone number. The chemist who can change the formula is down the hall."
+          }
+        }
+      },
+      "block_order": [
+        "stat_1",
+        "stat_2",
+        "stat_3",
+        "stat_4"
+      ],
+      "settings": {
+        "aria_label": "Damon by the numbers"
+      }
+    },
+    "capabilities": {
+      "type": "capabilities-grid",
+      "blocks": {
+        "capability_1": {
+          "type": "capability",
+          "settings": {
+            "no": "01",
+            "title": "Custom formulation",
+            "tag": "Core",
+            "tag_style": "neutral",
+            "body": "We own the formulas and the plant. When the shelf product does not fit your water, your surface or your soil, our chemists change it — from one pallet. Nobody who buys from a distributor can say that.",
+            "cta": "How custom blending works →",
+            "url": "#router"
+          }
+        },
+        "capability_2": {
+          "type": "capability",
+          "settings": {
+            "no": "02",
+            "title": "Enzyme technology",
+            "tag": "Page to build",
+            "tag_style": "neutral",
+            "body": "Live biological chemistry for drains, traps, odor and organic soil — the part of the line that keeps working long after the crew clocks out.",
+            "cta": "Enzyme page →",
+            "url": "#enzymes"
+          }
+        },
+        "capability_3": {
+          "type": "capability",
+          "settings": {
+            "no": "03",
+            "title": "Equipment & grant experts",
+            "tag": "Page to build",
+            "tag_style": "neutral",
+            "body": "Autoscrubbers, dispensers, laundry and foaming systems specced to the building — plus people on staff who write the grant that pays for them.",
+            "cta": "Equipment & grants →",
+            "url": "#equipment"
+          }
+        },
+        "capability_4": {
+          "type": "capability",
+          "settings": {
+            "no": "04",
+            "title": "Mobile repair",
+            "tag": "Page to build",
+            "tag_style": "neutral",
+            "body": "Techs and parts come to your facility. Any brand, including equipment we never sold you. Preventive plans so the floor machine does not die mid‑shift.",
+            "cta": "Mobile repair →",
+            "url": "#mobile"
+          }
+        },
+        "capability_5": {
+          "type": "capability",
+          "settings": {
+            "no": "05",
+            "title": "The Q Team",
+            "tag": "Page to build",
+            "tag_style": "neutral",
+            "body": "Chemists, service techs, grant writers and inside sales, listed by name and specialty. One phone number, and the person who can change the formula is down the hall.",
+            "cta": "Meet the Q Team →",
+            "url": "#qteam"
+          }
+        },
+        "capability_6": {
+          "type": "capability",
+          "settings": {
+            "no": "06",
+            "title": "Private label",
+            "tag": "Core",
+            "tag_style": "neutral",
+            "body": "Your label, your contact info, your dilution chart, our chemistry. Artwork approval to shipment in three to four weeks, one pallet minimum.",
+            "cta": "Private label program →",
+            "url": "#router"
+          }
+        }
+      },
+      "block_order": [
+        "capability_1",
+        "capability_2",
+        "capability_3",
+        "capability_4",
+        "capability_5",
+        "capability_6"
+      ],
+      "settings": {
+        "anchor_id": "capabilities",
+        "eyebrow_no": "01",
+        "eyebrow": "Capabilities",
+        "heading": "Six things we do that a distributor cannot.",
+        "description": "Each of these is a full page on the new site. The homepage's only job is to make you realize we do it at all."
+      }
+    },
+    "router": {
+      "type": "facility-router",
+      "blocks": {
+        "facility_1": {
+          "type": "facility",
+          "settings": {
+            "key": "grocery",
+            "label": "Grocery & retail",
+            "phrase": "grocery & retail"
+          }
+        },
+        "facility_2": {
+          "type": "facility",
+          "settings": {
+            "key": "food",
+            "label": "Food processing",
+            "phrase": "food processing"
+          }
+        },
+        "facility_3": {
+          "type": "facility",
+          "settings": {
+            "key": "qsr",
+            "label": "Quick service restaurant",
+            "phrase": "quick service restaurants"
+          }
+        },
+        "facility_4": {
+          "type": "facility",
+          "settings": {
+            "key": "schools",
+            "label": "Schools & universities",
+            "phrase": "schools & universities"
+          }
+        },
+        "facility_5": {
+          "type": "facility",
+          "settings": {
+            "key": "health",
+            "label": "Healthcare & long‑term care",
+            "phrase": "healthcare & long‑term care"
+          }
+        },
+        "facility_6": {
+          "type": "facility",
+          "settings": {
+            "key": "muni",
+            "label": "Municipal & parks",
+            "phrase": "municipal & parks"
+          }
+        },
+        "facility_7": {
+          "type": "facility",
+          "settings": {
+            "key": "auto",
+            "label": "Automotive & radiator shop",
+            "phrase": "automotive & radiator shops"
+          }
+        },
+        "facility_8": {
+          "type": "facility",
+          "settings": {
+            "key": "ind",
+            "label": "Industrial & machining",
+            "phrase": "industrial & machining"
+          }
+        },
+        "route_1": {
+          "type": "route",
+          "settings": {
+            "problem_key": "odor",
+            "problem_label": "Odor, drains & grease traps",
+            "title": "Enzyme program, not another fragrance",
+            "body": "Fragrance masks for four hours. A dosed enzyme program digests the organic film in the drain line and the trap so the smell stops being generated in the first place. We start with a two‑week trial on your worst line.",
+            "chemistry": "Enzyme line",
+            "equipment": "Drain dosing pump",
+            "funding": "Not typical",
+            "link_text": "Enzyme page",
+            "link_url": "#enzymes"
+          }
+        },
+        "route_2": {
+          "type": "route",
+          "settings": {
+            "problem_key": "grease",
+            "problem_label": "Baked‑on grease & carbon",
+            "title": "Concentrate plus the right dispenser",
+            "body": "Hoods, fryers and rotisserie carbon are a chemistry‑and‑dilution problem. We spec the concentrate to your soil, then mount a dilution station so your crew stops free‑pouring at four times the cost.",
+            "chemistry": "Non‑butyl concentrate",
+            "equipment": "Wall dilution station",
+            "funding": "Not typical",
+            "link_text": "Equipment page",
+            "link_url": "#equipment"
+          }
+        },
+        "route_3": {
+          "type": "route",
+          "settings": {
+            "problem_key": "floors",
+            "problem_label": "Floors — finish, stripping, scrubbing",
+            "title": "Floor program with the machine included",
+            "body": "Finish, stripper and daily neutral cleaner specced against your substrate — then the autoscrubber sized to your square footage, installed, trained and serviced by our techs.",
+            "chemistry": "Finish & stripper",
+            "equipment": "Autoscrubber",
+            "funding": "Often eligible",
+            "link_text": "Equipment page",
+            "link_url": "#equipment"
+          }
+        },
+        "route_4": {
+          "type": "route",
+          "settings": {
+            "problem_key": "sanitize",
+            "problem_label": "Sanitizing & documented kill claims",
+            "title": "Documented kill claims and the binder to prove it",
+            "body": "EPA‑registered chemistry with the dwell times your surveyor will ask about, plus an auto‑assembled SDS and registration binder for the products on your account.",
+            "chemistry": "EPA‑registered",
+            "equipment": "Metered dispensing",
+            "funding": "Sometimes eligible",
+            "link_text": "Talk to a specialist",
+            "link_url": "/pages/contact-rep"
+          }
+        },
+        "route_5": {
+          "type": "route",
+          "settings": {
+            "problem_key": "equipment",
+            "problem_label": "Equipment down or aging out",
+            "title": "Mobile repair first, replacement second",
+            "body": "Before you buy, our tech comes to the building and looks at what you have — any brand. Most machines we see are one part and a calibration away from another two years.",
+            "chemistry": "Machine‑safe line",
+            "equipment": "On‑site repair",
+            "funding": "Often eligible",
+            "link_text": "Mobile repair",
+            "link_url": "#mobile"
+          }
+        },
+        "route_6": {
+          "type": "route",
+          "settings": {
+            "problem_key": "budget",
+            "problem_label": "No capital budget for what we need",
+            "title": "Start with the grant, not the quote",
+            "body": "Our grant people check which cycles are open for your entity type, tell you honestly whether you qualify, and help write the equipment into the narrative. We have done this paperwork before.",
+            "chemistry": "Specced after award",
+            "equipment": "Written into the ask",
+            "funding": "This is the route",
+            "link_text": "Equipment & grants",
+            "link_url": "#equipment"
+          }
+        },
+        "route_7": {
+          "type": "route",
+          "settings": {
+            "problem_key": "custom",
+            "problem_label": "Nothing on the market works",
+            "title": "A formula built for one customer — yours",
+            "body": "Roughly a third of what leaves our dock was built for a single account. Tell the chemist the surface, the soil and the water; we blend against it and you can have it under your own label.",
+            "chemistry": "Custom blend",
+            "equipment": "As required",
+            "funding": "Not typical",
+            "link_text": "Talk to a chemist",
+            "link_url": "/pages/contact-rep"
+          }
+        }
+      },
+      "block_order": [
+        "facility_1",
+        "facility_2",
+        "facility_3",
+        "facility_4",
+        "facility_5",
+        "facility_6",
+        "facility_7",
+        "facility_8",
+        "route_1",
+        "route_2",
+        "route_3",
+        "route_4",
+        "route_5",
+        "route_6",
+        "route_7"
+      ],
+      "settings": {
+        "anchor_id": "router",
+        "eyebrow_no": "02",
+        "eyebrow": "Get routed",
+        "heading_pre": "Tell us the facility",
+        "heading_post": "and the problem.",
+        "subheading": "Not a product search. Two questions and you land on the person who has solved this before — with the chemistry, the equipment and the funding angle already attached.",
+        "facility_label": "Your facility",
+        "problem_label": "What you're up against",
+        "default_facility": "schools",
+        "default_problem": "budget",
+        "kicker": "Recommended route",
+        "typical_prefix": "Typical for",
+        "chemistry_label": "Chemistry",
+        "equipment_label": "Equipment",
+        "funding_label": "Funding",
+        "cta_text": "Book a 15‑minute call →",
+        "cta_url": "/pages/contact-rep",
+        "note": "Free sample and SDS attached automatically",
+        "empty_text": "Add a Route block to show a recommendation here."
+      }
+    },
+    "enzymes": {
+      "type": "enzyme-feature",
+      "blocks": {
+        "fact_1": {
+          "type": "fact",
+          "settings": {
+            "title": "Works after hours",
+            "body": "Bacteria keep digesting through the night in lines you cannot reach."
+          }
+        },
+        "fact_2": {
+          "type": "fact",
+          "settings": {
+            "title": "Odor at the source",
+            "body": "Removes the organic film generating the smell instead of covering it."
+          }
+        },
+        "fact_3": {
+          "type": "fact",
+          "settings": {
+            "title": "Drain, trap, floor, laundry",
+            "body": "One technology across four programs in the same building."
+          }
+        },
+        "fact_4": {
+          "type": "fact",
+          "settings": {
+            "title": "Safer on the crew",
+            "body": "Low‑hazard chemistry for spaces where kids and patients are present."
+          }
+        }
+      },
+      "block_order": [
+        "fact_1",
+        "fact_2",
+        "fact_3",
+        "fact_4"
+      ],
+      "settings": {
+        "anchor_id": "enzymes",
+        "eyebrow_no": "03",
+        "eyebrow": "Enzyme technology",
+        "heading": "Biology does the work after your crew goes home.",
+        "lead": "A surfactant cleans what you can reach. Enzymes keep working down the drain line, in the grease trap, under the tile, in the mop bucket — digesting the organic soil that causes the odor instead of perfuming over it. It is the least understood thing we make and the most defensible.",
+        "cta_primary_text": "Explore the enzyme page →",
+        "cta_primary_url": "#router",
+        "cta_secondary_text": "Request a drain‑line trial",
+        "cta_secondary_url": "/pages/contact-rep",
+        "image_alt": "Damon enzyme chemistry at work in a drain line",
+        "image_placeholder": "Enzyme photo — drain line, grease trap or lab bench"
+      }
+    },
+    "equipment": {
+      "type": "equipment-grants",
+      "blocks": {
+        "step_1": {
+          "type": "step",
+          "settings": {
+            "no": "01",
+            "title": "Specced to your building",
+            "body": "Square footage, floor type, crew size and water hardness — then the machine and the dilution station that actually fit. Not a catalog page.",
+            "tag_1": "Site survey",
+            "tag_2": "Water test",
+            "highlight": false,
+            "cta_text": "",
+            "cta_url": "#router"
+          }
+        },
+        "step_2": {
+          "type": "step",
+          "settings": {
+            "no": "02",
+            "title": "Installed, trained, maintained",
+            "body": "Dispensers mounted and calibrated, crew trained in English or Spanish, and a service interval that we come back for — not one you have to remember.",
+            "tag_1": "Install",
+            "tag_2": "Bilingual training",
+            "highlight": false,
+            "cta_text": "",
+            "cta_url": "#router"
+          }
+        },
+        "step_3": {
+          "type": "step",
+          "settings": {
+            "no": "03",
+            "title": "Grant experts on staff",
+            "body": "Ohio EPA, ESSER successors, USDA Rural Development, state school‑facility funds. Our people know which cycle is open, what the narrative needs to say, and how to write the equipment into it.",
+            "tag_1": "Eligibility check",
+            "tag_2": "Application support",
+            "highlight": true,
+            "cta_text": "Check my grant eligibility →",
+            "cta_url": "#router"
+          }
+        }
+      },
+      "block_order": [
+        "step_1",
+        "step_2",
+        "step_3"
+      ],
+      "settings": {
+        "anchor_id": "equipment",
+        "eyebrow_no": "04",
+        "eyebrow": "Equipment & grant experts",
+        "heading": "We spec the machine, then help you find someone else to pay for it.",
+        "description": "Autoscrubbers, dispensers, laundry systems, foamers. Most schools and municipalities never buy because of the capital line — so we put grant people on staff."
+      }
+    },
+    "mobile": {
+      "type": "mobile-repair",
+      "blocks": {
+        "stat_1": {
+          "type": "stat",
+          "settings": {
+            "title": "On site",
+            "body": "No crating, no freight",
+            "accent": false
+          }
+        },
+        "stat_2": {
+          "type": "stat",
+          "settings": {
+            "title": "Any brand",
+            "body": "Including what we didn't sell",
+            "accent": false
+          }
+        },
+        "stat_3": {
+          "type": "stat",
+          "settings": {
+            "title": "PM plans",
+            "body": "Scheduled, not reactive",
+            "accent": true
+          }
+        }
+      },
+      "block_order": [
+        "stat_1",
+        "stat_2",
+        "stat_3"
+      ],
+      "settings": {
+        "anchor_id": "mobile",
+        "eyebrow_no": "05",
+        "eyebrow": "Mobile repair",
+        "heading": "The machine gets fixed in your building.",
+        "lead": "A broken autoscrubber is not a shipping problem, it is a floor nobody is cleaning. Our techs come to you with the parts on the van — whatever brand it is, whoever sold it to you.",
+        "cta_primary_text": "Request a service visit →",
+        "cta_primary_url": "/pages/contact-rep",
+        "cta_secondary_text": "See the service area",
+        "cta_secondary_url": "#router",
+        "image_alt": "Damon service technician repairing an autoscrubber on site",
+        "image_placeholder": "Service van or a tech repairing an autoscrubber"
+      }
+    },
+    "qteam": {
+      "type": "qteam-directory",
+      "blocks": {
+        "person_1": {
+          "type": "person",
+          "settings": {
+            "image_alt": "",
+            "image_placeholder": "Chemist headshot",
+            "role": "Formulation",
+            "name": "Chemist — name TBD",
+            "spec": "Custom blends, water chemistry, reformulation requests."
+          }
+        },
+        "person_2": {
+          "type": "person",
+          "settings": {
+            "image_alt": "",
+            "image_placeholder": "Equipment specialist headshot",
+            "role": "Equipment & grants",
+            "name": "Specialist — name TBD",
+            "spec": "Machine specs, funding eligibility, application narratives."
+          }
+        },
+        "person_3": {
+          "type": "person",
+          "settings": {
+            "image_alt": "",
+            "image_placeholder": "Service tech headshot",
+            "role": "Service",
+            "name": "Lead tech — name TBD",
+            "spec": "Mobile repair, preventive maintenance, install and calibration."
+          }
+        },
+        "person_4": {
+          "type": "person",
+          "settings": {
+            "image_alt": "",
+            "image_placeholder": "Inside sales headshot",
+            "role": "Inside sales",
+            "name": "Account manager — name TBD",
+            "spec": "Programs, reorders, terms, training scheduling."
+          }
+        }
+      },
+      "block_order": [
+        "person_1",
+        "person_2",
+        "person_3",
+        "person_4"
+      ],
+      "settings": {
+        "anchor_id": "qteam",
+        "eyebrow_no": "06",
+        "eyebrow": "The Q Team",
+        "heading": "Ask for the chemist. You get the chemist.",
+        "description": "The Q Team page is a directory, not an About page — real names, real specialties, a real way to reach them. The single best asset an inside sales motion can have.",
+        "cta_text": "Meet the whole Q Team →",
+        "cta_url": "/pages/contact-rep",
+        "note": "Placeholder names and photos — swap in the real directory."
+      }
+    },
+    "industries": {
+      "type": "industries-grid",
+      "blocks": {
+        "sector_1": {
+          "type": "sector",
+          "settings": {
+            "no": "01",
+            "name": "Grocery & retail",
+            "note": "Meat, deli, bakery, produce mist, front‑end floors.",
+            "url": "#router"
+          }
+        },
+        "sector_2": {
+          "type": "sector",
+          "settings": {
+            "no": "02",
+            "name": "Food processing",
+            "note": "USDA‑accepted chemistry, boil‑out, smoke houses, CIP.",
+            "url": "#router"
+          }
+        },
+        "sector_3": {
+          "type": "sector",
+          "settings": {
+            "no": "03",
+            "name": "Quick service",
+            "note": "Fryers, hoods, dish machines, three‑comp sink program.",
+            "url": "#router"
+          }
+        },
+        "sector_4": {
+          "type": "sector",
+          "settings": {
+            "no": "04",
+            "name": "Schools",
+            "note": "Gym floors, cafeterias, locker rooms, grant‑funded equipment.",
+            "url": "#router"
+          }
+        },
+        "sector_5": {
+          "type": "sector",
+          "settings": {
+            "no": "05",
+            "name": "Healthcare",
+            "note": "Joint Commission and CMS documented kill claims.",
+            "url": "#router"
+          }
+        },
+        "sector_6": {
+          "type": "sector",
+          "settings": {
+            "no": "06",
+            "name": "Municipal & parks",
+            "note": "Restrooms, fleet wash, odor control, funding support.",
+            "url": "#router"
+          }
+        },
+        "sector_7": {
+          "type": "sector",
+          "settings": {
+            "no": "07",
+            "name": "Automotive & radiator",
+            "note": "Red‑Kote, Over‑Kote, EGR flush, hot‑tank chemistry.",
+            "url": "#router"
+          }
+        },
+        "sector_8": {
+          "type": "sector",
+          "settings": {
+            "no": "08",
+            "name": "Industrial & machining",
+            "note": "Coolants, mold release, parts washers, plant floors.",
+            "url": "#router"
+          }
+        }
+      },
+      "block_order": [
+        "sector_1",
+        "sector_2",
+        "sector_3",
+        "sector_4",
+        "sector_5",
+        "sector_6",
+        "sector_7",
+        "sector_8"
+      ],
+      "settings": {
+        "anchor_id": "industries",
+        "eyebrow_no": "07",
+        "eyebrow": "By industry",
+        "heading": "Organized the way you'd describe your own building.",
+        "link_text": "All industries →",
+        "link_url": "#router"
+      }
+    },
+    "field_notes": {
+      "type": "field-notes",
+      "blocks": {
+        "channel_1": {
+          "type": "channel",
+          "settings": {
+            "network": "Instagram",
+            "handle": "@damonindustries",
+            "note": "One fix a day",
+            "url": "",
+            "new_tab": true
+          }
+        },
+        "channel_2": {
+          "type": "channel",
+          "settings": {
+            "network": "LinkedIn",
+            "handle": "/damon‑industries",
+            "note": "Programs & hiring",
+            "url": "",
+            "new_tab": true
+          }
+        },
+        "channel_3": {
+          "type": "channel",
+          "settings": {
+            "network": "YouTube",
+            "handle": "@damonq",
+            "note": "Application protocols",
+            "url": "",
+            "new_tab": true
+          }
+        },
+        "channel_4": {
+          "type": "channel",
+          "settings": {
+            "network": "TikTok",
+            "handle": "@damonq",
+            "note": "Plant floor",
+            "url": "",
+            "new_tab": true
+          }
+        },
+        "post_1": {
+          "type": "post",
+          "settings": {
+            "kind": "Field note",
+            "title": "Why your drain smells again by Thursday",
+            "url": ""
+          }
+        },
+        "post_2": {
+          "type": "post",
+          "settings": {
+            "kind": "Protocol",
+            "title": "Lining a fuel tank in fifteen steps",
+            "url": ""
+          }
+        },
+        "post_3": {
+          "type": "post",
+          "settings": {
+            "kind": "Ask a chemist",
+            "title": "Hard water is eating your detergent budget",
+            "url": ""
+          }
+        },
+        "post_4": {
+          "type": "post",
+          "settings": {
+            "kind": "Grant desk",
+            "title": "Which school funds are open this quarter",
+            "url": ""
+          }
+        },
+        "post_5": {
+          "type": "post",
+          "settings": {
+            "kind": "Shop floor",
+            "title": "A 40‑year‑old autoscrubber, resurrected",
+            "url": ""
+          }
+        },
+        "post_6": {
+          "type": "post",
+          "settings": {
+            "kind": "Do not",
+            "title": "Never boil out terne‑plated steel",
+            "url": ""
+          }
+        }
+      },
+      "block_order": [
+        "channel_1",
+        "channel_2",
+        "channel_3",
+        "channel_4",
+        "post_1",
+        "post_2",
+        "post_3",
+        "post_4",
+        "post_5",
+        "post_6"
+      ],
+      "settings": {
+        "anchor_id": "social",
+        "eyebrow_no": "08",
+        "eyebrow": "In the field",
+        "heading": "Eighty‑eight years of knowing things, published.",
+        "lead": "A short‑form feed run out of the plant: one fix, one surface, one mistake per post. The cheapest credibility Damon can buy, and it feeds the inside sales calls directly."
+      }
+    },
+    "catalog": {
+      "type": "catalog-strip",
+      "settings": {
+        "anchor_id": "shop",
+        "eyebrow": "Already know what you need",
+        "heading": "The full catalog is still one click away.",
+        "description": "300+ formulas, quart through 220‑gallon tote, Net‑30 for verified facilities, reorder from your history. Ships from Alliance, Ohio.",
+        "cta_primary_text": "Browse the catalog →",
+        "cta_primary_url": "/collections/all",
+        "cta_secondary_text": "Sign in to reorder",
+        "cta_secondary_url": "/account/login"
+      }
+    },
+    "cta": {
+      "type": "cta-banner",
+      "settings": {
+        "anchor_id": "",
+        "eyebrow": "Damon Industries · Alliance, Ohio · Since 1938",
+        "heading": "More than just chemicals.",
+        "body": "Tell us the facility, the surface and the budget. A chemist, a service tech and a grant writer are all on the same call.",
+        "cta_primary_text": "Talk to a specialist →",
+        "cta_primary_url": "/pages/contact-rep",
+        "cta_secondary_text": "1‑800‑362‑9850",
+        "cta_secondary_url": "tel:+18003629850"
+      }
+    }
+  },
+  "order": [
+    "rail",
+    "hero",
+    "stats",
+    "capabilities",
+    "router",
+    "enzymes",
+    "equipment",
+    "mobile",
+    "qteam",
+    "industries",
+    "field_notes",
+    "catalog",
+    "cta"
+  ]
+}

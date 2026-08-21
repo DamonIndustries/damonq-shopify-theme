@@ -1,0 +1,119 @@
+{%- comment -%}
+  Field notes — "In the field": intro + social channel list (`channel`
+  blocks) on the left, a 3×2 grid of post tiles (`post` blocks) on the right.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign anchor = s.anchor_id | default: 'social'
+  assign channels = section.blocks | where: 'type', 'channel'
+  assign posts = section.blocks | where: 'type', 'post'
+-%}
+
+<section class="page-section field-notes" id="{{ anchor }}">
+  <div class="container">
+    <div class="field-notes__grid">
+      <div class="field-notes__intro">
+        {%- if s.eyebrow != blank -%}
+          <span class="eyebrow">
+            {%- if s.eyebrow_no != blank -%}<span>{{ s.eyebrow_no }}</span>{%- endif -%}
+            <span class="eyebrow__rule" aria-hidden="true"></span>
+            <span>{{ s.eyebrow }}</span>
+          </span>
+        {%- endif -%}
+        <h2 class="field-notes__title">{{ s.heading }}</h2>
+        {%- if s.lead != blank -%}
+          <p class="field-notes__lead">{{ s.lead }}</p>
+        {%- endif -%}
+
+        {%- if channels.size > 0 -%}
+          <div class="field-notes__list">
+            {%- for block in channels -%}
+              {%- assign b = block.settings -%}
+              <a class="channel-link" href="{{ b.url | default: '#' }}"{% if b.new_tab %} target="_blank" rel="noopener"{% endif %} {{ block.shopify_attributes }}>
+                <span class="channel-link__net">{{ b.network }}</span>
+                {%- if b.handle != blank -%}<span class="channel-link__handle">{{ b.handle }}</span>{%- endif -%}
+                {%- if b.note != blank -%}<span class="channel-link__note">{{ b.note }}</span>{%- endif -%}
+              </a>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      {%- if posts.size > 0 -%}
+        <div class="field-notes__posts">
+          {%- for block in posts -%}
+            {%- assign b = block.settings -%}
+            {%- if b.url != blank -%}
+              <a class="post-tile" href="{{ b.url }}" {{ block.shopify_attributes }}>
+                <span class="post-tile__kind">{{ b.kind }}</span>
+                <span class="post-tile__title">{{ b.title }}</span>
+              </a>
+            {%- else -%}
+              <div class="post-tile" {{ block.shopify_attributes }}>
+                <span class="post-tile__kind">{{ b.kind }}</span>
+                <span class="post-tile__title">{{ b.title }}</span>
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Field notes",
+  "tag": "div",
+  "settings": [
+    { "type": "text", "id": "anchor_id", "label": "Anchor id", "default": "social", "info": "Used by in-page links and the section rail. Letters, numbers and dashes only." },
+    { "type": "text", "id": "eyebrow_no", "label": "Eyebrow number", "default": "08" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "In the field" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Eighty‑eight years of knowing things, published." },
+    { "type": "textarea", "id": "lead", "label": "Lead paragraph", "default": "A short‑form feed run out of the plant: one fix, one surface, one mistake per post. The cheapest credibility Damon can buy, and it feeds the inside sales calls directly." }
+  ],
+  "blocks": [
+    {
+      "type": "channel",
+      "name": "Social channel",
+      "limit": 6,
+      "settings": [
+        { "type": "text", "id": "network", "label": "Network", "default": "Instagram" },
+        { "type": "text", "id": "handle", "label": "Handle", "default": "@damonindustries" },
+        { "type": "text", "id": "note", "label": "Note", "default": "One fix a day" },
+        { "type": "text", "id": "url", "label": "Link", "info": "Full profile URL." },
+        { "type": "checkbox", "id": "new_tab", "label": "Open in new tab", "default": true }
+      ]
+    },
+    {
+      "type": "post",
+      "name": "Post tile",
+      "limit": 6,
+      "settings": [
+        { "type": "text", "id": "kind", "label": "Kind", "default": "Field note" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Why your drain smells again by Thursday" },
+        { "type": "text", "id": "url", "label": "Link", "info": "Optional. Leave blank for a non-linked tile." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Field notes",
+      "category": "Homepage",
+      "blocks": [
+        { "type": "channel", "settings": { "network": "Instagram", "handle": "@damonindustries", "note": "One fix a day" } },
+        { "type": "channel", "settings": { "network": "LinkedIn", "handle": "/damon‑industries", "note": "Programs & hiring" } },
+        { "type": "channel", "settings": { "network": "YouTube", "handle": "@damonq", "note": "Application protocols" } },
+        { "type": "channel", "settings": { "network": "TikTok", "handle": "@damonq", "note": "Plant floor" } },
+        { "type": "post", "settings": { "kind": "Field note", "title": "Why your drain smells again by Thursday" } },
+        { "type": "post", "settings": { "kind": "Protocol", "title": "Lining a fuel tank in fifteen steps" } },
+        { "type": "post", "settings": { "kind": "Ask a chemist", "title": "Hard water is eating your detergent budget" } },
+        { "type": "post", "settings": { "kind": "Grant desk", "title": "Which school funds are open this quarter" } },
+        { "type": "post", "settings": { "kind": "Shop floor", "title": "A 40‑year‑old autoscrubber, resurrected" } },
+        { "type": "post", "settings": { "kind": "Do not", "title": "Never boil out terne‑plated steel" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

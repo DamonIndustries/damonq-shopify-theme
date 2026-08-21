@@ -1,0 +1,83 @@
+{%- comment -%}
+  Industries grid — eight sector cards (number, name, note) that fill red
+  on hover. Each card is a `sector` block linking to its industry page.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign anchor = s.anchor_id | default: 'industries'
+-%}
+
+<section class="page-section industries" id="{{ anchor }}">
+  <div class="container">
+    {%- if s.eyebrow != blank -%}
+      <span class="eyebrow">
+        {%- if s.eyebrow_no != blank -%}<span>{{ s.eyebrow_no }}</span>{%- endif -%}
+        <span class="eyebrow__rule" aria-hidden="true"></span>
+        <span>{{ s.eyebrow }}</span>
+      </span>
+    {%- endif -%}
+
+    <div class="page-section__head">
+      <h2 class="page-section__title">{{ s.heading }}</h2>
+      {%- if s.link_text != blank -%}
+        <a href="{{ s.link_url }}" class="btn btn--outline">{{ s.link_text }}</a>
+      {%- endif -%}
+    </div>
+
+    <div class="industries__grid">
+      {%- for block in section.blocks -%}
+        {%- assign b = block.settings -%}
+        <a class="sector-card" href="{{ b.url | default: '#' }}" {{ block.shopify_attributes }}>
+          {%- if b.no != blank -%}<div class="sector-card__no">{{ b.no }}</div>{%- endif -%}
+          <div class="sector-card__name">{{ b.name }}</div>
+          {%- if b.note != blank -%}<div class="sector-card__note">{{ b.note }}</div>{%- endif -%}
+        </a>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Industries grid",
+  "tag": "div",
+  "settings": [
+    { "type": "text", "id": "anchor_id", "label": "Anchor id", "default": "industries", "info": "Used by in-page links and the section rail. Letters, numbers and dashes only." },
+    { "type": "text", "id": "eyebrow_no", "label": "Eyebrow number", "default": "07" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "By industry" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Organized the way you'd describe your own building." },
+    { "type": "text", "id": "link_text", "label": "Button text", "default": "All industries →" },
+    { "type": "text", "id": "link_url", "label": "Button link (URL or #anchor)", "default": "#router" }
+  ],
+  "blocks": [
+    {
+      "type": "sector",
+      "name": "Sector card",
+      "limit": 12,
+      "settings": [
+        { "type": "text", "id": "no", "label": "Number", "default": "01" },
+        { "type": "text", "id": "name", "label": "Name", "default": "Grocery & retail" },
+        { "type": "text", "id": "note", "label": "Note", "default": "Meat, deli, bakery, produce mist, front‑end floors." },
+        { "type": "text", "id": "url", "label": "Link (URL or #anchor)", "default": "#router" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Industries grid",
+      "category": "Homepage",
+      "blocks": [
+        { "type": "sector", "settings": { "no": "01", "name": "Grocery & retail", "note": "Meat, deli, bakery, produce mist, front‑end floors.", "url": "#router" } },
+        { "type": "sector", "settings": { "no": "02", "name": "Food processing", "note": "USDA‑accepted chemistry, boil‑out, smoke houses, CIP.", "url": "#router" } },
+        { "type": "sector", "settings": { "no": "03", "name": "Quick service", "note": "Fryers, hoods, dish machines, three‑comp sink program.", "url": "#router" } },
+        { "type": "sector", "settings": { "no": "04", "name": "Schools", "note": "Gym floors, cafeterias, locker rooms, grant‑funded equipment.", "url": "#router" } },
+        { "type": "sector", "settings": { "no": "05", "name": "Healthcare", "note": "Joint Commission and CMS documented kill claims.", "url": "#router" } },
+        { "type": "sector", "settings": { "no": "06", "name": "Municipal & parks", "note": "Restrooms, fleet wash, odor control, funding support.", "url": "#router" } },
+        { "type": "sector", "settings": { "no": "07", "name": "Automotive & radiator", "note": "Red‑Kote, Over‑Kote, EGR flush, hot‑tank chemistry.", "url": "#router" } },
+        { "type": "sector", "settings": { "no": "08", "name": "Industrial & machining", "note": "Coolants, mold release, parts washers, plant floors.", "url": "#router" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
