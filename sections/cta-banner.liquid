@@ -1,0 +1,44 @@
+{%- comment -%}
+  CTA banner — full-bleed red closer: "More than just chemicals." Eyebrow,
+  oversized heading, body and two CTAs (white button + outline phone link).
+{%- endcomment -%}
+
+{%- assign s = section.settings -%}
+
+<section class="cta-banner"{% if s.anchor_id != blank %} id="{{ s.anchor_id }}"{% endif %}>
+  <div class="cta-banner__in">
+    {%- if s.eyebrow != blank -%}<div class="cta-banner__eye">{{ s.eyebrow }}</div>{%- endif -%}
+    <h2 class="cta-banner__title">{{ s.heading }}</h2>
+    {%- if s.body != blank -%}<p class="cta-banner__body">{{ s.body }}</p>{%- endif -%}
+    {%- if s.cta_primary_text != blank or s.cta_secondary_text != blank -%}
+      <div class="cta-banner__row">
+        {%- if s.cta_primary_text != blank -%}
+          <a href="{{ s.cta_primary_url }}" class="btn btn--white btn--lg">{{ s.cta_primary_text }}</a>
+        {%- endif -%}
+        {%- if s.cta_secondary_text != blank -%}
+          <a href="{{ s.cta_secondary_url }}" class="btn btn--outline-on-dark btn--lg">{{ s.cta_secondary_text }}</a>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "CTA banner",
+  "tag": "div",
+  "settings": [
+    { "type": "text", "id": "anchor_id", "label": "Anchor id", "info": "Optional. Letters, numbers and dashes only." },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Damon Industries · Alliance, Ohio · Since 1938" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "More than just chemicals." },
+    { "type": "textarea", "id": "body", "label": "Body", "default": "Tell us the facility, the surface and the budget. A chemist, a service tech and a grant writer are all on the same call." },
+    { "type": "text", "id": "cta_primary_text", "label": "Primary button", "default": "Talk to a specialist →" },
+    { "type": "text", "id": "cta_primary_url", "label": "Primary link (URL or #anchor)", "default": "/pages/contact-rep" },
+    { "type": "text", "id": "cta_secondary_text", "label": "Secondary button", "default": "1‑800‑362‑9850" },
+    { "type": "text", "id": "cta_secondary_url", "label": "Secondary link (URL, tel: or #anchor)", "default": "tel:+18003629850" }
+  ],
+  "presets": [
+    { "name": "CTA banner", "category": "Homepage" }
+  ]
+}
+{% endschema %}

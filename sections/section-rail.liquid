@@ -1,0 +1,68 @@
+{%- comment -%}
+  Section rail — floating shortcut rail fixed to the left margin: a thin
+  rule with a red progress fill and one dot per section. Dots-only at rest,
+  labels reveal on hover, active dot solid red; flips to white over dark /
+  red backgrounds (theme.js probes the page). Hidden below 1180px, where
+  the red category strip carries the same jump links.
+
+  Place first in templates/index.json. Each `link` block pairs a label with
+  the anchor id of a homepage section, so the rail stays in sync with the
+  section order. Behavior: initSectionRail() in assets/theme.js.
+{%- endcomment -%}
+
+{%- assign s = section.settings -%}
+
+{%- if section.blocks.size > 0 -%}
+  <nav class="railnav" data-section-rail data-rail-offset="{{ s.offset | default: 108 }}" aria-label="{{ s.aria_label | escape }}">
+    <span class="railnav__line" aria-hidden="true"><span class="railnav__fill" data-rail-fill></span></span>
+    {%- for block in section.blocks -%}
+      {%- assign target = block.settings.target | strip | remove: '#' -%}
+      {%- if target != blank and block.settings.label != blank -%}
+        <a class="railnav__link" href="#{{ target }}" {{ block.shopify_attributes }}>
+          <span class="railnav__dot" aria-hidden="true"></span>
+          <span class="railnav__lbl">{{ block.settings.label }}</span>
+        </a>
+      {%- endif -%}
+    {%- endfor -%}
+  </nav>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Section rail",
+  "tag": "div",
+  "settings": [
+    { "type": "paragraph", "content": "Floating dot navigation for the homepage. Add one link per section, in page order, using each section's Anchor id. Hidden on screens narrower than 1180px." },
+    { "type": "text", "id": "aria_label", "label": "Accessible name", "default": "Jump to section", "info": "Read by screen readers; not shown on the page." },
+    { "type": "range", "id": "offset", "label": "Scroll offset", "min": 0, "max": 200, "step": 2, "unit": "px", "default": 108, "info": "Height of the sticky header, so a jumped-to section lands below it." }
+  ],
+  "blocks": [
+    {
+      "type": "link",
+      "name": "Link",
+      "limit": 12,
+      "settings": [
+        { "type": "text", "id": "label", "label": "Label", "default": "Capabilities" },
+        { "type": "text", "id": "target", "label": "Target anchor id", "default": "capabilities", "info": "The Anchor id of the section to jump to, without the #." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Section rail",
+      "category": "Homepage",
+      "blocks": [
+        { "type": "link", "settings": { "label": "Capabilities", "target": "capabilities" } },
+        { "type": "link", "settings": { "label": "Get routed", "target": "router" } },
+        { "type": "link", "settings": { "label": "Enzymes", "target": "enzymes" } },
+        { "type": "link", "settings": { "label": "Equipment & grants", "target": "equipment" } },
+        { "type": "link", "settings": { "label": "Mobile repair", "target": "mobile" } },
+        { "type": "link", "settings": { "label": "Q Team", "target": "qteam" } },
+        { "type": "link", "settings": { "label": "Industries", "target": "industries" } },
+        { "type": "link", "settings": { "label": "In the field", "target": "social" } },
+        { "type": "link", "settings": { "label": "Shop the catalog", "target": "shop" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
