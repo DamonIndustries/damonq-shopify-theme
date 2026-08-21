@@ -740,4 +740,154 @@
   // only if the user clicks "View cart" in the toast.
   document.addEventListener('cart:added', openDrawer);
   document.addEventListener('cart:open',  openDrawer);
+
+  // ---------------------------------------------- Homepage: facility / problem router
+  // Markup contract (sections/facility-router.liquid):
+  //   [data-router]                      section root
+  //   [data-router-routes]               <script type="application/json"> { typical, facilities:{key:phrase}, routes:{problemKey:{...}} }
+  //   [data-router-facility]             <select>
+  //   [data-router-problem]              <select>
+  //   [data-route-title|body|chemistry|equipment|funding|link]
+  // The default route is server-rendered; this only swaps the panel on change.
+  function initFacilityRouter(scope) {
+    var roots = (scope || document).querySelectorAll('[data-router]');
+    Array.prototype.forEach.call(roots, function (root) {
+      if (root.hasAttribute('data-router-ready')) return;
+      var dataEl = root.querySelector('[data-router-routes]');
+      var facility = root.querySelector('[data-router-facility]');
+      var problem = root.querySelector('[data-router-problem]');
+      if (!dataEl || !facility || !problem) return;
+      var data;
+      try { data = JSON.parse(dataEl.textContent); } catch (err) { return; }
+      var routes = data.routes || {};
+      var facilities = data.facilities || {};
+      var typical = data.typical || '';
+      var fields = {
+        title: root.querySelector('[data-route-title]'),
+        body: root.querySelector('[data-route-body]'),
+        chemistry: root.querySelector('[data-route-chemistry]'),
+        equipment: root.querySelector('[data-route-equipment]'),
+        funding: root.querySelector('[data-route-funding]'),
+        link: root.querySelector('[data-route-link]')
+      };
+      function setText(el, value) { if (el) el.textContent = value || ''; }
+      function update() {
+        var route = routes[problem.value];
+        if (!route) return;
+        var phrase = facilities[facility.value] || '';
+        var body = route.body || '';
+        if (typical && phrase) body += ' ' + typical + ' ' + phrase + '.';
+        setText(fields.title, route.title);
+        setText(fields.body, body);
+        setText(fields.chemistry, route.chemistry);
+        setText(fields.equipment, route.equipment);
+        setText(fields.funding, route.funding);
+        if (fields.link) {
+          if (route.link_text && route.link_url) {
+            fields.link.textContent = route.link_text;
+            fields.link.setAttribute('href', route.link_url);
+            fields.link.hidden = false;
+          } else {
+            fields.link.hidden = true;
+          }
+        }
+      }
+      facility.addEventListener('change', update);
+      problem.addEventListener('change', update);
+      root.setAttribute('data-router-ready', '');
+    });
+  }
+  document.addEventListener('DOMContentLoaded', function () { initFacilityRouter(document); });
+
+  // ---------------------------------------------- Homepage: floating section shortcut rail
+  // Markup contract (sections/section-rail.liquid):
+  //   [data-section-rail][data-rail-offset="108"]   <nav> root; offset = sticky header height in px
+  //   [data-rail-fill]                              progress fill inside the rule
+  //   .railnav__link[href="#id"]                    one per section
+  // Adds .is-active to the current link and .is-dark to the root when the page
+  // background just left of the rail is dark/red, so dots/labels flip to white.
+  function initSectionRail(scope) {
+    var rails = (scope || document).querySelectorAll('[data-section-rail]');
+    Array.prototype.forEach.call(rails, function (rail) {
+      if (rail.hasAttribute('data-rail-ready')) return;
+      var fill = rail.querySelector('[data-rail-fill]');
+      var links = Array.prototype.slice.call(rail.querySelectorAll('.railnav__link'));
+      if (!links.length) return;
+      var offset = parseInt(rail.getAttribute('data-rail-offset'), 10);
+      if (isNaN(offset)) offset = 108;
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      function targetFor(link) {
+        var href = link.getAttribute('href') || '';
+        var hash = href.indexOf('#');
+        if (hash === -1) return null;
+        var id = href.slice(hash + 1);
+        return id ? document.getElementById(id) : null;
+      }
+
+      links.forEach(function (link) {
+        link.addEventListener('click', function (e) {
+          var t = targetFor(link);
+          if (!t) return; // let the browser handle a missing target normally
+          e.preventDefault();
+          var y = t.getBoundingClientRect().top + window.pageYOffset - offset;
+          window.scrollTo({ top: Math.max(0, y), behavior: reduceMotion ? 'auto' : 'smooth' });
+          if (history.replaceState) history.replaceState(null, '', link.getAttribute('href'));
+        });
+      });
+
+      function isDarkAt(x, y) {
+        var el = document.elementFromPoint(x, y);
+        while (el) {
+          var c = getComputedStyle(el).backgroundColor;
+          var m = c && c.match(/rgba?\(([^)]+)\)/);
+          if (m) {
+            var p = m[1].split(',').map(parseFloat);
+            var a = p.length > 3 ? p[3] : 1;
+            if (a > 0.15) {
+              var lum = 0.299 * p[0] + 0.587 * p[1] + 0.114 * p[2];
+              return lum < 140;
+            }
+          }
+          el = el.parentElement;
+        }
+        return false;
+      }
+
+      function update() {
+        var vh = window.innerHeight, idx = 0;
+        links.forEach(function (link, i) {
+          var t = targetFor(link);
+          if (t && t.getBoundingClientRect().top <= vh * 0.35) idx = i;
+        });
+        links.forEach(function (link, j) {
+          link.classList.toggle('is-active', j === idx);
+          if (j === idx) link.setAttribute('aria-current', 'true'); else link.removeAttribute('aria-current');
+        });
+        if (fill) {
+          var dot = links[idx].querySelector('.railnav__dot');
+          if (dot) {
+            var railTop = rail.getBoundingClientRect().top;
+            var c = dot.getBoundingClientRect().top + dot.offsetHeight / 2 - railTop;
+            fill.style.height = Math.max(0, c - 13) + 'px';
+          }
+        }
+        var rx = Math.max(4, rail.getBoundingClientRect().left - 6);
+        rail.classList.toggle('is-dark', isDarkAt(rx, vh * 0.5));
+      }
+
+      window.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', update);
+      window.addEventListener('load', update);
+      update();
+      rail.setAttribute('data-rail-ready', '');
+    });
+  }
+  document.addEventListener('DOMContentLoaded', function () { initSectionRail(document); });
+
+  // Theme editor: sections are re-rendered on the fly, so re-bind behavior.
+  document.addEventListener('shopify:section:load', function (e) {
+    initFacilityRouter(e.target);
+    initSectionRail(e.target);
+  });
 })();
