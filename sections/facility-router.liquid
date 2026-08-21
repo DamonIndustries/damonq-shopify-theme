@@ -67,7 +67,7 @@
             <label class="router__label" for="router-facility-{{ uid }}">{{ s.facility_label }}</label>
             <select class="router__select" id="router-facility-{{ uid }}" name="facility" data-router-facility>
               {%- for f in facilities -%}
-                <option value="{{ f.settings.key | escape }}"{% if f.settings.key == default_facility %} selected{% endif %}>{{ f.settings.label | escape }}</option>
+                <option value="{{ f.settings.key | escape }}"{% if f.settings.key == default_facility %} selected{% endif %}>{{ f.settings.title | escape }}</option>
               {%- endfor -%}
             </select>
           </div>
@@ -170,7 +170,7 @@
       "limit": 12,
       "settings": [
         { "type": "text", "id": "key", "label": "Key", "default": "schools", "info": "Short unique id (letters, numbers, dashes)." },
-        { "type": "text", "id": "label", "label": "Dropdown label", "default": "Schools & universities", "info": "Keep under 50 characters." },
+        { "type": "text", "id": "title", "label": "Dropdown label", "default": "Schools & universities", "info": "Keep under 50 characters." },
         { "type": "text", "id": "phrase", "label": "Sentence phrase", "default": "schools & universities", "info": "Used as “Typical for <phrase>.”" }
       ]
     },
@@ -196,14 +196,14 @@
       "name": "Facility router",
       "category": "Homepage",
       "blocks": [
-        { "type": "facility", "settings": { "key": "grocery", "label": "Grocery & retail", "phrase": "grocery & retail" } },
-        { "type": "facility", "settings": { "key": "food", "label": "Food processing", "phrase": "food processing" } },
-        { "type": "facility", "settings": { "key": "qsr", "label": "Quick service restaurant", "phrase": "quick service restaurants" } },
-        { "type": "facility", "settings": { "key": "schools", "label": "Schools & universities", "phrase": "schools & universities" } },
-        { "type": "facility", "settings": { "key": "health", "label": "Healthcare & long‑term care", "phrase": "healthcare & long‑term care" } },
-        { "type": "facility", "settings": { "key": "muni", "label": "Municipal & parks", "phrase": "municipal & parks" } },
-        { "type": "facility", "settings": { "key": "auto", "label": "Automotive & radiator shop", "phrase": "automotive & radiator shops" } },
-        { "type": "facility", "settings": { "key": "ind", "label": "Industrial & machining", "phrase": "industrial & machining" } },
+        { "type": "facility", "settings": { "key": "grocery", "title": "Grocery & retail", "phrase": "grocery & retail" } },
+        { "type": "facility", "settings": { "key": "food", "title": "Food processing", "phrase": "food processing" } },
+        { "type": "facility", "settings": { "key": "qsr", "title": "Quick service restaurant", "phrase": "quick service restaurants" } },
+        { "type": "facility", "settings": { "key": "schools", "title": "Schools & universities", "phrase": "schools & universities" } },
+        { "type": "facility", "settings": { "key": "health", "title": "Healthcare & long‑term care", "phrase": "healthcare & long‑term care" } },
+        { "type": "facility", "settings": { "key": "muni", "title": "Municipal & parks", "phrase": "municipal & parks" } },
+        { "type": "facility", "settings": { "key": "auto", "title": "Automotive & radiator shop", "phrase": "automotive & radiator shops" } },
+        { "type": "facility", "settings": { "key": "ind", "title": "Industrial & machining", "phrase": "industrial & machining" } },
         { "type": "route", "settings": { "problem_key": "odor", "problem_label": "Odor, drains & grease traps", "title": "Enzyme program, not another fragrance", "body": "Fragrance masks for four hours. A dosed enzyme program digests the organic film in the drain line and the trap so the smell stops being generated in the first place. We start with a two‑week trial on your worst line.", "chemistry": "Enzyme line", "equipment": "Drain dosing pump", "funding": "Not typical", "link_text": "Enzyme page", "link_url": "#enzymes" } },
         { "type": "route", "settings": { "problem_key": "grease", "problem_label": "Baked‑on grease & carbon", "title": "Concentrate plus the right dispenser", "body": "Hoods, fryers and rotisserie carbon are a chemistry‑and‑dilution problem. We spec the concentrate to your soil, then mount a dilution station so your crew stops free‑pouring at four times the cost.", "chemistry": "Non‑butyl concentrate", "equipment": "Wall dilution station", "funding": "Not typical", "link_text": "Equipment page", "link_url": "#equipment" } },
         { "type": "route", "settings": { "problem_key": "floors", "problem_label": "Floors — finish, stripping, scrubbing", "title": "Floor program with the machine included", "body": "Finish, stripper and daily neutral cleaner specced against your substrate — then the autoscrubber sized to your square footage, installed, trained and serviced by our techs.", "chemistry": "Finish & stripper", "equipment": "Autoscrubber", "funding": "Often eligible", "link_text": "Equipment page", "link_url": "#equipment" } },

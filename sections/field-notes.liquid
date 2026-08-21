@@ -31,7 +31,7 @@
             {%- for block in channels -%}
               {%- assign b = block.settings -%}
               <a class="channel-link" href="{{ b.url | default: '#' }}"{% if b.new_tab %} target="_blank" rel="noopener"{% endif %} {{ block.shopify_attributes }}>
-                <span class="channel-link__net">{{ b.network }}</span>
+                <span class="channel-link__net">{{ b.title }}</span>
                 {%- if b.handle != blank -%}<span class="channel-link__handle">{{ b.handle }}</span>{%- endif -%}
                 {%- if b.note != blank -%}<span class="channel-link__note">{{ b.note }}</span>{%- endif -%}
               </a>
@@ -79,7 +79,7 @@
       "name": "Social channel",
       "limit": 6,
       "settings": [
-        { "type": "text", "id": "network", "label": "Network", "default": "Instagram" },
+        { "type": "text", "id": "title", "label": "Network", "default": "Instagram" },
         { "type": "text", "id": "handle", "label": "Handle", "default": "@damonindustries" },
         { "type": "text", "id": "note", "label": "Note", "default": "One fix a day" },
         { "type": "text", "id": "url", "label": "Link", "info": "Full profile URL." },
@@ -102,10 +102,10 @@
       "name": "Field notes",
       "category": "Homepage",
       "blocks": [
-        { "type": "channel", "settings": { "network": "Instagram", "handle": "@damonindustries", "note": "One fix a day" } },
-        { "type": "channel", "settings": { "network": "LinkedIn", "handle": "/damon‑industries", "note": "Programs & hiring" } },
-        { "type": "channel", "settings": { "network": "YouTube", "handle": "@damonq", "note": "Application protocols" } },
-        { "type": "channel", "settings": { "network": "TikTok", "handle": "@damonq", "note": "Plant floor" } },
+        { "type": "channel", "settings": { "title": "Instagram", "handle": "@damonindustries", "note": "One fix a day" } },
+        { "type": "channel", "settings": { "title": "LinkedIn", "handle": "/damon‑industries", "note": "Programs & hiring" } },
+        { "type": "channel", "settings": { "title": "YouTube", "handle": "@damonq", "note": "Application protocols" } },
+        { "type": "channel", "settings": { "title": "TikTok", "handle": "@damonq", "note": "Plant floor" } },
         { "type": "post", "settings": { "kind": "Field note", "title": "Why your drain smells again by Thursday" } },
         { "type": "post", "settings": { "kind": "Protocol", "title": "Lining a fuel tank in fifteen steps" } },
         { "type": "post", "settings": { "kind": "Ask a chemist", "title": "Hard water is eating your detergent budget" } },
