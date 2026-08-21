@@ -52,7 +52,6 @@
             {{ hero_image | image_url: width: 1400 | image_tag: loading: 'eager', fetchpriority: 'high', widths: '600, 900, 1200, 1400', sizes: '(max-width: 1000px) 100vw, 44vw', alt: hero_alt }}
           {%- else -%}
             <div class="photo-slot">
-              <span class="photo-slot__badge">Photo slot</span>
               <span class="photo-slot__label">{{ s.image_placeholder }}</span>
             </div>
           {%- endif -%}

@@ -22,7 +22,6 @@
               {{ s.image | image_url: width: 1200 | image_tag: loading: 'lazy', widths: '600, 900, 1200', sizes: '(max-width: 1000px) 100vw, 44vw', alt: img_alt }}
             {%- else -%}
               <div class="photo-slot photo-slot--dark">
-                <span class="photo-slot__badge">Photo slot</span>
                 <span class="photo-slot__label">{{ s.image_placeholder }}</span>
               </div>
             {%- endif -%}

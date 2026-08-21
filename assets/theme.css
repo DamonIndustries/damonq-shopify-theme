@@ -5831,12 +5831,6 @@ button { font: inherit; cursor: pointer; }
   padding: 20px; letter-spacing: .02em; line-height: 1.4; max-width: 80%;
 }
 .photo-slot--dark .photo-slot__label { color: rgba(255,255,255,.7); }
-.photo-slot__badge {
-  position: absolute; top: 14px; left: 14px;
-  background: #fff; color: var(--red);
-  font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
-  padding: 5px 9px; border-radius: var(--radius-pill);
-}
 
 /* ---------- hero-statement */
 .hero-statement { padding: 72px 0 0; scroll-margin-top: 118px; }
