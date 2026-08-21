@@ -1,0 +1,104 @@
+{%- comment -%}
+  Hero statement — capabilities-first positioning hero for the homepage.
+  Eyebrow + two-line headline (second line red) + lead + two CTAs + factory
+  image with caption. `layout` = split (text | image) or poster (image above).
+  Anchor id is a setting so the section rail / catnav jump links stay in sync.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign anchor = s.anchor_id | default: 'top'
+  assign hero_image = s.image
+  assign hero_alt = s.image_alt
+  if hero_alt == blank
+    assign hero_alt = hero_image.alt
+  endif
+-%}
+
+<section class="hero-statement hero-statement--{{ s.layout | default: 'split' }}" id="{{ anchor }}">
+  <div class="container">
+    <div class="hero-statement__grid">
+      <div class="hero-statement__content">
+        {%- if s.eyebrow != blank -%}
+          <span class="eyebrow"><span class="eyebrow__rule" aria-hidden="true"></span>{{ s.eyebrow }}</span>
+        {%- endif -%}
+
+        <h1 class="hero-statement__title">
+          {{ s.heading_pre }}
+          {%- if s.heading_em != blank -%}
+            <br><span class="hero-statement__em">{{ s.heading_em }}</span>
+          {%- endif -%}
+        </h1>
+
+        {%- if s.lead != blank -%}
+          <p class="hero-statement__lead">{{ s.lead }}</p>
+        {%- endif -%}
+
+        {%- if s.cta_primary_text != blank or s.cta_secondary_text != blank -%}
+          <div class="hero-statement__ctas">
+            {%- if s.cta_primary_text != blank -%}
+              <a href="{{ s.cta_primary_url }}" class="btn btn--red btn--lg">{{ s.cta_primary_text }}</a>
+            {%- endif -%}
+            {%- if s.cta_secondary_text != blank -%}
+              <a href="{{ s.cta_secondary_url }}" class="btn btn--outline btn--lg">{{ s.cta_secondary_text }}</a>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      <figure class="hero-statement__fig">
+        <div class="hero-statement__frame">
+          {%- if hero_image != blank -%}
+            {{ hero_image | image_url: width: 1400 | image_tag: loading: 'eager', fetchpriority: 'high', widths: '600, 900, 1200, 1400', sizes: '(max-width: 1000px) 100vw, 44vw', alt: hero_alt }}
+          {%- else -%}
+            <div class="photo-slot">
+              <span class="photo-slot__badge">Photo slot</span>
+              <span class="photo-slot__label">{{ s.image_placeholder }}</span>
+            </div>
+          {%- endif -%}
+        </div>
+        {%- if s.caption != blank -%}
+          <figcaption class="hero-statement__cap">{{ s.caption }}</figcaption>
+        {%- endif -%}
+      </figure>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Hero statement",
+  "tag": "div",
+  "settings": [
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        { "value": "split", "label": "Split — text beside image" },
+        { "value": "poster", "label": "Poster — wide image above text" }
+      ],
+      "default": "split"
+    },
+    { "type": "text", "id": "anchor_id", "label": "Anchor id", "default": "top", "info": "Used by in-page links and the section rail (e.g. #top). Letters, numbers and dashes only." },
+    { "type": "header", "content": "Copy" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Chemistry · Equipment · Service · Expertise" },
+    { "type": "text", "id": "heading_pre", "label": "Headline line 1", "default": "Most suppliers sell you a drum." },
+    { "type": "text", "id": "heading_em", "label": "Headline line 2 (red)", "default": "We run the whole system." },
+    { "type": "textarea", "id": "lead", "label": "Lead paragraph", "default": "Damon formulates the chemistry, engineers the enzymes, installs and repairs the equipment, writes your grant application, trains your crew and answers the phone with a chemist. Eighty‑eight years in, that is still one building in Ohio." },
+    { "type": "header", "content": "Calls to action" },
+    { "type": "text", "id": "cta_primary_text", "label": "Primary button", "default": "See what we do →" },
+    { "type": "text", "id": "cta_primary_url", "label": "Primary link", "default": "#capabilities", "info": "A URL or an in-page anchor such as #capabilities." },
+    { "type": "text", "id": "cta_secondary_text", "label": "Secondary button", "default": "Route me to the right expert" },
+    { "type": "text", "id": "cta_secondary_url", "label": "Secondary link", "default": "#router", "info": "A URL or an in-page anchor such as #router." },
+    { "type": "header", "content": "Image" },
+    { "type": "image_picker", "id": "image", "label": "Image", "info": "4:5 portrait works best in the split layout; 21:9 in poster." },
+    { "type": "text", "id": "image_alt", "label": "Image alt text", "default": "Damon Industries, Alliance, Ohio" },
+    { "type": "text", "id": "caption", "label": "Caption", "default": "Alliance, Ohio — one plant since 1938" },
+    { "type": "text", "id": "image_placeholder", "label": "Placeholder label (no image)", "default": "Factory photo — the Alliance, Ohio plant" }
+  ],
+  "presets": [
+    { "name": "Hero statement", "category": "Homepage" }
+  ]
+}
+{% endschema %}
