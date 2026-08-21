@@ -1,0 +1,97 @@
+{%- comment -%}
+  Equipment & grants — three-column steps. The third step is highlighted
+  (red-soft) and carries the grant-eligibility CTA. Each step is a block
+  with a number, title, body, up to two tag chips and an optional button.
+{%- endcomment -%}
+
+{%- liquid
+  assign s = section.settings
+  assign anchor = s.anchor_id | default: 'equipment'
+-%}
+
+<section class="page-section equipment" id="{{ anchor }}">
+  <div class="container">
+    {%- if s.eyebrow != blank -%}
+      <span class="eyebrow">
+        {%- if s.eyebrow_no != blank -%}<span>{{ s.eyebrow_no }}</span>{%- endif -%}
+        <span class="eyebrow__rule" aria-hidden="true"></span>
+        <span>{{ s.eyebrow }}</span>
+      </span>
+    {%- endif -%}
+
+    <div class="page-section__head">
+      <h2 class="page-section__title">{{ s.heading }}</h2>
+      {%- if s.description != blank -%}
+        <p class="page-section__desc">{{ s.description }}</p>
+      {%- endif -%}
+    </div>
+
+    <div class="equipment__grid">
+      {%- for block in section.blocks -%}
+        {%- assign b = block.settings -%}
+        {%- liquid
+          assign tag_style = 'neutral'
+          if b.highlight
+            assign tag_style = 'red'
+          endif
+        -%}
+        <div class="equip-step{% if b.highlight %} equip-step--hi{% endif %}" {{ block.shopify_attributes }}>
+          {%- if b.no != blank -%}<div class="equip-step__no">{{ b.no }}</div>{%- endif -%}
+          <h3 class="equip-step__title">{{ b.title }}</h3>
+          {%- if b.body != blank -%}<p class="equip-step__body">{{ b.body }}</p>{%- endif -%}
+          {%- if b.tag_1 != blank or b.tag_2 != blank -%}
+            <div class="equip-step__tags">
+              {%- if b.tag_1 != blank -%}<span class="tag tag--{{ tag_style }}">{{ b.tag_1 }}</span>{%- endif -%}
+              {%- if b.tag_2 != blank -%}<span class="tag tag--{{ tag_style }}">{{ b.tag_2 }}</span>{%- endif -%}
+            </div>
+          {%- endif -%}
+          {%- if b.cta_text != blank -%}
+            <a href="{{ b.cta_url }}" class="btn btn--red btn--block equip-step__cta">{{ b.cta_text }}</a>
+          {%- endif -%}
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Equipment & grants",
+  "tag": "div",
+  "settings": [
+    { "type": "text", "id": "anchor_id", "label": "Anchor id", "default": "equipment", "info": "Used by in-page links and the section rail. Letters, numbers and dashes only." },
+    { "type": "text", "id": "eyebrow_no", "label": "Eyebrow number", "default": "04" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Equipment & grant experts" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "We spec the machine, then help you find someone else to pay for it." },
+    { "type": "textarea", "id": "description", "label": "Description", "default": "Autoscrubbers, dispensers, laundry systems, foamers. Most schools and municipalities never buy because of the capital line — so we put grant people on staff." }
+  ],
+  "blocks": [
+    {
+      "type": "step",
+      "name": "Step",
+      "limit": 3,
+      "settings": [
+        { "type": "text", "id": "no", "label": "Number", "default": "01" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Specced to your building" },
+        { "type": "textarea", "id": "body", "label": "Body", "default": "Square footage, floor type, crew size and water hardness — then the machine and the dilution station that actually fit. Not a catalog page." },
+        { "type": "text", "id": "tag_1", "label": "Tag 1", "default": "Site survey" },
+        { "type": "text", "id": "tag_2", "label": "Tag 2", "default": "Water test" },
+        { "type": "checkbox", "id": "highlight", "label": "Highlight this step (red tint)", "default": false },
+        { "type": "text", "id": "cta_text", "label": "Button text", "info": "Optional. Shown as a full-width red button." },
+        { "type": "text", "id": "cta_url", "label": "Button link (URL or #anchor)", "default": "#router" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Equipment & grants",
+      "category": "Homepage",
+      "blocks": [
+        { "type": "step", "settings": { "no": "01", "title": "Specced to your building", "body": "Square footage, floor type, crew size and water hardness — then the machine and the dilution station that actually fit. Not a catalog page.", "tag_1": "Site survey", "tag_2": "Water test", "highlight": false, "cta_text": "" } },
+        { "type": "step", "settings": { "no": "02", "title": "Installed, trained, maintained", "body": "Dispensers mounted and calibrated, crew trained in English or Spanish, and a service interval that we come back for — not one you have to remember.", "tag_1": "Install", "tag_2": "Bilingual training", "highlight": false, "cta_text": "" } },
+        { "type": "step", "settings": { "no": "03", "title": "Grant experts on staff", "body": "Ohio EPA, ESSER successors, USDA Rural Development, state school‑facility funds. Our people know which cycle is open, what the narrative needs to say, and how to write the equipment into it.", "tag_1": "Eligibility check", "tag_2": "Application support", "highlight": true, "cta_text": "Check my grant eligibility →", "cta_url": "#router" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
