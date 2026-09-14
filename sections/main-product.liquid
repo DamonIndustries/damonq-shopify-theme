@@ -558,12 +558,12 @@
           assign vol_unit = 'units'
           if vol and vol.unit
             case vol.unit
-              when 'us_qt' or 'imp_qt'  ; assign vol_unit = 'quarts'
-              when 'us_pt' or 'imp_pt'  ; assign vol_unit = 'pints'
-              when 'us_gal' or 'imp_gal'; assign vol_unit = 'gallons'
-              when 'us_oz' or 'imp_oz'  ; assign vol_unit = 'ounces'
-              when 'l'                  ; assign vol_unit = 'liters'
-              when 'ml'                 ; assign vol_unit = 'milliliters'
+              when 'us_qt', 'imp_qt'
+              when 'us_pt', 'imp_pt'
+              when 'us_gal', 'imp_gal'
+              when 'us_oz', 'imp_oz'
+              when 'l'
+              when 'ml'
             endcase
           endif
 
@@ -1435,3 +1435,28 @@
   ]
 }
 {% endschema %}
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "              when 'us_qt' or 'imp_qt'  ; assign vol_unit = 'quarts'"
+  to: "              when 'us_qt', 'imp_qt'"
+  position: 28431..28467
+- from: "              when 'us_pt' or 'imp_pt'  ; assign vol_unit = 'pints'"
+  to: "              when 'us_pt', 'imp_pt'"
+  position: 28468..28504
+- from: "              when 'us_gal' or 'imp_gal'; assign vol_unit = 'gallons'"
+  to: "              when 'us_gal', 'imp_gal'"
+  position: 28505..28543
+- from: "              when 'us_oz' or 'imp_oz'  ; assign vol_unit = 'ounces'"
+  to: "              when 'us_oz', 'imp_oz'"
+  position: 28544..28580
+- from: "              when 'l'                  ; assign vol_unit = 'liters'"
+  to: "              when 'l'"
+  position: 28581..28603
+- from: "              when 'ml'                 ; assign vol_unit = 'milliliters'"
+  to: "              when 'ml'"
+  position: 28604..28627
+{% endcomment %}
